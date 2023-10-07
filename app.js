@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const express = require('express');
 const createDoctor = require('./controller/doctorController');
-const {createAppointment,showMyPatients} = require('./controller/appointmentController');
+const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments} = require('./controller/appointmentController');
 
 const app= express();
 const port = 3000;
@@ -20,3 +20,5 @@ app.use(express.json());
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
 app.get("/Doctor/patients",showMyPatients)
+app.get("/Doctor/patients/:id",showMyPatientInfo)
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
