@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
 const adminsTable = require("../model/admin.js");
+const healthPackageTable = require("../model/healthPackage.js");
+const patientsTable = require("../model/patient.js");
+const doctorsTable = require("../model/doctor.js");
 
 const adminLogin = async (req, res) => {
   res.send("Admin Login page");
@@ -12,6 +15,8 @@ const adminHome = async (req, res) => {
 const adminRegister = async (req, res) => {
   res.send("Admin Register page");
 };
+
+const goToHealthPackages = async (req, res) => {};
 
 const goToDeleteUser = async (req, res) => {
   res.send("Delete User");
@@ -28,7 +33,7 @@ const createAdmin = async (req, res) => {
     res.send("Username Unavailable");
   }
   const adminUser = new adminsTable({
-    name: req.body.username,
+    username: req.body.username,
     password: req.body.password,
   });
   try {
@@ -44,14 +49,20 @@ const createAdmin = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  const deletedUser = null;
+  console.log("sadasd")
+  let deletedUser = null;
+  let userFound = null;
   if (req.body.userType == "admin") {
-    deletedUser = await adminsTable.deleteOne({ name: req.body.name });
+    deletedUser = await adminsTable.deleteOne({ name: req.body.username });
   } else if (req.body.userType == "patient") {
-    deletedUser = await patientsTable.deleteOne({ name: req.body.name });
+    deletedUser = await patientsTable.deleteOne({ username: req.body.username });
   } else {
-    deletedUser = await doctorsTable.deleteOne({ name: req.body.name });
+    deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
   }
+  if(deletedUser.deletedCount == 0)
+    res.status(200).send("USER DELETED");
+  else
+    res.status(400).send("USER NOT FOUND");
   console.log(deletedUser);
 };
 
@@ -63,8 +74,7 @@ module.exports = {
   adminRegister,
   createAdmin,
   deleteUser,
-  goToDeletePatient,
-  goToDeleteDoctor,
+  goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
   updateHealthPackages,
