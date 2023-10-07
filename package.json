@@ -23,5 +23,6 @@
     "joi-oid": "^1.1.2",
     "mongoose": "^7.6.0",
     "nodemon": "^3.0.1"
-  }
+  },
+  "keywords": []
 }
