@@ -31,9 +31,16 @@ mongoose
 const id ="1"
 
 app.use(express.json());
+
+
+//Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
 app.get("/Doctor/patients",showMyPatients);
+app.get("/Doctor/patients/:id",showMyPatientInfo)
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+
+//Admin
 app.get("view/admin", adminLogin);
 app.get("view/admin/home", adminHome);
 app.get("view/admin/register", adminRegister);
@@ -44,5 +51,4 @@ app.post("view/admin/home/healthPackages/done", addHealthPackages);
 app.put("view/admin/home/healthPackages/done", updateHealthPackages);
 app.delete("view/admin/home/healthPackages/done", deleteHealthPackages);
 app.delete("view/admin/home/deleteUser/done", deleteUser);
-app.get("/Doctor/patients/:id",showMyPatientInfo)
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+
