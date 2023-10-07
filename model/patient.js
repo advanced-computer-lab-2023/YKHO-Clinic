@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const subSchema = {
+const familyMemberSchema = {
     name: {
         type: String,
         required: true,
@@ -18,24 +18,24 @@ const subSchema = {
         required: true,
         enum: ['male', 'female'],
         lowercase: true,
-        trim:true,
+        trim: true,
     },
     relation: {
         type: String,
         required: true,
-        enum: ['sister', 'brother', 'mother', 'father', 'grandmother', 'grandfather', 'daugther', 'son', 'wife', 'husband'],
+        enum: ['husband', 'wife', 'son', 'daugther'],
         lowercase: true,
-        trim:true,
+        trim: true,
     },
 }
 
 const patientSchema = new mongoose.Schema({
-    username: {
+    email: {
         type: String,
         required: true,
-        trim: true,
-    },    
-    name: {
+
+    },
+    username: {
         type: String,
         required: true,
         trim: true,
@@ -45,21 +45,21 @@ const patientSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+    },
     dob: {
         type: Date,
         required: true,
     },
-    email: {
-        type: String,
-        required: true,
-
-    },
     gender: {
         type: String,
         required: true,
-        enum: ['male', 'female'], 
+        enum: ['male', 'female'],
         lowercase: true,
-        trim:true,
+        trim: true,
     },
     mobileNumber: {
         type: String,
@@ -69,10 +69,15 @@ const patientSchema = new mongoose.Schema({
         name: String,
         mobileNumber: String
     },
-    family:[subSchema],
+    familyMembers: [familyMemberSchema],
+    healthPackage: {
+        type: String,
+        default: "none",
+    }
 
 })
 
+// joi validation
 
 const Patient = mongoose.model('Patient', patientSchema);
 module.exports = Patient; 
