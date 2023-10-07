@@ -4,7 +4,7 @@ const {doctor,validateDoctor} = require('../model/doctor.js');
 async function createDoctor(req,res){
     const result=validateDoctor(req.body);
     if(result.error){
-        res.send(result.error.message)
+       return res.send(result.error.message)
     }
     else{
         let newDoctor= new doctor({name:req.body.name,

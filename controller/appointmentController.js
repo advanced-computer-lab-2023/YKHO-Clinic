@@ -22,11 +22,30 @@ async function createAppointment(req,res){
     
 }
 async function showMyPatients(req,res){
-    const result = await appointment.find({doctorID:id}).select(["patientID","-_id"]).populate("patientID")
+    let result
+    if(req.body.name){
+         result = await appointment.find({}).populate("patientID",'name').select(["patientID","-_id"])
+        
+         result=result.filter((c)=>{
+            
+            return c.patientID.name.substring(0,req.body.name.length)==req.body.name
+         }
+         )
+        
+    }
+    else{
+         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
+    }
+    
     res.send(result);
 }
-async function searchMyPatients(req,res){
-    const result = await appointment.find({doctorID:id,}).select(["patientID","-_id"])
+async function showMyPatientInfo(req,res){
+    const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
     res.send(result);
 }
-module.exports={createAppointment,showMyPatients};
+async function showUpcomingAppointments(req,res){
+    const result = await appointment.find({doctorID:id,date:{$gt:Date.now()}}).populate("patientID","-_id").select(["patientID","-_id"])
+    res.send(result);
+}
+
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments}; 

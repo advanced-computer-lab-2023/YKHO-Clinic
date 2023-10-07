@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Joi = require('joi-oid')
 const {doctor}= require("./doctor")
+const patient= require("./patient")
 const appointmentSchema = new mongoose.Schema({
     doctorID:
     {
@@ -13,6 +14,7 @@ const appointmentSchema = new mongoose.Schema({
     {
         type:mongoose.Schema.Types.ObjectId,
         required:true,
+        ref:patient
     },
     date: 
     {
