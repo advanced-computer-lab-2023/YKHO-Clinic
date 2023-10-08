@@ -57,11 +57,8 @@ app.get("/admin/HealthPackages", goToHealthPackages);
 app.post("/admin/healthPackages/done", addHealthPackages);
 app.put("/admin/healthPackages/done", updateHealthPackages);
 app.delete("/admin/healthPackages/done", deleteHealthPackages);
-app.post("/addDoctor",createDoctor);
-app.post("/addAppointment",createAppointment);
-app.get("/Doctor/patients",showMyPatients);
-app.get("/Doctor/patients/:id",showMyPatientInfo);
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
+
+//Patient
 app.get("/Patient/Prescriptions", ViewPrescriptions);
 app.get("/Patient/Prescriptions/Filtered",FilterPrescriptions);
 app.get("/Patient/Appointments",PatientShowAppointments);

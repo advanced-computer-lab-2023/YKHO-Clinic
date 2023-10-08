@@ -33,13 +33,8 @@ const adminRegister = async (req, res) => {
 };
 
 const goToHealthPackages = async (req, res) => {
-  const healthPackages1 = await healthPackageTable.find();
-  console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-  data = await JSON.stringify(healthPackages1);
-  console.log(data)
-  console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-
-  res.render("admin/healthPackages", data);
+  const healthPackages = await healthPackageTable.find();
+  res.render("admin/healthPackages", {healthPackages});
 };
 
 const goToDeleteUser = async (req, res) => {
