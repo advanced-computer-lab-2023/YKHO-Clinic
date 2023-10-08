@@ -95,5 +95,40 @@ async function showUpcomingAppointments(req,res){
     }
     res.render("doctor/doctorAppointments",{patientRows:patientRows})
 } 
-   
-module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments}; 
+   async function PatientShowAppointments(req,res){
+    const result = await appointment.find({patientID:req.body.id});
+    res.send(result);
+}
+async function DocShowAppointments(req,res){
+    const result = await appointment.find({doctorID:req.body.id});
+    res.send(result);
+}
+
+async function PatientFilterAppointments(req,res){
+    let result 
+    if(req.body.filter="status"){
+        result =  await appointment.find({patientID:req.body.id,status:req.body.status});
+    }
+    if(req.body.filter="date"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.date});
+    }
+    if(req.body.filter="both"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.id,status:req.body.status});
+    }
+    res.send(result);
+}
+async function DocFilterAppointments(req,res){
+    let result 
+    if(req.body.filter="status"){
+        result =  await appointment.find({patientID:req.body.id,status:req.body.status});
+    }
+    if(req.body.filter="date"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.date});
+    }
+    if(req.body.filter="both"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.id,status:req.body.status});
+    }
+    res.send(result);
+}
+
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments}; 

@@ -2,7 +2,8 @@ const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
 const {createDoctor,goToHome,updateMyInfo,updateThis} = require('./controller/doctorController');
-const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments} = require('./controller/appointmentController');
+const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments
+  ,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments} = require('./controller/appointmentController');
 const {
   adminLogin,
   adminHome,
@@ -15,7 +16,7 @@ const {
   updateHealthPackages,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
-
+const {ViewPrescriptions,FilterPrescriptions}= require('./controller/patientController');
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -55,4 +56,10 @@ app.post("/admin/home/healthPackages/done", addHealthPackages);
 app.put("/admin/home/healthPackages/done", updateHealthPackages);
 app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
 
- 
+
+//ahmed Patient
+app.get("/Patient/Prescriptions", ViewPrescriptions);
+app.get("/Patient/Prescriptions/Filtered",FilterPrescriptions);
+app.get("/Patient/Appointments",PatientShowAppointments);
+app.get("/Patient/Appointments/Filter",PatientFilterAppointments);
+
