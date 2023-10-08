@@ -8,6 +8,7 @@ const {
   adminRegister,
   createAdmin,
   deleteUser,
+  goToUploadedInfo,
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
@@ -21,7 +22,7 @@ app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
 });
 app.use(express.json());
-
+app.set('view engine', 'ejs');
 
 mongoose
   .connect("mongodb://127.0.0.1/clinic")
@@ -41,6 +42,7 @@ app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
 //Admin
 app.get("/admin", adminLogin);
 app.get("/admin/home", adminHome);
+app.get("/admin/home/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register/done", createAdmin);
 app.get("/admin/home/deleteUser", goToDeleteUser);
@@ -49,9 +51,4 @@ app.get("/admin/home/HealthPackages", goToHealthPackages);
 app.post("/admin/home/healthPackages/done", addHealthPackages);
 app.put("/admin/home/healthPackages/done", updateHealthPackages);
 app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
-app.post("/addDoctor",createDoctor);
-app.post("/addAppointment",createAppointment);
-app.get("/Doctor/patients",showMyPatients);
-app.get("/Doctor/patients/:id",showMyPatientInfo);
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
 
