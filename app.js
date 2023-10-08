@@ -44,6 +44,8 @@ app.get("/doctor/patients/:id",showMyPatientInfo)
 app.get("/doctor/upcomingAppointments",showUpcomingAppointments)
 app.get("/doctor/updateInfo",updateMyInfo)
 app.post("/doctor/updateInfo",updateThis)
+app.get("/doctor/Appointments",DocShowAppointments);
+app.get("/doctor/AppointmentsFilter",DocFilterAppointments);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -58,8 +60,10 @@ app.post("/admin/healthPackages/done", addHealthPackages);
 app.put("/admin/healthPackages/done", updateHealthPackages);
 app.delete("/admin/healthPackages/done", deleteHealthPackages);
 
-//Patient
+
+//ahmed Patient
 app.get("/Patient/Prescriptions", ViewPrescriptions);
-app.get("/Patient/Prescriptions/Filtered",FilterPrescriptions);
+app.get("/Patient/PrescriptionsFiltered",FilterPrescriptions);
 app.get("/Patient/Appointments",PatientShowAppointments);
-app.get("/Patient/Appointments/Filter",PatientFilterAppointments);
+app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
+
