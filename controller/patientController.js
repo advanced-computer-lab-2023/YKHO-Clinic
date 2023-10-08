@@ -61,19 +61,23 @@ const filterDoctors = async (req,res) => {
 }
 
 const ViewPrescriptions = async (req,res) => {
-    let result = await prescription.find({patientID:req.body.id});
+    let result = await prescription.find({patientID:req.body.id}.select(["prescriptionName"+"date"]));
     res.send(result);
 }
+//async function selectPrescription(req,res){
+ //   const result = await prescription.find({patientID:req.body.id,_id:req.params.id})
+ //   res.send(result);
+//}
 const FilterPrescriptions = async (req,res) => {
     let result
     if(req.body.filter=="DoctorName") {
-        result= await prescription.find({doctorName:req.body.doctorName});
+        result= await prescription.find({doctorName:req.body.doctorName,patientID:req.body.id});
     }
     if(req.body.filter=="Date") {
-        result= await prescription.find({date:req.body.date});
+        result= await prescription.find({date:req.body.date,patientID:req.body.id});
     }
     if(req.body.filter=="Filled") {
-        result= await prescription.find({filled:req.body.filled});
+        result= await prescription.find({filled:req.body.filled,patientID:req.body.id});
     }
     res.send(result);
     

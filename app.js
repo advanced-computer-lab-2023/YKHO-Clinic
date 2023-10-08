@@ -39,7 +39,7 @@ app.get("/Doctor/patients",showMyPatients);
 app.get("/Doctor/patients/:id",showMyPatientInfo);
 app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
 app.get("/Doctor/Appointments",DocShowAppointments);
-app.get("/Doctor/Appointments/Filter",DocFilterAppointments);
+app.get("/Doctor/AppointmentsFilter",DocFilterAppointments);
 
 //Admin
 app.get("/admin", adminLogin);
@@ -56,7 +56,7 @@ app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
 
 //ahmed Patient
 app.get("/Patient/Prescriptions", ViewPrescriptions);
-app.get("/Patient/Prescriptions/Filtered",FilterPrescriptions);
+app.get("/Patient/PrescriptionsFiltered",FilterPrescriptions);
 app.get("/Patient/Appointments",PatientShowAppointments);
-app.get("/Patient/Appointments/Filter",PatientFilterAppointments);
+app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
 
