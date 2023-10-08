@@ -1,0 +1,22 @@
+<head>
+</head>
+<body>
+    <h1>Your patients</h1>
+    <% if(onepatient){%>
+    <form method="get|post" action="/doctor/patients">
+        <input name="name" type="text" placeholder="Search patients by name....">
+        <button type="submit">Search</button>
+    </form>
+    <% } %>
+    <table>
+        
+        <%- patientRows %>
+    </table>
+</body>
+<script>
+ 
+
+    function showThis(event){
+        window.location.href = `http://localhost:3000/doctor/patients/${event.target.id}`
+    }
+</script>
