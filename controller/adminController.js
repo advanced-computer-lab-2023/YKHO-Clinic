@@ -4,7 +4,7 @@ const app = express();
 const adminsTable = require("../model/admin.js");
 const healthPackageTable = require("../model/healthPackage.js");
 const patientsTable = require("../model/patient.js");
-const doctorsTable = require("../model/doctor.js");
+const {doctor: doctorsTable} = require("../model/doctor.js");
 
 const adminLogin = async (req, res) => {
   res.send("Admin Login page");
@@ -59,7 +59,7 @@ const deleteUser = async (req, res) => {
   } else {
     deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
   }
-  if(deletedUser.deletedCount == 0)
+  if(deletedUser.deletedCount == 1)
     res.status(200).send("USER DELETED");
   else
     res.status(400).send("USER NOT FOUND");

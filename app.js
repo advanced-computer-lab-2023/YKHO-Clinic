@@ -49,4 +49,9 @@ app.get("/admin/home/HealthPackages", goToHealthPackages);
 app.post("/admin/home/healthPackages/done", addHealthPackages);
 app.put("/admin/home/healthPackages/done", updateHealthPackages);
 app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
+app.post("/addDoctor",createDoctor);
+app.post("/addAppointment",createAppointment);
+app.get("/Doctor/patients",showMyPatients);
+app.get("/Doctor/patients/:id",showMyPatientInfo);
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
 
