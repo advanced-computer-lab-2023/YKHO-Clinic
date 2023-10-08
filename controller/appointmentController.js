@@ -40,7 +40,7 @@ async function showMyPatients(req,res){
         
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
         
-    }
+    } 
     for(i in result){
         for(j in result){
             if(i!=j){
@@ -131,4 +131,4 @@ async function DocFilterAppointments(req,res){
     res.send(result);
 }
 
-module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments}; 
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments};  
