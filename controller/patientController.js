@@ -1,5 +1,8 @@
+const mongoose = require('mongoose');
 const patientModel = require('../model/patient');
-const doctorModel = require('../model/doctor');
+const {doctor: doctorModel} = require('../model/doctor');
+const { prescription } = require('../model/prescription');
+
 
 let patient;
 (async function(){ 
@@ -57,4 +60,22 @@ const filterDoctors = async (req,res) => {
     let speciality;
 }
 
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, filterDoctors};
+const ViewPrescriptions = async (req,res) => {
+    let result = await prescription.find({patientID:req.body.id});
+    res.send(result);
+}
+const FilterPrescriptions = async (req,res) => {
+    let result
+    if(req.body.filter=="DoctorName") {
+        result= await prescription.find({doctorName:req.body.doctorName});
+    }
+    if(req.body.filter=="Date") {
+        result= await prescription.find({date:req.body.date});
+    }
+    if(req.body.filter=="Filled") {
+        result= await prescription.find({filled:req.body.filled});
+    }
+    res.send(result);
+    
+}
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, filterDoctors, ViewPrescriptions,FilterPrescriptions};
