@@ -3,8 +3,8 @@ const express = require('express');
 const createDoctor = require('./controller/doctorController');
 const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments} = require('./controller/appointmentController');
 const {
+  goToAdminLogin,
   adminLogin,
-  adminHome,
   adminRegister,
   createAdmin,
   deleteUser,
@@ -22,6 +22,7 @@ app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
 });
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
 mongoose
@@ -40,15 +41,15 @@ app.get("/Doctor/patients/:id",showMyPatientInfo)
 app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
 
 //Admin
-app.get("/admin", adminLogin);
-app.get("/admin/home", adminHome);
-app.get("/admin/home/uploadedInfo", goToUploadedInfo);
+app.get("/admin/login", goToAdminLogin);
+app.post("/admin/home", adminLogin);
+app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register/done", createAdmin);
-app.get("/admin/home/deleteUser", goToDeleteUser);
-app.delete("/admin/home/deleteUser/done", deleteUser);
-app.get("/admin/home/HealthPackages", goToHealthPackages);
-app.post("/admin/home/healthPackages/done", addHealthPackages);
-app.put("/admin/home/healthPackages/done", updateHealthPackages);
-app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
+app.get("/admin/deleteUser", goToDeleteUser);
+app.post("/admin/deleteUser/done", deleteUser);
+app.get("/admin/HealthPackages", goToHealthPackages);
+app.post("/admin/healthPackages/done", addHealthPackages);
+app.put("/admin/healthPackages/done", updateHealthPackages);
+app.delete("/admin/healthPackages/done", deleteHealthPackages);
 

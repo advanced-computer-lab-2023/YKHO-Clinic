@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
+app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
 const {
   healthPackage: healthPackageTable,
@@ -9,23 +10,40 @@ const {
 const patientsTable = require("../model/patient.js");
 const { doctor: doctorsTable } = require("../model/doctor.js");
 
-const adminLogin = async (req, res) => {
-  const data = {
-    name: 'Fuji',
-  };
-  res.render('../views/admin.ejs', data);
-};
-const adminHome = async (req, res) => {
-  res.send("Admin Home page");
-};
-const adminRegister = async (req, res) => {
-  res.send("Admin Register page");
+const goToAdminLogin = async (req, res) => {
+  res.render("admin/login");
 };
 
-const goToHealthPackages = async (req, res) => {};
+const adminLogin = async (req, res) => {
+  const user = await adminsTable.findOne({
+    username: req.body.username,
+    password: req.body.password,
+  });
+
+  if (user != null) {
+    const data = {
+      username: user.username,
+    };
+    return res.render("admin/home", data);
+  } else return res.send("username or passowrd is wrong");
+};
+
+const adminRegister = async (req, res) => {
+  res.render("admin/register.ejs");
+};
+
+const goToHealthPackages = async (req, res) => {
+  const healthPackages1 = await healthPackageTable.find();
+  console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+  data = await JSON.stringify(healthPackages1);
+  console.log(data)
+  console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+  res.render("admin/healthPackages", data);
+};
 
 const goToDeleteUser = async (req, res) => {
-  res.send("Delete User");
+  res.render("admin/deleteUser");
 };
 
 const goToUploadedInfo = async (req, res) => {
@@ -84,7 +102,10 @@ const deleteHealthPackages = async (req, res) => {
 };
 
 const createAdmin = async (req, res) => {
-  const userAvailable = adminsTable.findOne({ username: req.body.username });
+  const userAvailable = await adminsTable.findOne({
+    username: req.body.username,
+  });
+  console.log(userAvailable);
   if (userAvailable != null) {
     return res.send("Username Unavailable");
   }
@@ -106,8 +127,10 @@ const createAdmin = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   let deletedUser = null;
+  if(req.body.username == "")
+    return res.status(400).send("INSERT USERNAME");
   if (req.body.userType == "admin") {
-    deletedUser = await adminsTable.deleteOne({ name: req.body.username });
+    deletedUser = await adminsTable.deleteOne({ username: req.body.username });
   } else if (req.body.userType == "patient") {
     deletedUser = await patientsTable.deleteOne({
       username: req.body.username,
@@ -121,8 +144,8 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
+  goToAdminLogin,
   adminLogin,
-  adminHome,
   adminRegister,
   createAdmin,
   deleteUser,
