@@ -24,7 +24,7 @@ app.use(express.json());
 
 
 mongoose
-  .connect("mongodb://127.0.0.1/Clinic")
+  .connect("mongodb://127.0.0.1/clinic")
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));``
 

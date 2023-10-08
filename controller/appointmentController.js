@@ -34,6 +34,7 @@ async function showMyPatients(req,res){
         
     }
     else{
+       console.log("hi")
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
     }
     
