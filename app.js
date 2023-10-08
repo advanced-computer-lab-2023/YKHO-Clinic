@@ -30,10 +30,15 @@ mongoose
 
 const id = "1";
 
-app.post("/addDoctor", createDoctor);
-app.post("/addAppointment", createAppointment);
-app.get("/Doctor/patients", showMyPatients);
+//Doctor
 
+app.post("/addDoctor",createDoctor);
+app.post("/addAppointment",createAppointment)
+app.get("/Doctor/patients",showMyPatients);
+app.get("/Doctor/patients/:id",showMyPatientInfo)
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+
+//Admin
 app.get("/admin", adminLogin);
 app.get("/admin/home", adminHome);
 app.get("/admin/register", adminRegister);
@@ -49,3 +54,4 @@ app.post("/addAppointment",createAppointment);
 app.get("/Doctor/patients",showMyPatients);
 app.get("/Doctor/patients/:id",showMyPatientInfo);
 app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
+
