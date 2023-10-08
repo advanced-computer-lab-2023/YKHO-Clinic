@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 const express = require('express');
-const createDoctor = require('./controller/doctorController');
-const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments} = require('./controller/appointmentController');
+const ejs = require('ejs');
+const {createDoctor,goToHome,updateMyInfo,updateThis} = require('./controller/doctorController');
+const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments
+  ,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments} = require('./controller/appointmentController');
 const {
   goToAdminLogin,
   adminLogin,
@@ -15,7 +17,7 @@ const {
   updateHealthPackages,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
-
+const {ViewPrescriptions,FilterPrescriptions}= require('./controller/patientController');
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -23,8 +25,8 @@ app.listen(port, () => {
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
-
+app.set("view engine", "ejs");
+app.use("/public", express.static('public'))
 mongoose
   .connect("mongodb://127.0.0.1/clinic")
   .then(() => console.log("connected to clinicDB"))
@@ -36,9 +38,12 @@ const id = "1";
 
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
-app.get("/Doctor/patients",showMyPatients);
-app.get("/Doctor/patients/:id",showMyPatientInfo)
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+app.get("/doctor/home",goToHome)
+app.get("/doctor/patients",showMyPatients);
+app.get("/doctor/patients/:id",showMyPatientInfo)
+app.get("/doctor/upcomingAppointments",showUpcomingAppointments)
+app.get("/doctor/updateInfo",updateMyInfo)
+app.post("/doctor/updateInfo",updateThis)
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -52,4 +57,12 @@ app.get("/admin/HealthPackages", goToHealthPackages);
 app.post("/admin/healthPackages/done", addHealthPackages);
 app.put("/admin/healthPackages/done", updateHealthPackages);
 app.delete("/admin/healthPackages/done", deleteHealthPackages);
-
+app.post("/addDoctor",createDoctor);
+app.post("/addAppointment",createAppointment);
+app.get("/Doctor/patients",showMyPatients);
+app.get("/Doctor/patients/:id",showMyPatientInfo);
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
+app.get("/Patient/Prescriptions", ViewPrescriptions);
+app.get("/Patient/Prescriptions/Filtered",FilterPrescriptions);
+app.get("/Patient/Appointments",PatientShowAppointments);
+app.get("/Patient/Appointments/Filter",PatientFilterAppointments);

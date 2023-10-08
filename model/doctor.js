@@ -55,7 +55,7 @@ function validateDoctor(newDoctor){
         name: Joi.string().required().min(5).max(20),
         username: Joi.string().required().min(5).max(20),
         password: Joi.string().required().min(5).max(20),
-        email: Joi.string().required(),
+        email: Joi.string().email().required(),
         DOB: Joi.date().required(),
         rate:Joi.number().required(),
         affiliation:Joi.string().required(),

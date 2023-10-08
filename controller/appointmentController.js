@@ -23,29 +23,112 @@ async function createAppointment(req,res){
 }
 async function showMyPatients(req,res){
     let result
-    if(req.body.name){
-         result = await appointment.find({}).populate("patientID",'name').select(["patientID","-_id"])
-        
+    
+    if(req.query.name){
+         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
          result=result.filter((c)=>{
             
-            return c.patientID.name.substring(0,req.body.name.length)==req.body.name
+            return c.patientID.name.substring(0,req.query.name.length)==req.query.name
          }
+         
+         
          )
-        
+       
+         
     }
     else{
+        
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
+        
+    } 
+    for(i in result){
+        for(j in result){
+            if(i!=j){
+                if(result[i]&& result[j])
+                if(result[i].patientID._id==result[j].patientID._id){
+                    result.splice(j,1)
+                }
+            }
+        } 
+    } 
+    let patientRows ='<tr><th>name</th></tr>';
+    for(patients in result){
+        patientRows=patientRows + `<tr><td id="${result[patients].patientID._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[patients].patientID.name} </td></tr>`
+
     }
-    
-    res.send(result);
+    res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:true})
 }
 async function showMyPatientInfo(req,res){
-    const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
-    res.send(result);
+    try{
+        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
+        let patientRows ='<tr><th>name</th> <th>Date of birth</th> <th>Gender</th>\
+         <th>Mobile number</th> <th>Emergency contact name</th> <th>Emergency contact number</th>\
+           <th>Health package</th> </tr>';
+            var date=result[0].patientID.dob;
+            if(date){
+                date=date.toISOString().split('T')[0]
+            }
+            patientRows=patientRows + `<tr><td style="text-align: center;"> ${result[0].patientID.name} </td><td style="text-align: center;\
+            "> ${date} </td>\
+             <td style="text-align: center;"> ${result[0].patientID.gender} </td> <td style="text-align: center;">\
+              ${result[0].patientID.mobileNumber} </td> \
+             <td style="text-align: center;"> ${result[0].patientID.emergency.name} </td>\
+             <td style="text-align: center;"> ${result[0].patientID.emergency.mobileNumber} \
+             </td> <td style="text-align: center;">${result[0].patientID.healthPackage}</td>`
+        
+        res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:false})
+    }
+    catch(error){
+        res.send("Patient doesnt exist")
+    }
+    
 }
 async function showUpcomingAppointments(req,res){
-    const result = await appointment.find({doctorID:id,date:{$gt:Date.now()}}).populate("patientID","-_id").select(["patientID","-_id"])
+    
+    const result = await appointment.find({doctorID:id,date:{$gt:Date.now()}}).populate("patientID").select(["patientID","-_id","date"])
+    let patientRows ='<tr><th>name</th> <th>date</th></tr>';
+    for(patients in result){
+        
+        patientRows=patientRows + `<tr><td id="${result[patients].patientID._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[patients].patientID.name} </td>\
+        <td id="${result[patients].patientID._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[patients].date.toISOString().split('T')[0]} </td></tr>`
+
+    }
+    res.render("doctor/doctorAppointments",{patientRows:patientRows})
+} 
+   async function PatientShowAppointments(req,res){
+    const result = await appointment.find({patientID:req.body.id});
+    res.send(result);
+}
+async function DocShowAppointments(req,res){
+    const result = await appointment.find({doctorID:req.body.id});
     res.send(result);
 }
 
-module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments}; 
+async function PatientFilterAppointments(req,res){
+    let result 
+    if(req.body.filter="status"){
+        result =  await appointment.find({patientID:req.body.id,status:req.body.status});
+    }
+    if(req.body.filter="date"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.date});
+    }
+    if(req.body.filter="both"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.id,status:req.body.status});
+    }
+    res.send(result);
+}
+async function DocFilterAppointments(req,res){
+    let result 
+    if(req.body.filter="status"){
+        result =  await appointment.find({patientID:req.body.id,status:req.body.status});
+    }
+    if(req.body.filter="date"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.date});
+    }
+    if(req.body.filter="both"){
+        result= await appointment.find({patientID:req.body.id,date:req.body.id,status:req.body.status});
+    }
+    res.send(result);
+}
+
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments};  

@@ -1,0 +1,15 @@
+<head>
+</head>
+<body>
+    <h1>patients with upcoming appointments</h1>
+    <table>
+        <%- patientRows %>
+    </table>
+</body>
+<script>
+ 
+
+    function showThis(event){
+        window.location.href = `http://localhost:3000/doctor/patients/${event.target.id}`
+    }
+</script>

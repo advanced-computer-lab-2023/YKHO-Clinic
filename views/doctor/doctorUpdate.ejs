@@ -1,0 +1,24 @@
+<head>
+
+</head>
+<body>
+    <h1>Update my info</h1>
+    <form method="POST" action="/doctor/updateInfo">
+        <label for="updateTerm">i want</label>
+        <select id="updateTerm" name="updateTerm">
+            <option >email</option>
+            <option >rate</option>
+            <option >affiliation</option>
+        </select>
+        <label for="updateValue">to be updated to</label>
+        <input id="updateValue" input="text" name="updateValue">
+        <p><%= errormessage %></p>
+        <button type="submit" style="display: block">Update</button>
+    </form>
+    
+</body>
+<script>
+    const updateTerm= document.getElementById("updateTerm");
+    const updateValue= document.getElementById("updateValue");
+
+    </script>
