@@ -24,7 +24,7 @@ app.use(express.json());
 
 
 mongoose
-  .connect("mongodb://127.0.0.1/Clinic")
+  .connect("mongodb://127.0.0.1/clinic")
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));``
 
@@ -45,7 +45,7 @@ app.post("/admin/home/healthPackages/done", addHealthPackages);
 app.put("/admin/home/healthPackages/done", updateHealthPackages);
 app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
 app.post("/addDoctor",createDoctor);
-app.post("/addAppointment",createAppointment)
+app.post("/addAppointment",createAppointment);
 app.get("/Doctor/patients",showMyPatients);
-app.get("/Doctor/patients/:id",showMyPatientInfo)
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+app.get("/Doctor/patients/:id",showMyPatientInfo);
+app.get("/Doctor/upcomingAppointments",showUpcomingAppointments);
