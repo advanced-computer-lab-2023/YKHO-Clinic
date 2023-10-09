@@ -28,74 +28,6 @@ const adminLogin = async (req, res) => {
   } else return res.send("username or passowrd is wrong");
 };
 
-const adminRegister = async (req, res) => {
-  res.render("admin/register.ejs");
-};
-
-const goToHealthPackages = async (req, res) => {
-  const healthPackages = await healthPackageTable.find();
-  res.render("admin/healthPackages", {healthPackages});
-};
-
-const goToDeleteUser = async (req, res) => {
-  res.render("admin/deleteUser");
-};
-
-const goToUploadedInfo = async (req, res) => {
-  res.send("Doctors uploaded info");
-};
-
-const addHealthPackages = async (req, res) => {
-  const healthPackage = new healthPackageTable({
-    name: req.body.name,
-    price: req.body.price,
-    doctorDiscount: req.body.doctorDiscount,
-    pharmacyDiscount: req.body.pharmacyDiscount,
-    familyDiscount: req.body.familyDiscount,
-  });
-  try {
-    const result = await healthPackage.save();
-    console.log(result);
-  } catch (ex) {
-    res.send(ex.message);
-    return;
-  }
-  res.send(`${req.body.name} HealthPackage Created`);
-};
-
-const updateHealthPackages = async (req, res) => {
-  //if not given any variable to update, it wont return an error and just leave it
-  const validated = validateHealthPackage(req.body);
-  if (validated.error) return res.send(validated.error.message);
-  try {
-    const healthPackage = await healthPackageTable.findOneAndUpdate(
-      { name: req.body.name },
-      {
-        price: req.body.price,
-        doctorDiscount: req.body.doctorDiscount,
-        pharmacyDiscount: req.body.pharmacyDiscount,
-        familyDiscount: req.body.familyDiscount,
-      }
-    );
-  } catch (ex) {
-    res.send(ex.message);
-    return;
-  }
-  res.send(`${req.body.name} HealthPackage Updated`);
-};
-
-const deleteHealthPackages = async (req, res) => {
-  try {
-    const healthPackage = await healthPackageTable.deleteOne({
-      name: req.body.name,
-    });
-  } catch (err) {
-    res.send(err.message);
-    return;
-  }
-  res.send(`${req.body.name} HealthPackage Deleted`);
-};
-
 const createAdmin = async (req, res) => {
   const userAvailable = await adminsTable.findOne({
     username: req.body.username,
@@ -120,10 +52,120 @@ const createAdmin = async (req, res) => {
   );
 };
 
+const adminRegister = async (req, res) => {
+  res.render("admin/register.ejs");
+};
+
+const goToHealthPackages = async (req, res) => {
+  const healthPackages = await healthPackageTable.find();
+  res.render("admin/healthPackages", {
+    healthPackages,
+    createErrorMessage: "",
+    deleteErrorMessage: "",
+    updateErrorMessage: "",
+  });
+};
+
+const addHealthPackages = async (req, res) => {
+  const healthPackages = await healthPackageTable.find();
+  const healthPackage = new healthPackageTable({
+    packageName: req.body.packageName,
+    price: req.body.price,
+    doctorDiscount: req.body.doctorDiscount,
+    pharmacyDiscount: req.body.pharmacyDiscount,
+    familyDiscount: req.body.familyDiscount,
+  });
+  const validated = validateHealthPackage(healthPackage);
+  if (validated.error) {
+    res.render("admin/healthPackages", {
+      healthPackages,
+      createErrorMessage: validated.error.message,
+      updateErrorMessage: "",
+      deleteErrorMessage: "",
+    });
+  } else {
+    try {
+      const result = await healthPackage.save();
+      res.render("admin/healthPackages", {
+        healthPackages,
+        createErrorMessage: "Health package created successfully",
+        updateErrorMessage: "",
+        deleteErrorMessage: "",
+      });
+      console.log(result);
+    } catch (ex) {
+      res.render("admin/healthPackages", {
+        healthPackages,
+        createErrorMessage: ex.message,
+        updateErrorMessage: "",
+        deleteErrorMessage: "",
+      });
+      return;
+    }
+  }
+};
+const callUpdateHealthPackage = async (req, res) => {
+  updateHealthPackages(req, res);
+};
+const updateHealthPackages = async (req, res) => {
+  //if not given any variable to update, it wont return an error and just leave it
+  const healthPackages = await healthPackageTable.find();
+  const validated = validateHealthPackage(req.body);
+  if (validated.error)
+    res.render("admin/healthPackages", {
+      healthPackages,
+      updateErrorMessage: validated.error.message,
+      createErrorMessage: "",
+      deleteErrorMessage: "",
+    });
+  else {
+    try {
+      const healthPackage = await healthPackageTable.findOneAndUpdate(
+        { name: req.body.packageName },
+        {
+          name: req.body.packageName,
+          price: req.body.price,
+          doctorDiscount: req.body.doctorDiscount,
+          pharmacyDiscount: req.body.pharmacyDiscount,
+          familyDiscount: req.body.familyDiscount,
+        }
+      );
+      res.render("admin/healthPackages", {
+        healthPackages,
+        updateErrorMessage: "Health package updated successfully",
+        createErrorMessage: "",
+        deleteErrorMessage: "",
+      });
+    } catch (ex) {
+      res.render("admin/healthPackages", {
+        healthPackages,
+        updateErrorMessage: ex.message,
+        createErrorMessage: "",
+        deleteErrorMessage: "",
+      });
+    }
+  }
+};
+
+const deleteHealthPackages = async (req, res) => {
+  try {
+    const healthPackage = await healthPackageTable.deleteOne({
+      name: req.body.name,
+    });
+  } catch (err) {
+    res.send(err.message);
+    return;
+  }
+  res.send(`${req.body.name} HealthPackage Deleted`);
+};
+
+const goToDeleteUser = async (req, res) => {
+  res.render("admin/deleteUser");
+};
+
 const deleteUser = async (req, res) => {
   let deletedUser = null;
-  if(req.body.username == "")
-    return res.status(400).send("INSERT USERNAME");
+  if (req.body.username == "") return res.status(400).send("INSERT USERNAME");
   if (req.body.userType == "admin") {
     deletedUser = await adminsTable.deleteOne({ username: req.body.username });
   } else if (req.body.userType == "patient") {
@@ -138,6 +180,10 @@ const deleteUser = async (req, res) => {
   console.log(deletedUser);
 };
 
+const goToUploadedInfo = async (req, res) => {
+  res.send("Doctors uploaded info");
+};
+
 module.exports = {
   goToAdminLogin,
   adminLogin,
@@ -148,6 +194,6 @@ module.exports = {
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
-  updateHealthPackages,
+  callUpdateHealthPackage,
   deleteHealthPackages,
 };

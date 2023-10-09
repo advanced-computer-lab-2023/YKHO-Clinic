@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form method="get" action="/admin/login">
+        <button>Admin</button>
+    </form>
+    <form method="get" action="/doctor/home">
+        <button>Doctor</button>
+    </form>
+    <ul>
+        <% for(i = 0; i < 10; i++) { %>
+          <li><%= i %></li>
+        <% }; %>
+      </ul>
+</body>
+</html>

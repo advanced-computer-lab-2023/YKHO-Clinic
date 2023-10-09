@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
+const {home} = require("./controller/homePage");
 const {createDoctor,goToHome,updateMyInfo,updateThis} = require('./controller/doctorController');
 const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments
   ,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments} = require('./controller/appointmentController');
@@ -14,7 +15,7 @@ const {
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
-  updateHealthPackages,
+  callUpdateHealthPackage,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
 const {ViewPrescriptions,FilterPrescriptions}= require('./controller/patientController');
@@ -34,8 +35,8 @@ mongoose
 
 const id = "1";
 
+app.get("/",home);
 //Doctor
-
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
 app.get("/doctor/home",goToHome)
@@ -56,8 +57,8 @@ app.post("/admin/register/done", createAdmin);
 app.get("/admin/deleteUser", goToDeleteUser);
 app.post("/admin/deleteUser/done", deleteUser);
 app.get("/admin/HealthPackages", goToHealthPackages);
-app.post("/admin/healthPackages/done", addHealthPackages);
-app.put("/admin/healthPackages/done", updateHealthPackages);
+app.post("/admin/healthPackages", addHealthPackages);
+app.post("/admin/healthPackages/done", callUpdateHealthPackage);
 app.delete("/admin/healthPackages/done", deleteHealthPackages);
 
 
