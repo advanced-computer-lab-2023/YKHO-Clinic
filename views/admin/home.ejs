@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <h1>Welcome <%= username %>, Admin Home page</h1>
+    <form method="get" action="/admin/register">
+        <button id="createAdminButton">Create a new admin</button>
+    </form>
+    <form method="get" action="/admin/deleteUser">
+        <button id="deleteUserButton">Delete a doctor/patient/admin</button>
+    </form>
+    <form method="get" action="/admin/uploadedInfo"> 
+        <button id="uploadedInfoButton">View doctors' uploaded info</button>
+    </form>
+    <form method="get" action="/admin/healthPackages">
+        <button id="healthPackagesButton">edit health packages</button>
+    </form> 
+</head>
+<body>
+    <script>
+        const createAdminbutton = document.getElementById("createAdminButton");
+        createAdminbutton.addEventListener("click", () => {
+            //app.post("/login", adminLogin);
+        });
+        const deleteUserButton = document.getElementById("deleteUserButton");
+        deleteUserButton.addEventListener("click", () => {
+            //app.post("/login", adminLogin);
+        });
+        const uploadedInfoButton = document.getElementById("uploadedInfoButton");
+        uploadedInfoButton.addEventListener("click", () => {
+            //app.post("/login", adminLogin);
+        });
+        const healthPackagesButton = document.getElementById("healthPackagesButton");
+        healthPackagesButton.addEventListener("click", () => {
+            //app.post("/login", adminLogin);
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,10 @@
 const patientModel = require('../model/patient');
 const doctorModel = require('../model/doctor').doctor;
 const HealthPackageModel = require('../model/healthPackage');
-const { date } = require('joi');
+//const { date } = require('joi');
 const appointmentModel = require('../model/appointments').appointment;
+const { prescription } = require('../model/prescription');
+
 
 let patient;
 (async function () {
@@ -136,4 +138,26 @@ const filterDoctors = async (req, res) => {
 }
 
 
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors };
+const ViewPrescriptions = async (req,res) => {
+    let result = await prescription.find({patientID:req.body.id}.select(["prescriptionName"+"date"]));
+    res.send(result);
+}
+//async function selectPrescription(req,res){
+ //   const result = await prescription.find({patientID:req.body.id,_id:req.params.id})
+ //   res.send(result);
+//}
+const FilterPrescriptions = async (req,res) => {
+    let result
+    if(req.body.filter=="DoctorName") {
+        result= await prescription.find({doctorName:req.body.doctorName,patientID:req.body.id});
+    }
+    if(req.body.filter=="Date") {
+        result= await prescription.find({date:req.body.date,patientID:req.body.id});
+    }
+    if(req.body.filter=="Filled") {
+        result= await prescription.find({filled:req.body.filled,patientID:req.body.id});
+    }
+    res.send(result);
+    
+}
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions};

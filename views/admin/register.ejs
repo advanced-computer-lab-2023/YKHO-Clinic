@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>New Admin Interface</h1>
+    <form method="post" action="/admin/register/done">
+        <input name="username" class="adminData" type="text" placeholder="username">
+        <input name="password" class="adminData" placeholder="password">
+        <button id="createAdminButton">Create Admin</button>
+    </form>
+</body>
+<script>
+    const createAdminButton = document.getElementById("createAdminButton");
+    createAdminButton.addEventListener("click", () => {
+        //app.post("/admin/register/done", createAdmin);
+    });
+</script>
+</html>

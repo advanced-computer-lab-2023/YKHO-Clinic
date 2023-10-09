@@ -1,13 +1,16 @@
 const mongoose = require('mongoose')
 const express = require('express');
-const createDoctor = require('./controller/doctorController');
-const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments} = require('./controller/appointmentController');
+const ejs = require('ejs');
+const {createDoctor,goToHome,updateMyInfo,updateThis} = require('./controller/doctorController');
+const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments
+  ,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments} = require('./controller/appointmentController');
 const {
+  goToAdminLogin,
   adminLogin,
-  adminHome,
   adminRegister,
   createAdmin,
   deleteUser,
+  goToUploadedInfo,
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
@@ -17,15 +20,16 @@ const {
 // request controller
 const{createRequest} = require('./controller/requestController');
 // patient controller
-const{ createPatient, createFamilyMember, readFamilyMembers, readDoctors ,searchDoctors ,filterDoctors} = require('./controller/patientController.js')
+const{ createPatient, createFamilyMember, readFamilyMembers, readDoctors ,searchDoctors ,filterDoctors,ViewPrescriptions,FilterPrescriptions} = require('./controller/patientController.js')
 const port = 3000;
 const app = express();
 app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
 });
 app.use(express.json());
-
-
+app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+app.use("/public", express.static('public'))
 mongoose
   .connect("mongodb://127.0.0.1/clinic")
   .then(() => console.log("connected to clinicDB"))
@@ -37,25 +41,39 @@ const id = "1";
 
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
-app.get("/Doctor/patients",showMyPatients);
-app.get("/Doctor/patients/:id",showMyPatientInfo)
-app.get("/Doctor/upcomingAppointments",showUpcomingAppointments)
+app.get("/doctor/home",goToHome)
+app.get("/doctor/patients",showMyPatients);
+app.get("/doctor/patients/:id",showMyPatientInfo)
+app.get("/doctor/upcomingAppointments",showUpcomingAppointments)
+app.get("/doctor/updateInfo",updateMyInfo)
+app.post("/doctor/updateInfo",updateThis)
+app.get("/doctor/Appointments",DocShowAppointments);
+app.get("/doctor/AppointmentsFilter",DocFilterAppointments);
 
 //Admin
-app.get("/admin", adminLogin);
-app.get("/admin/home", adminHome);
+app.get("/admin/login", goToAdminLogin);
+app.post("/admin/home", adminLogin);
+app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register/done", createAdmin);
-app.get("/admin/home/deleteUser", goToDeleteUser);
-app.delete("/admin/home/deleteUser/done", deleteUser);
-app.get("/admin/home/HealthPackages", goToHealthPackages);
-app.post("/admin/home/healthPackages/done", addHealthPackages);
-app.put("/admin/home/healthPackages/done", updateHealthPackages);
-app.delete("/admin/home/healthPackages/done", deleteHealthPackages);
+app.get("/admin/deleteUser", goToDeleteUser);
+app.post("/admin/deleteUser/done", deleteUser);
+app.get("/admin/HealthPackages", goToHealthPackages);
+app.post("/admin/healthPackages/done", addHealthPackages);
+app.put("/admin/healthPackages/done", updateHealthPackages);
+app.delete("/admin/healthPackages/done", deleteHealthPackages);
+
+
+//ahmed Patient
+app.get("/Patient/Prescriptions", ViewPrescriptions);
+app.get("/Patient/PrescriptionsFiltered",FilterPrescriptions);
+app.get("/Patient/Appointments",PatientShowAppointments);
+app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
 
 // patient
 app.post("/guestDoctor",createRequest);
 app.post("/guestPatient/createPatient", createPatient);
+app.post("patient/readFamilyMembers", createFamilyMember);
 app.get("patient/readFamilyMembers", readFamilyMembers);
 app.get("/patient/readDoctors", readDoctors);
 app.get("/patient/searchDoctors", searchDoctors);
