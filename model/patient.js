@@ -30,11 +30,6 @@ const familyMemberSchema = {
 }
 
 const patientSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-
-    },
     username: {
         type: String,
         required: true,
@@ -50,7 +45,7 @@ const patientSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    dob: {
+    DOB: {
         type: Date,
         required: true,
     },
@@ -61,7 +56,12 @@ const patientSchema = new mongoose.Schema({
         lowercase: true,
         trim: true,
     },
-    mobileNumber: {
+    email: {
+        type: String,
+        required: true,
+
+    },
+    mobile: {
         type: String,
         required: true,
     },

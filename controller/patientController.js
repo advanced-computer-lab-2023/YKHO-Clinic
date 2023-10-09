@@ -1,39 +1,30 @@
 const patientModel = require('../model/patient');
-const doctorModel = require('../model/doctor');
+const doctorModel = require('../model/doctor').doctor;
+const HealthPackageModel = require('../model/healthPackage');
+const { date } = require('joi');
+const appointmentModel = require('../model/appointments').appointment;
 
 let patient;
-(async function(){ 
+(async function () {
     patient = await patientModel.findOne();
-})();
-
-let doctors;
-(async function(){ 
-    doctors = await doctorModel.find().sort({name:1});
 })();
 
 
 const createPatient = async (req, res) => {
     // joi validation
-    const { email, username, password, name, dob, gender, mobileNumber, emergency} = req.body;
+    const { username, password, name, dob, gender, email, mobile, emergency } = req.body;
 
     patient = new patientModel({
-        email,
-        username,
-        password,
-        name,
-        dob,
-        gender,
-        mobileNumber,
-        emergency
+        username, password, name, dob, gender, email, mobile, emergency
     });
 
     patient = await patient.save();
     res.status(201).send(patient);
 }
 
-const createFamilyMember = async (req,res) => {
+const createFamilyMember = async (req, res) => {
     // joi validation
-    const {name, nationalID, age, gender, relation} = req.body;
+    const { name, nationalID, age, gender, relation } = req.body;
 
     let familyMember = {
         name,
@@ -42,19 +33,107 @@ const createFamilyMember = async (req,res) => {
         gender,
         relation,
     };
-    
+
     patient.familyMembers.push(familyMember);
     patient = await patient.save();
-    familyMember = patient.familyMembers[patient.familyMembers.length-1];
-    res.send(familyMember);
+    familyMember = patient.familyMembers[patient.familyMembers.length - 1];
+    res.status(201).send(familyMember);
 };
 
-const readFamilyMembers = async (req,res) => {
-    res.send(patient.familyMembers);
+const readFamilyMembers = async (req, res) => {
+    res.status(200).send(patient.familyMembers);
 }
 
-const filterDoctors = async (req,res) => {
-    let speciality;
+// helper
+async function helper(doctors) {
+    let healthPackage = await HealthPackageModel.findOne({ name: patient.healthPackage });
+    let discount = healthPackage.doctorsDiscount;
+    console.log(discount);
+    let results = doctors.map(({ name, speciality, rate }) => ({ name, speciality, sessionPrice: rate * 1.1 * discount }));
+    return results;
 }
 
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, filterDoctors};
+const readDoctors = async (req, res) => {
+    doctors = await doctorModel.find().sort({ name: 1 });
+    let results = await helper(doctors);
+    res.status(200).send(results);
+}
+
+// helper
+function isEmpty(input) {
+    return !/[a-z]/i.test(input);
+}
+
+const searchDoctors = async (req, res) => {
+    //let presentSpecialities = doctorModel.schema.path('speciality').enumValues;
+    doctors = await doctorModel.find().sort({ name: 1 });
+    let searchedDoctors = req.query.doctors;
+    // empty input fields
+    if (!isEmpty(searchedDoctors)) {
+        searchedDoctors = req.query.doctors.split(/\s*[^a-z0-9]+\s*|\s+[^a-z0-9]*\s*/i);
+        doctors = doctors.filter(doctor => {
+            for (let i = 0; i < searchedDoctors.length; i++) {
+                if (doctor.name.includes(searchedDoctors[i]))
+                    return true;
+            }
+            return false;
+        });
+    }
+
+    let searchedSpecialities = req.query.specialities;
+    if (!isEmpty(searchedSpecialities)) {
+        searchedSpecialities = req.query.specialities.split(/\s*,+\s*|\s+,*\s*/);
+        doctors = doctors.filter(doctor => {
+            for (let i = 0; i < searchedSpecialities.length; i++) {
+                if (doctor.speciality.includes(searchedSpecialities[i]))
+                    return true;
+            }
+            return false;
+        });
+    }
+    let results = await helper(doctors);
+    res.status(201).send(results);
+}
+
+const filterDoctors = async (req, res) => {
+    let speciality = req.query.speciality
+    if (speciality != 'any') {
+        doctors = doctors.filter(doctor => {
+            if (doctor.speciality == speciality)
+                return true;
+            return false;
+        });
+    }
+
+    let date = req.query.date;
+    if (date != "") {
+
+        date = new Date(date);
+        let appointments = await appointmentModel.find({ status: true });
+
+        // filter appointments by date
+        appointments = appointments.filter((x) => {
+            if (x.date.getDate() == date.getDate()) {
+                let diff = date.getTime() - x.date.getTime();
+                if (diff <= 1000 * 60 * 60 && diff >= 0)
+                    return true
+            }
+            return false;
+        });
+
+        // map appointments to 
+        appointments = appointments.map(({ doctorID }) => (doctorID.toString()));
+
+        // filter doctors
+        doctors = doctors.filter((doctor) => {
+            return appointments.includes(doctor._id.toString());
+        })
+
+        let results = await helper(doctors);
+        res.status(201).send(results);
+    }
+
+}
+
+
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors };
