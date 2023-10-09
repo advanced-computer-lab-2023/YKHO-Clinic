@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
+const {home} = require("./controller/homePage");
 const {createDoctor,goToHome,updateMyInfo,updateThis} = require('./controller/doctorController');
 const {createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments
   ,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments} = require('./controller/appointmentController');
@@ -14,10 +15,13 @@ const {
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
-  updateHealthPackages,
+  callUpdateHealthPackage,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
-const {ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription}= require('./controller/patientController');
+// request controller
+const{createRequest} = require('./controller/requestController');
+// patient controller
+const{ createPatient, createFamilyMember, readFamilyMembers, readDoctors ,searchDoctors ,filterDoctors,ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription} = require('./controller/patientController.js')
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -34,8 +38,8 @@ mongoose
 
 const id = "1";
 
+app.get("/",home);
 //Doctor
-
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
 app.get("/doctor/home",goToHome)
@@ -56,8 +60,8 @@ app.post("/admin/register/done", createAdmin);
 app.get("/admin/deleteUser", goToDeleteUser);
 app.post("/admin/deleteUser/done", deleteUser);
 app.get("/admin/HealthPackages", goToHealthPackages);
-app.post("/admin/healthPackages/done", addHealthPackages);
-app.put("/admin/healthPackages/done", updateHealthPackages);
+app.post("/admin/healthPackages", addHealthPackages);
+app.post("/admin/healthPackages/done", callUpdateHealthPackage);
 app.delete("/admin/healthPackages/done", deleteHealthPackages);
 
 
@@ -68,4 +72,11 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments",PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-
+// patient
+app.post("/guestDoctor",createRequest);
+app.post("/guestPatient/createPatient", createPatient);
+app.post("patient/readFamilyMembers", createFamilyMember);
+app.get("patient/readFamilyMembers", readFamilyMembers);
+app.get("/patient/readDoctors", readDoctors);
+app.get("/patient/searchDoctors", searchDoctors);
+app.get("/patient/filterDoctors", filterDoctors);

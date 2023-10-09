@@ -4,7 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <h1>aaaaaaa <%- data %></h1>
+    <table>
+        <tr>
+          <th>Package Name</th>
+          <th>Price</th>
+          <th>doctor discount</th>
+          <th>pharmacy discount</th>
+          <th>family discount</th>
+        </tr>
+        <% healthPackages.forEach(package => { %>
+          <tr>
+            <td><%= package.name %></td>
+            <td><%= package.price %></td>
+            <td><%= package.doctorDiscount %></td>
+            <td><%= package.pharmacyDiscount %></td>
+            <td><%= package.familyDiscount %></td>
+          </tr>
+        <% }); %>
+    </table>
+    <h1>add new health package</h1>
+    <form method="POST" action="/admin/healthPackages">
+    <p><%= createErrorMessage %></p>
+    <label for="name">package name</label>
+    <input id="name" input="text" name="packageName">
+    <label for="price">Price</label>
+    <input id="price" input="text" name="price">
+    <label for="doctorDiscount">doctor Discount</label>
+    <input id="doctorDiscount" input="text" name="doctorDiscount">
+    <label for="pharmacyDiscount">pharmacy Discount</label>
+    <input id="pharmacyDiscount" input="text" name="pharmacyDiscount">
+    <label for="familyDiscount">family Discount</label>
+    <input id="familyDiscount" input="text" name="familyDiscount">
+    <button>Create package</button>
+    </form>
+    <br>
+
+    <h1>delete a health package</h1>
+    <p><%= deleteErrorMessage %></p>
+    <label for="name">package name</label>
+    <input id="name" input="text" name="packageName">
+    <button>delete package</button>
+    <br>
+
+    <form method="post" action="/admin/healthPackages/done">
+        <h1>update a health package</h1>
+        <p><%= updateErrorMessage %></p>
+        <p>insert values to be updated, also insert the values you don't want to update as they were</p>
+        <label for="name">package name</label>
+        <input id="name" input="text" name="packageName">
+        <label for="price">Price</label>
+        <input id="price" input="text" name="price">
+        <label for="doctorDiscount">doctor Discount</label>
+        <input id="doctorDiscount" input="text" name="doctorDiscount">
+        <label for="pharmacyDiscount">pharmacy Discount</label>
+        <input id="pharmacyDiscount" input="text" name="pharmacyDiscount">
+        <label for="familyDiscount">family Discount</label>
+        <input id="familyDiscount" input="text" name="familyDiscount">
+        <button>update package</button>
+    </form>
 </head>
 <body>
     
