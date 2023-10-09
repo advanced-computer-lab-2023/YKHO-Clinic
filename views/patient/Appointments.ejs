@@ -1,0 +1,41 @@
+<head>
+</head>
+<body>
+    <h1>Your Appointments</h1>
+    <% if(onepatient){%>
+    <form method="GET" action="/patient/AppointmentsFilter">
+        <label for="filter">Search By</label>
+        <select id="filter" name="filter">
+            <option value="Status">Status</option>
+            <option value="Date">Date</option>
+        </select>
+        
+        
+        
+        <label for="searchvalue">With value</label>
+        <input id="searchvalue" input="text" name="searchvalue">
+           
+        <button type="submit" style="display: block">Search</button>
+    </form>
+    <% } %>
+    <table>
+        
+        <%- appointmentrows %>
+    </table>
+</body>
+
+<script>
+    const filterDropdown = document.getElementById('filter');
+    const searchValueInput = document.getElementById('searchvalue');
+
+    filterDropdown.addEventListener('change', function () {
+        if (filterDropdown.value === 'Date') {
+            // Show the date input field when Date is selected
+            searchValueInput.type = 'date';
+
+        } else {
+            // Show the text input field for other options
+            searchValueInput.type = 'text';
+        }
+    });
+</script>

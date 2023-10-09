@@ -17,7 +17,7 @@ const {
   updateHealthPackages,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
-const {ViewPrescriptions,FilterPrescriptions}= require('./controller/patientController');
+const {ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription}= require('./controller/patientController');
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -44,8 +44,8 @@ app.get("/doctor/patients/:id",showMyPatientInfo)
 app.get("/doctor/upcomingAppointments",showUpcomingAppointments)
 app.get("/doctor/updateInfo",updateMyInfo)
 app.post("/doctor/updateInfo",updateThis)
-app.get("/doctor/Appointments",DocShowAppointments);
 app.get("/doctor/AppointmentsFilter",DocFilterAppointments);
+app.get("/doctor/Appointments",DocShowAppointments);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -62,8 +62,10 @@ app.delete("/admin/healthPackages/done", deleteHealthPackages);
 
 
 //ahmed Patient
-app.get("/Patient/Prescriptions", ViewPrescriptions);
+app.get("/patient/Prescriptions", ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered",FilterPrescriptions);
+app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments",PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
+app.get("/patient/patientHome",patientHome);
 

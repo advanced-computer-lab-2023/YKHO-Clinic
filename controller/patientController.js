@@ -2,7 +2,20 @@ const mongoose = require('mongoose');
 const patientModel = require('../model/patient');
 const {doctor: doctorModel} = require('../model/doctor');
 const { prescription } = require('../model/prescription');
-
+const test={
+    "_id": "606aa80e929a618584d2758b",
+    "name": "kika",
+    "gender": "female",
+    "mobileNumber": "01224764545",
+    "dob": {
+      "$date": "2001-09-30T22:00:00.000Z"
+    },
+    "emergency": {
+      "name": "rawez",
+      "mobileNumber": "01280730418"
+    },
+    "healthPackage": "kikamima"
+  };
 
 let patient;
 (async function(){ 
@@ -61,25 +74,55 @@ const filterDoctors = async (req,res) => {
 }
 
 const ViewPrescriptions = async (req,res) => {
-    let result = await prescription.find({patientID:req.body.id}.select(["prescriptionName"+"date"]));
-    res.send(result);
+    let result = await prescription.find({patientID:test._id}).select(["prescriptionName","doctorName"]);
+    let prescriptionrows ='<tr><th>name</th></tr>';
+    
+    for(prescriptions in result){
+        prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td></tr>`
+
+    }
+    res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
 }
-//async function selectPrescription(req,res){
- //   const result = await prescription.find({patientID:req.body.id,_id:req.params.id})
- //   res.send(result);
-//}
+async function selectPrescription(req,res){
+    try{
+        const result = await prescription.find({patientID:test._id,_id:req.params.id})
+        let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
+         <th>Doctor Name</th> <th>Filled</th> </tr>';
+            var date=result[0].date;
+            if(date){
+                date=date.toISOString().split('T')[0]
+            }
+            prescriptionrows=prescriptionrows + `<tr><td style="text-align: center;"> ${result[0].prescriptionName} </td><td style="text-align: center;\
+            "> ${date} </td>\
+             <td style="text-align: center;"> ${result[0].doctorName} </td> <td style="text-align: center;">\
+              ${result[0].filled} </td>`
+        
+        res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:false})
+    }
+    catch(error){
+        res.send("Patient doesnt exist")
+    }
+}
 const FilterPrescriptions = async (req,res) => {
     let result
-    if(req.body.filter=="DoctorName") {
-        result= await prescription.find({doctorName:req.body.doctorName,patientID:req.body.id});
+    if(req.query.filter=="DoctorName") {
+        result= await prescription.find({doctorName:req.query.searchvalue,patientID:test._id});
     }
-    if(req.body.filter=="Date") {
-        result= await prescription.find({date:req.body.date,patientID:req.body.id});
+    if(req.query.filter=="Date") {
+        result= await prescription.find({date:req.query.searchvalue,patientID:test._id});
     }
-    if(req.body.filter=="Filled") {
-        result= await prescription.find({filled:req.body.filled,patientID:req.body.id});
+    if(req.query.filter=="Filled") {
+        result= await prescription.find({filled:req.query.searchvalue,patientID:test._id});
     }
-    res.send(result);
+    let prescriptionrows ='<tr><th>name</th></tr>';
+    for(prescriptions in result){
+        prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td></tr>`
+
+    }
+    res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:false});
     
 }
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, filterDoctors, ViewPrescriptions,FilterPrescriptions};
+async function patientHome(req,res){
+    res.render("patient/patientHome");
+}
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, filterDoctors, ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription};
