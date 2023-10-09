@@ -46,6 +46,13 @@ const doctorSchema = new mongoose.Schema({
     {
         type:String,
         required:true,
+    },
+    speciality:{
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+        enum: ['dermatology', 'pediatrics', 'orthopedics'],
     }
     });
 const doctor = mongoose.model('doctor', doctorSchema);
@@ -60,6 +67,7 @@ function validateDoctor(newDoctor){
         rate:Joi.number().required(),
         affiliation:Joi.string().required(),
         education:Joi.string().required(),
+        speciality:Joi.string().required(),
       }); 
     return schema.validate(newDoctor);
 }

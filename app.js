@@ -18,7 +18,10 @@ const {
   callUpdateHealthPackage,
   deleteHealthPackages,
 } = require("./controller/adminController.js");
-const {ViewPrescriptions,FilterPrescriptions}= require('./controller/patientController');
+// request controller
+const{createRequest} = require('./controller/requestController');
+// patient controller
+const{ createPatient, createFamilyMember, readFamilyMembers, readDoctors ,searchDoctors ,filterDoctors,ViewPrescriptions,FilterPrescriptions} = require('./controller/patientController.js')
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -68,3 +71,11 @@ app.get("/Patient/PrescriptionsFiltered",FilterPrescriptions);
 app.get("/Patient/Appointments",PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter",PatientFilterAppointments);
 
+// patient
+app.post("/guestDoctor",createRequest);
+app.post("/guestPatient/createPatient", createPatient);
+app.post("patient/readFamilyMembers", createFamilyMember);
+app.get("patient/readFamilyMembers", readFamilyMembers);
+app.get("/patient/readDoctors", readDoctors);
+app.get("/patient/searchDoctors", searchDoctors);
+app.get("/patient/filterDoctors", filterDoctors);
