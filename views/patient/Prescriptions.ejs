@@ -1,0 +1,29 @@
+<head>
+</head>
+<body>
+    <h1>Your prescriptions</h1>
+    <% if(onepatient){%>
+    <form method="GET" action="/patient/PrescriptionsFiltered">
+        <label for="filter">Search By</label>
+        <select id="filter" name="filter">
+            <option >DoctorName</option>
+            <option >Date</option>
+            <option >Filled</option>
+        </select>
+        <label for="searchvalue">With value</label>
+        <input id="searchvalue" input="text" name="searchvalue">
+        <button type="submit" style="display: block">Search</button>
+    </form>
+    <% } %>
+    <table>
+        
+        <%- prescriptionrows %>
+    </table>
+</body>
+<script>
+ 
+
+    function showThis(event){
+        window.location.href = `http://localhost:3000/patient/Prescriptions/${event.target.id}`
+    }
+</script>

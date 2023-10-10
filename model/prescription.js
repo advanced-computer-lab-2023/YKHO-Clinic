@@ -17,6 +17,12 @@ const prescriptionSchema = new mongoose.Schema({
         ref:patient
     }
     ,
+    doctorID:
+    {
+        type:mongoose.Schema.Types.ObjectId,
+        required:true,
+        ref:doctor
+    },
     doctorName:
     {
         type:String,
@@ -40,6 +46,7 @@ const prescriptionSchema = new mongoose.Schema({
         const schema = Joi.object({
             prescriptionName: Joi.string().required().min(5).max(50),
             patientID: Joi.objectId().required(),
+            doctorID: Joi.objectId().required(),
             doctorName: Joi.string().required().min(5).max(20),
             date: Joi.date().required(),
             filled:Joi.boolean().required(),
