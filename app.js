@@ -34,7 +34,7 @@ app.use("/public", express.static('public'))
 mongoose
   .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/?retryWrites=true&w=majority")
   .then(() => console.log("connected to clinicDB"))
-  .catch((err) => console.log(err.message));``
+  .catch((err) => console.log(err.message));
 
 const id = "1";
 

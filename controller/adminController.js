@@ -34,7 +34,7 @@ const createAdmin = async (req, res) => {
   });
   console.log(userAvailable);
   if (userAvailable != null) {
-    return res.send("Username Unavailable");
+    return res.render("admin/register", {message:"Username Unavailable"});
   }
   const adminUser = new adminsTable({
     username: req.body.username,
@@ -43,17 +43,14 @@ const createAdmin = async (req, res) => {
   try {
     const result = await adminUser.save();
     console.log(result);
+    res.render("admin/register",{message:"Admin created successfully"});
   } catch (ex) {
-    res.send(ex.message);
-    return;
+    res.render("admin/register",{message:ex.message});
   }
-  res.send(
-    `Admin Created with user ${req.body.username} and password ${req.body.password}`
-  );
 };
 
 const adminRegister = async (req, res) => {
-  res.render("admin/register.ejs");
+  res.render("admin/register", {message:""});
 };
 
 const goToHealthPackages = async (req, res) => {
@@ -78,17 +75,17 @@ const addHealthPackages = async (req, res) => {
     packageName: req.body.packageName,
   });
 
-  const validated = validateHealthPackage(healthPackage);
-  console.log(validated);
-  if (validated.error) {
-    const healthPackages = await healthPackageTable.find();
-    res.render("admin/healthPackages", {
-      healthPackages,
-      createErrorMessage: validated.error.message,
-      updateErrorMessage: "",
-      deleteErrorMessage: "",
-    });
-  } else {
+  // const validated = validateHealthPackage(healthPackage);
+  // console.log(validated);
+  // if (validated.error) {
+  //   const healthPackages = await healthPackageTable.find();
+  //   res.render("admin/healthPackages", {
+  //     healthPackages,
+  //     createErrorMessage: validated.error.message,
+  //     updateErrorMessage: "",
+  //     deleteErrorMessage: "",
+  //   });
+  // } else {
     try {
       if (healthPackageExists == null) {
         const result = await healthPackage.save();
@@ -119,7 +116,7 @@ const addHealthPackages = async (req, res) => {
       });
       return;
     }
-  }
+  // }
 };
 const callUpdateHealthPackage = async (req, res) => {
   updateHealthPackages(req, res);
@@ -203,7 +200,7 @@ const deleteHealthPackages = async (req, res) => {
 };
 
 const goToDeleteUser = async (req, res) => {
-  res.render("admin/deleteUser");
+  res.render("admin/deleteUser", {message:""});
 };
 
 const deleteUser = async (req, res) => {
@@ -212,14 +209,14 @@ const deleteUser = async (req, res) => {
   if (req.body.userType == "admin") {
     deletedUser = await adminsTable.deleteOne({ username: req.body.username });
   } else if (req.body.userType == "patient") {
-    deletedUser = await patientsTable.deleteOne({
-      username: req.body.username,
-    });
+    deletedUser = await patientsTable.deleteOne({ username: req.body.username,});
   } else {
     deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
   }
-  if (deletedUser.deletedCount == 1) res.status(200).send("USER DELETED");
-  else res.status(400).send("USER NOT FOUND");
+  if (deletedUser.deletedCount == 1) 
+    res.render("admin/deleteUser", { message: "User deleted successfully"})
+  else     
+    res.render("admin/deleteUser", { message: "User not found"})
   console.log(deletedUser);
 };
 

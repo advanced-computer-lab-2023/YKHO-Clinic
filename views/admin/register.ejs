@@ -9,14 +9,9 @@
     <h1>New Admin Interface</h1>
     <form method="post" action="/admin/register/done">
         <input name="username" class="adminData" type="text" placeholder="username">
-        <input name="password" class="adminData" placeholder="password">
+        <input name="password" class="adminData" type="password" placeholder="password">
         <button id="createAdminButton">Create Admin</button>
+        <p><%= message %></p>
     </form>
 </body>
-<script>
-    const createAdminButton = document.getElementById("createAdminButton");
-    createAdminButton.addEventListener("click", () => {
-        //app.post("/admin/register/done", createAdmin);
-    });
-</script>
 </html>
