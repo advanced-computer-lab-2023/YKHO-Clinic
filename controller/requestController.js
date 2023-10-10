@@ -11,4 +11,4 @@ const createRequest = async (req,res) => {
     res.status(201).send(request);
 };
 
-model.exports = {createRequest};
+module.exports = {createRequest};

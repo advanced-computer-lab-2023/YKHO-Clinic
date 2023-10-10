@@ -9,7 +9,7 @@ const {
 } = require("../model/healthPackage.js");
 const patientsTable = require("../model/patient.js");
 const { doctor: doctorsTable } = require("../model/doctor.js");
-
+const requestsTable = require("../model/request.js");
 const goToAdminLogin = async (req, res) => {
   res.render("admin/login");
 };
@@ -67,7 +67,6 @@ const goToHealthPackages = async (req, res) => {
 };
 
 const addHealthPackages = async (req, res) => {
-  const healthPackages = await healthPackageTable.find();
   const healthPackage = new healthPackageTable({
     packageName: req.body.packageName,
     price: req.body.price,
@@ -75,8 +74,14 @@ const addHealthPackages = async (req, res) => {
     pharmacyDiscount: req.body.pharmacyDiscount,
     familyDiscount: req.body.familyDiscount,
   });
+  const healthPackageExists = await healthPackageTable.findOne({
+    packageName: req.body.packageName,
+  });
+
   const validated = validateHealthPackage(healthPackage);
+  console.log(validated);
   if (validated.error) {
+    const healthPackages = await healthPackageTable.find();
     res.render("admin/healthPackages", {
       healthPackages,
       createErrorMessage: validated.error.message,
@@ -85,15 +90,27 @@ const addHealthPackages = async (req, res) => {
     });
   } else {
     try {
-      const result = await healthPackage.save();
-      res.render("admin/healthPackages", {
-        healthPackages,
-        createErrorMessage: "Health package created successfully",
-        updateErrorMessage: "",
-        deleteErrorMessage: "",
-      });
-      console.log(result);
+      if (healthPackageExists == null) {
+        const result = await healthPackage.save();
+        healthPackages = await healthPackageTable.find();
+        res.render("admin/healthPackages", {
+          healthPackages,
+          createErrorMessage: "Health package created successfully",
+          updateErrorMessage: "",
+          deleteErrorMessage: "",
+        });
+        console.log(result);
+      } else {
+        healthPackages = await healthPackageTable.find();
+        res.render("admin/healthPackages", {
+          healthPackages,
+          createErrorMessage: "Health package already exists",
+          updateErrorMessage: "",
+          deleteErrorMessage: "",
+        });
+      }
     } catch (ex) {
+      healthPackages = await healthPackageTable.find();
       res.render("admin/healthPackages", {
         healthPackages,
         createErrorMessage: ex.message,
@@ -113,7 +130,7 @@ const updateHealthPackages = async (req, res) => {
   const validated = validateHealthPackage(req.body);
   if (validated.error)
     res.render("admin/healthPackages", {
-      healthPackages,
+       healthPackages,
       updateErrorMessage: validated.error.message,
       createErrorMessage: "",
       deleteErrorMessage: "",
@@ -121,21 +138,30 @@ const updateHealthPackages = async (req, res) => {
   else {
     try {
       const healthPackage = await healthPackageTable.findOneAndUpdate(
-        { name: req.body.packageName },
+        { packageName: req.body.packageName },
         {
-          name: req.body.packageName,
+          packageName: req.body.packageName,
           price: req.body.price,
           doctorDiscount: req.body.doctorDiscount,
           pharmacyDiscount: req.body.pharmacyDiscount,
           familyDiscount: req.body.familyDiscount,
         }
       );
-      res.render("admin/healthPackages", {
-        healthPackages,
-        updateErrorMessage: "Health package updated successfully",
-        createErrorMessage: "",
-        deleteErrorMessage: "",
-      });
+      const healthPackages = await healthPackageTable.find();
+      if (healthPackage != null)
+        res.render("admin/healthPackages", {
+          healthPackages,
+          updateErrorMessage: "Health package updated successfully",
+          createErrorMessage: "",
+          deleteErrorMessage: "",
+        });
+      else
+        res.render("admin/healthPackages", {
+          healthPackages,
+          updateErrorMessage: "Health package not found",
+          createErrorMessage: "",
+          deleteErrorMessage: "",
+        });
     } catch (ex) {
       res.render("admin/healthPackages", {
         healthPackages,
@@ -146,17 +172,34 @@ const updateHealthPackages = async (req, res) => {
     }
   }
 };
-
+const callDeleteHealthPackage = async (req, res) => {
+  deleteHealthPackages(req, res);
+};
 const deleteHealthPackages = async (req, res) => {
   try {
     const healthPackage = await healthPackageTable.deleteOne({
-      name: req.body.name,
+      packageName: req.body.packageName,
     });
+    console.log(req.body);
+    const healthPackages = await healthPackageTable.find();
+    console.log(healthPackage.deletedCount);
+    if (healthPackage.deletedCount == 1)
+      res.render("admin/healthPackages", {
+        healthPackages,
+        updateErrorMessage: "",
+        createErrorMessage: "",
+        deleteErrorMessage: "Health package deleted",
+      });
+    else
+      res.render("admin/healthPackages", {
+        healthPackages,
+        updateErrorMessage: "",
+        createErrorMessage: "",
+        deleteErrorMessage: "Health package not found",
+      });
   } catch (err) {
     res.send(err.message);
-    return;
   }
-  res.send(`${req.body.name} HealthPackage Deleted`);
 };
 
 const goToDeleteUser = async (req, res) => {
@@ -181,7 +224,10 @@ const deleteUser = async (req, res) => {
 };
 
 const goToUploadedInfo = async (req, res) => {
-  res.send("Doctors uploaded info");
+  const requests = await requestsTable.find();
+  res.render("admin/uploadedInfo", {
+    requests,
+  });
 };
 
 module.exports = {
@@ -195,5 +241,5 @@ module.exports = {
   goToHealthPackages,
   addHealthPackages,
   callUpdateHealthPackage,
-  deleteHealthPackages,
+  callDeleteHealthPackage,
 };

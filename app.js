@@ -16,7 +16,7 @@ const {
   goToHealthPackages,
   addHealthPackages,
   callUpdateHealthPackage,
-  deleteHealthPackages,
+  callDeleteHealthPackage,
 } = require("./controller/adminController.js");
 // request controller
 const{createRequest} = require('./controller/requestController');
@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use("/public", express.static('public'))
 mongoose
-  .connect("mongodb://127.0.0.1/clinic")
+  .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/?retryWrites=true&w=majority")
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));``
 
@@ -61,8 +61,8 @@ app.get("/admin/deleteUser", goToDeleteUser);
 app.post("/admin/deleteUser/done", deleteUser);
 app.get("/admin/HealthPackages", goToHealthPackages);
 app.post("/admin/healthPackages", addHealthPackages);
-app.post("/admin/healthPackages/done", callUpdateHealthPackage);
-app.delete("/admin/healthPackages/done", deleteHealthPackages);
+app.post("/admin/healthPackages/updated", callUpdateHealthPackage);
+app.post("/admin/healthPackages/deleted", callDeleteHealthPackage);
 
 
 //ahmed Patient

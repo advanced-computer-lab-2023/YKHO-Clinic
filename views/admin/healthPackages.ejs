@@ -14,7 +14,7 @@
         </tr>
         <% healthPackages.forEach(package => { %>
           <tr>
-            <td><%= package.name %></td>
+            <td><%= package.packageName %></td>
             <td><%= package.price %></td>
             <td><%= package.doctorDiscount %></td>
             <td><%= package.pharmacyDiscount %></td>
@@ -24,7 +24,6 @@
     </table>
     <h1>add new health package</h1>
     <form method="POST" action="/admin/healthPackages">
-    <p><%= createErrorMessage %></p>
     <label for="name">package name</label>
     <input id="name" input="text" name="packageName">
     <label for="price">Price</label>
@@ -36,19 +35,21 @@
     <label for="familyDiscount">family Discount</label>
     <input id="familyDiscount" input="text" name="familyDiscount">
     <button>Create package</button>
+    <p><%= createErrorMessage %></p>
     </form>
     <br>
 
-    <h1>delete a health package</h1>
-    <p><%= deleteErrorMessage %></p>
-    <label for="name">package name</label>
-    <input id="name" input="text" name="packageName">
-    <button>delete package</button>
+    <form method="post" action="/admin/healthPackages/deleted">
+        <h1>delete a health package</h1>
+        <label for="name">package name</label>
+        <input id="name" input="text" name="packageName">
+        <button>delete package</button>
+        <p><%= deleteErrorMessage %></p>
+    </form>
     <br>
 
-    <form method="post" action="/admin/healthPackages/done">
+    <form method="post" action="/admin/healthPackages/updated">
         <h1>update a health package</h1>
-        <p><%= updateErrorMessage %></p>
         <p>insert values to be updated, also insert the values you don't want to update as they were</p>
         <label for="name">package name</label>
         <input id="name" input="text" name="packageName">
@@ -61,6 +62,7 @@
         <label for="familyDiscount">family Discount</label>
         <input id="familyDiscount" input="text" name="familyDiscount">
         <button>update package</button>
+        <p><%= updateErrorMessage %></p>
     </form>
 </head>
 <body>
