@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>clinic</title>
+</head>
+
+<body> 
+    <h3>register</h3>
+    <form method="post" action="/patient/createFamilyMember">
+        <label for="name">name</label><br>
+        <input type="text" id="name" name="name"><br>
+        <label for="nationalID">nationalID</label><br>
+        <input type="text" id="nationalID" name="nationalID"><br>
+        <label for="age">age</label><br>
+        <input type="number" id="age" name="age"><br>
+        <h4>gender</h4>
+        <input type="radio" id="male" name="gender" value="male">
+        <label for="male">male</label>
+        <br>
+        <input type="radio" id="female" name="gender" value="female">
+        <label for="female">female</label>
+        <br>
+        <h4>relation</h4>
+        <input type="radio" id="husband" name="relation" value="husband">
+        <label for="husband">husband</label>
+        <br>
+        <input type="radio" id="wife" name="relation" value="wife">
+        <label for="wife">wife</label>
+        <br>
+        <input type="radio" id="son" name="relation" value="son">
+        <label for="son">son</label>
+        <br>
+        <input type="radio" id="daughter" name="relation" value="daughter">
+        <label for="daugter">daughter</label>
+        <br>
+        <input type="submit" value="register">
+    </form>
+</body>
+
+</html>
