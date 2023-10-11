@@ -6,6 +6,17 @@
 </head>
 
 <body>
+    <%if (one==true){%>
+    <form method="GET" action="/patient/Prescriptions">
+        <button type="submit" id="infoButton">
+            View Prescriptions
+        </button>
+    </form>
+    <form method="GET" action="/patient/Appointments">
+        <button id="patientsButton">
+            View Appointments
+        </button>
+    </form>
     <a href="/patient/readFamilyMembers">manage family members</a>
     <h3>search</h3>
     <form method="get" action="/patient/searchDoctors">
@@ -35,13 +46,27 @@
             </tr>
             <%results.forEach((result) => {%>
                 <tr>
-                    <td><%=result.name%></td>
+                    <td id=  "<%=result._id%>"  onclick="showThis(event)" style="cursor: pointer;"> <%=result.name%></td>
                     <td><%=result.speciality%></td>
                     <td><%=result.sessionPrice%></td>
                 </tr>
             <%})%>
         </table>
     <%}%>
+    <%}%>
+    <% if (one==false){%>
+    <table>
+        
+        <%- doctorrows %>
+    </table>
+    <% }%>
 </body>
 
 </html>
+<script>
+ 
+
+    function showThis(event){
+        window.location.href = `http://localhost:3000/patient/doctors/${event.target.id}`
+    }
+</script>

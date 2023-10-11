@@ -21,7 +21,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor } = require('./controller/patientController.js')
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -94,3 +94,4 @@ app.get("/patient/readFamilyMembers", readFamilyMembers);
 app.get('/patient/home', readDoctors );
 app.get("/patient/searchDoctors", searchDoctors);
 app.get("/patient/filterDoctors", filterDoctors);
+app.get("/patient/doctors/:id",selectDoctor)

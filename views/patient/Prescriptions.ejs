@@ -6,9 +6,9 @@
     <form method="GET" action="/patient/PrescriptionsFiltered">
         <label for="filter">Search By</label>
         <select id="filter" name="filter">
-            <option >DoctorName</option>
-            <option >Date</option>
-            <option >Filled</option>
+            <option value="DoctorName">DoctorName</option>
+            <option value="Date">Date</option>
+            <option value="Filled">Filled</option>
         </select>
         <label for="searchvalue">With value</label>
         <input id="searchvalue" input="text" name="searchvalue">
@@ -21,7 +21,19 @@
     </table>
 </body>
 <script>
- 
+    const filterDropdown = document.getElementById('filter');
+    const searchValueInput = document.getElementById('searchvalue');
+
+    filterDropdown.addEventListener('change', function () {
+        if (filterDropdown.value === 'Date') {
+            // Show the date input field when Date is selected
+            searchValueInput.type = 'date';
+
+        } else {
+            // Show the text input field for other options
+            searchValueInput.type = 'text';
+        }
+    });
 
     function showThis(event){
         window.location.href = `http://localhost:3000/patient/Prescriptions/${event.target.id}`
