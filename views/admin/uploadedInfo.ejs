@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <table>
+        <tr>
+          <th>name</th>
+          <th>email</th>
+          <th>DOB</th>
+          <th>mobile</th>
+          <th>rate</th>
+          <th>affiliation</th>
+          <th>education</th>
+        </tr>
+        <% requests.forEach(request => { %>
+          <tr>
+            <td><%= request.name %></td>
+            <td><%= request.email %></td>
+            <td><%= request.DOB.toISOString().split('T')[0] %></td>
+            <td><%= request.mobile %></td>
+            <td><%= request.rate %></td>
+            <td><%= request.affiliation %></td>
+            <td><%= request.education %></td>
+          </tr>
+        <% }); %>
+    </table>
 </head>
 <body>
 </body>
