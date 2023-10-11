@@ -1,6 +1,6 @@
 const patientModel = require('../model/patient');
 const doctorModel = require('../model/doctor').doctor;
-const HealthPackageModel = require('../model/healthPackage');
+const healthPackageModel = require('../model/healthPackage').healthPackage;
 //const { date } = require('joi');
 const appointmentModel = require('../model/appointments').appointment;
 const { prescription } = require('../model/prescription');
@@ -11,17 +11,25 @@ let patient;
     patient = await patientModel.findOne();
 })();
 
+let doctors;
 
 const createPatient = async (req, res) => {
     // joi validation
-    const { username, password, name, dob, gender, email, mobile, emergency } = req.body;
+    const { username, password, name, DOB, gender, email, mobile, emergencyName, emergencyMobile } = req.body;
+
+    const emergency = {
+        name: emergencyName,
+        mobile: emergencyMobile
+    }
 
     patient = new patientModel({
-        username, password, name, dob, gender, email, mobile, emergency
+        username, password, name, DOB, gender, email, mobile, emergency
     });
 
     patient = await patient.save();
-    res.status(201).send(patient);
+    doctors = await doctorModel.find().sort({ name: 1 });
+    let results = await helper(doctors);
+    res.status(201).render('patient/home', {results});
 }
 
 const createFamilyMember = async (req, res) => {
@@ -38,27 +46,30 @@ const createFamilyMember = async (req, res) => {
 
     patient.familyMembers.push(familyMember);
     patient = await patient.save();
-    familyMember = patient.familyMembers[patient.familyMembers.length - 1];
-    res.status(201).send(familyMember);
+    results = patient.familyMembers
+    res.status(201).render('patient/family', {results} );
 };
 
 const readFamilyMembers = async (req, res) => {
-    res.status(200).send(patient.familyMembers);
+    let results = patient.familyMembers;
+    res.status(201).render('patient/family', {results} );
 }
 
 // helper
 async function helper(doctors) {
-    let healthPackage = await HealthPackageModel.findOne({ name: patient.healthPackage });
-    let discount = healthPackage.doctorsDiscount;
-    console.log(discount);
-    let results = doctors.map(({ name, speciality, rate }) => ({ name, speciality, sessionPrice: rate * 1.1 * discount }));
+    let discount = 1;
+    if(patient.healthPackage != "none"){
+        let healthPackage = await healthPackageModel.findOne({ name: patient.healthPackage });
+        discount = healthPackage.doctorDiscount;
+    }
+    let results = doctors.map(({ _id, name, speciality, rate }) => ({_id, name, speciality, sessionPrice: rate * 1.1 * discount }));
     return results;
 }
 
 const readDoctors = async (req, res) => {
     doctors = await doctorModel.find().sort({ name: 1 });
     let results = await helper(doctors);
-    res.status(200).send(results);
+    res.status(201).render('patient/home', { results});
 }
 
 // helper
@@ -94,7 +105,7 @@ const searchDoctors = async (req, res) => {
         });
     }
     let results = await helper(doctors);
-    res.status(201).send(results);
+    res.status(201).render('patient/home', { results});
 }
 
 const filterDoctors = async (req, res) => {
@@ -131,33 +142,32 @@ const filterDoctors = async (req, res) => {
             return appointments.includes(doctor._id.toString());
         })
 
-        let results = await helper(doctors);
-        res.status(201).send(results);
     }
 
+    let results = await helper(doctors);
+    res.status(201).render('patient/home', {results});
 }
 
-
-const ViewPrescriptions = async (req,res) => {
-    let result = await prescription.find({patientID:req.body.id}.select(["prescriptionName"+"date"]));
+const ViewPrescriptions = async (req, res) => {
+    let result = await prescription.find({ patientID: req.body.id }.select(["prescriptionName" + "date"]));
     res.send(result);
 }
 //async function selectPrescription(req,res){
- //   const result = await prescription.find({patientID:req.body.id,_id:req.params.id})
- //   res.send(result);
+//   const result = await prescription.find({patientID:req.body.id,_id:req.params.id})
+//   res.send(result);
 //}
-const FilterPrescriptions = async (req,res) => {
+const FilterPrescriptions = async (req, res) => {
     let result
-    if(req.body.filter=="DoctorName") {
-        result= await prescription.find({doctorName:req.body.doctorName,patientID:req.body.id});
+    if (req.body.filter == "DoctorName") {
+        result = await prescription.find({ doctorName: req.body.doctorName, patientID: req.body.id });
     }
-    if(req.body.filter=="Date") {
-        result= await prescription.find({date:req.body.date,patientID:req.body.id});
+    if (req.body.filter == "Date") {
+        result = await prescription.find({ date: req.body.date, patientID: req.body.id });
     }
-    if(req.body.filter=="Filled") {
-        result= await prescription.find({filled:req.body.filled,patientID:req.body.id});
+    if (req.body.filter == "Filled") {
+        result = await prescription.find({ filled: req.body.filled, patientID: req.body.id });
     }
     res.send(result);
-    
+
 }
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions};
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions };

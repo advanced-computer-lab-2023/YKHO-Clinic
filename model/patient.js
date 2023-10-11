@@ -67,7 +67,7 @@ const patientSchema = new mongoose.Schema({
     },
     emergency: {
         name: String,
-        mobileNumber: String
+        mobile: String
     },
     familyMembers: [familyMemberSchema],
     healthPackage: {

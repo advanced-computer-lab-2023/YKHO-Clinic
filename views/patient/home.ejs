@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>clinic</title>
+</head>
+
+<body>
+    <a href="/patient/readFamilyMembers">manage family members</a>
+    <h3>search</h3>
+    <form method="get" action="/patient/searchDoctors">
+        <label for="doctors">doctor</label><br>
+        <input type="text" id="doctors" name="doctors"><br>
+        <label for="specialities">speciality</label><br>
+        <input type="text" id="specialities" name="specialities"><br><br>
+        <input type="submit" value="search">
+    </form>
+    <h3>filter</h3>
+    <form method="get" action="/patient/filterDoctors">
+        <label for="speciality">speciality</label><br>
+        <select name="speciality" id="speciality">
+            <option value="orthopedics">orthopedics</option>
+            <option value="dermatology">dermatology</option>
+        </select><br>
+        <label for="date">time</label><br>
+        <input type="datetime-local" id="date" name="date"><br><br>
+        <input type="submit" value="filter">
+    </form>
+    <%if (results.length > 0){%>
+        <table>
+            <tr>
+                <th>doctor</th>
+                <th>speciality</th>
+                <th>session price</th>
+            </tr>
+            <%results.forEach((result) => {%>
+                <tr>
+                    <td><%=result.name%></td>
+                    <td><%=result.speciality%></td>
+                    <td><%=result.sessionPrice%></td>
+                </tr>
+            <%})%>
+        </table>
+    <%}%>
+</body>
+
+</html>
