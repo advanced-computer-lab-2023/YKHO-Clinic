@@ -15,7 +15,6 @@ const healthPackage = mongoose.model("HealthPackages", healthPackagesSchema);
 
 function validateHealthPackage(toBeUpdatedHealthPackage) {
   const schema = Joi.object({
-    packageID: Joi.string().required(),
     packageName: Joi.string().required(),
     price: Joi.number().required().min(1),
     doctorDiscount: Joi.number().min(1).max(100).required(),

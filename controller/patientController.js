@@ -17,11 +17,12 @@ const test={
       "mobileNumber": "01280730418"
     },
     "healthPackage": "kikamima"
-  };
+};
 
 let patient;
 (async function () {
     patient = await patientModel.findOne();
+    console.log(patient)
 })();
 
 let doctors;
@@ -71,9 +72,11 @@ const readFamilyMembers = async (req, res) => {
 // helper
 async function helper(doctors) {
     let discount = 1;
+    console.log(patient);
     if(patient.healthPackage != "none"){
-        let healthPackage = await healthPackageModel.findOne({ name: patient.healthPackage });
+        let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
         discount = healthPackage.doctorDiscount;
+        discount = (100 - discount)/100;
     }
     let results = doctors.map(({ _id, name, speciality, rate }) => ({_id, name, speciality, sessionPrice: rate * 1.1 * discount }));
     return results;

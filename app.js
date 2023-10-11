@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use("/public", express.static('public'))
 mongoose
-  .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/?retryWrites=true&w=majority")
+  .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority")
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
