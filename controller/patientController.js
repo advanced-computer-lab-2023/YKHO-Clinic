@@ -22,11 +22,11 @@ const test = {
 */
 
 let patient;
+let test;
 (async function () {
     patient = await patientModel.findOne();
+    test = patient;
 })();
-
-const test = patient;
 
 let doctors;
 
@@ -128,8 +128,9 @@ const searchDoctors = async (req, res) => {
 
 const filterDoctors = async (req, res) => {
     let speciality = req.query.speciality
+    let results;
     if (speciality != 'any') {
-        doctors = doctors.filter(doctor => {
+        results = doctors.filter(doctor => {
             if (doctor.speciality == speciality)
                 return true;
             return false;
@@ -140,7 +141,7 @@ const filterDoctors = async (req, res) => {
     if (date != "") {
 
         date = new Date(date);
-        let appointments = await appointmentModel.find({ status: true });
+        let appointments = await appointmentModel.find();
 
         // filter appointments by date
         appointments = appointments.filter((x) => {
@@ -152,17 +153,17 @@ const filterDoctors = async (req, res) => {
             return false;
         });
 
-                // map appointments to 
+        // map appointments to 
         appointments = appointments.map(({ doctorID }) => (doctorID.toString()));
 
         // filter doctors
-        doctors = doctors.filter((doctor) => {
-            return appointments.includes(doctor._id.toString());
+        results = results.filter((doctor) => {
+            return !appointments.includes(doctor._id.toString());
         })
 
     }
 
-    let results = await helper(doctors);
+    results = await helper(results);
     res.status(201).render('patient/home', {results,one:true});
 }
 async function selectDoctor(req,res){
