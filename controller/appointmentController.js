@@ -25,7 +25,7 @@ async function showMyPatients(req,res){
     let result
     
     if(req.query.name){
-         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
          result=result.filter((c)=>{
             
             return c.patientID.name.substring(0,req.query.name.length)==req.query.name
@@ -38,9 +38,16 @@ async function showMyPatients(req,res){
     }
     else{
         
-         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
         
     } 
+    if(req.query.Upcoming=="on"){
+        console.log(result);
+        result= result.filter((c)=>{
+            return c.date > new Date();
+        })
+    }
+  
     for(i in result){
         for(j in result){
             if(i!=j){
