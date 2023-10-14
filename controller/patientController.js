@@ -4,26 +4,29 @@ const healthPackageModel = require('../model/healthPackage').healthPackage;
 //const { date } = require('joi');
 const appointmentModel = require('../model/appointments').appointment;
 const { prescription } = require('../model/prescription');
-const test={
+/*
+const test = {
     "_id": "606aa80e929a618584d2758b",
     "name": "kika",
     "gender": "female",
     "mobileNumber": "01224764545",
     "dob": {
-      "$date": "2001-09-30T22:00:00.000Z"
+        "$date": "2001-09-30T22:00:00.000Z"
     },
     "emergency": {
-      "name": "rawez",
-      "mobileNumber": "01280730418"
+        "name": "rawez",
+        "mobileNumber": "01280730418"
     },
     "healthPackage": "kikamima"
 };
+*/
 
 let patient;
 (async function () {
     patient = await patientModel.findOne();
-    console.log(patient)
 })();
+
+const test = patient;
 
 let doctors;
 
@@ -61,31 +64,30 @@ const createFamilyMember = async (req, res) => {
     patient.familyMembers.push(familyMember);
     patient = await patient.save();
     results = patient.familyMembers
-    res.status(201).render('patient/family', {results,one:true} );
+    res.status(201).render('patient/family', {results});
 };
 
 const readFamilyMembers = async (req, res) => {
     let results = patient.familyMembers;
-    res.status(201).render('patient/family', {results,one:true} );
+    res.status(201).render('patient/family', {results});
 }
 
 // helper
 async function helper(doctors) {
     let discount = 1;
-    console.log(patient);
-    if(patient.healthPackage != "none"){
+    if (patient.healthPackage != "none") {
         let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
         discount = healthPackage.doctorDiscount;
-        discount = (100 - discount)/100;
+        discount = (100 - discount) / 100;
     }
-    let results = doctors.map(({ _id, name, speciality, rate }) => ({_id, name, speciality, sessionPrice: rate * 1.1 * discount }));
+    let results = doctors.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: rate * 1.1 * discount }));
     return results;
 }
 
 const readDoctors = async (req, res) => {
     doctors = await doctorModel.find().sort({ name: 1 });
     let results = await helper(doctors);
-    res.status(201).render('patient/home', { results,one:true});
+    res.status(201).render('patient/home', { results, one: true });
 }
 
 // helper
@@ -99,7 +101,7 @@ const searchDoctors = async (req, res) => {
     let searchedDoctors = req.query.doctors;
     // empty input fields
     if (!isEmpty(searchedDoctors)) {
-        searchedDoctors = req.query.doctors.split(/\s*[^a-z0-9]+\s*|\s+[^a-z0-9]*\s*/i);
+        searchedDoctors = req.query.doctors.split(/\s*,+\s*|\s+,*\s*/i);
         doctors = doctors.filter(doctor => {
             for (let i = 0; i < searchedDoctors.length; i++) {
                 if (doctor.name.includes(searchedDoctors[i]))
@@ -121,7 +123,7 @@ const searchDoctors = async (req, res) => {
         });
     }
     let results = await helper(doctors);
-    res.status(201).render('patient/home', { results,one:true});
+    res.status(201).render('patient/home', { results, one: true });
 }
 
 const filterDoctors = async (req, res) => {
@@ -150,7 +152,7 @@ const filterDoctors = async (req, res) => {
             return false;
         });
 
-        // map appointments to 
+                // map appointments to 
         appointments = appointments.map(({ doctorID }) => (doctorID.toString()));
 
         // filter doctors
@@ -168,12 +170,12 @@ async function selectDoctor(req,res){
         const result = await doctorModel.find({_id:req.params.id})
         let doctorrows ='<tr><th>Name</th> <th>Speciality</th> \
          <th>Session Price</th> <th>Affiliation</th> <th>Education</th> </tr>';
-            
-            doctorrows=doctorrows + `<tr><td style="text-align: center;"> ${result[0].name} </td><td style="text-align: center;\
+
+        doctorrows=doctorrows + `<tr><td style="text-align: center;"> ${result[0].name} </td><td style="text-align: center;\
             "> ${result[0].speciality} </td>\
              <td style="text-align: center;"> ${result[0].rate} </td> <td style="text-align: center;">\
               ${result[0].affiliation} </td> <td style="text-align: center;">${result[0].education}</td> `
-        
+
         res.render("patient/home",{doctorrows:doctorrows,one:false})
     }
     catch(error){
@@ -184,7 +186,7 @@ async function selectDoctor(req,res){
 const ViewPrescriptions = async (req,res) => {
     let result = await prescription.find({patientID:test._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
-    
+
     for(prescriptions in result){
         prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
         </tr>`
@@ -197,15 +199,15 @@ async function selectPrescription(req,res){
         const result = await prescription.find({patientID:test._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
          <th>Doctor Name</th> <th>Filled</th> </tr>';
-            var date=result[0].date;
-            if(date){
-                date=date.toISOString().split('T')[0]
-            }
-            prescriptionrows=prescriptionrows + `<tr><td style="text-align: center;"> ${result[0].prescriptionName} </td><td style="text-align: center;\
+        var date=result[0].date;
+        if(date){
+            date=date.toISOString().split('T')[0]
+        }
+        prescriptionrows=prescriptionrows + `<tr><td style="text-align: center;"> ${result[0].prescriptionName} </td><td style="text-align: center;\
             "> ${date} </td>\
              <td style="text-align: center;"> ${result[0].doctorName} </td> <td style="text-align: center;">\
               ${result[0].filled} </td>`
-        
+
         res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:false})
     }
     catch(error){
@@ -231,7 +233,7 @@ const FilterPrescriptions = async (req,res) => {
 
     }
     res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:false});
-    
+
 }
 async function patientHome(req,res){
     res.render("patient/patientHome");

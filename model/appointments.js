@@ -16,27 +16,27 @@ const appointmentSchema = new mongoose.Schema({
         required:true,
         ref:patient
     },
-    date: 
+    date:
     {
         type:Date,
         required:true,
     },
-    status:
-    {
-        type:Boolean,
-        required:true,
-        default:false,
+    status: {
+        type: String,
+        required: true,
+        enum: ['upcoming', 'completed', 'cancelled', 'rescheduled'],
+        lowercase: true,
+        trim: true,
     }
-    });
+});
 function validateAppointments(newAppointment){
-        const schema = Joi.object({
-            doctorID: Joi.objectId().required(),
-            patientID: Joi.objectId().required(),
-            date: Joi.date().required(),
-            status:Joi.boolean().required(),
-          }); 
-        return schema.validate(newAppointment);
-    }
+    const schema = Joi.object({
+        doctorID: Joi.objectId().required(),
+        patientID: Joi.objectId().required(),
+        date: Joi.date().required()
+    });
+    return schema.validate(newAppointment);
+}
 const appointment = mongoose.model('appointment', appointmentSchema);
 module.exports={appointment,validateAppointments};
 

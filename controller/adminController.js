@@ -16,17 +16,18 @@ const goToAdminLogin = async (req, res) => {
 };
 
 const adminLogin = async (req, res) => {
+  if(req.body.username === "" || req.body.password === "")
+    res.render("admin/login",{message:"fill the empty fields"});
   const user = await adminsTable.findOne({//bydwr 3ala ay had beh same user and pass
     username: req.body.username,
     password: req.body.password,
   });
-
   if (user != null) {//if found a match
     const data = {
       username: user.username,//passing the username to the html so that i can say welcome "admin name"
     };
     return res.render("admin/home", data);
-  } else return res.send("username or passowrd is wrong");
+  } else return res.render("admin/login",{message:"username or passowrd is wrong"});
 };
 
 const createAdmin = async (req, res) => {

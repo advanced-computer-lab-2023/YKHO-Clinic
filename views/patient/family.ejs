@@ -8,7 +8,36 @@
 <body>
     <a href="/patient/createFamilyMember">manage family members</a>
     <h3>members</h3>
-    <%= results %>
+    <%if (results.length> 0) {%>
+        <table>
+            <tr>
+                <th>name</th>
+                <th>national ID</th>
+                <th>age</th>
+                <th>gender</th>
+                <th>relation</th>
+            </tr>
+            <%results.forEach((result)=> {%>
+                <tr>
+                    <td>
+                        <%=result.name%>
+                    </td>
+                    <td>
+                        <%=result.nationalID%>
+                    </td>
+                    <td>
+                        <%=result.age%>
+                    </td>
+                    <td>
+                        <%=result.gender%>
+                    </td>
+                    <td>
+                        <%=result.relation%>
+                    </td>
+                </tr>
+                <%})%>
+        </table>
+        <%}%>
 </body>
 
 </html>
