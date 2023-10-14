@@ -39,11 +39,11 @@ const createPatient = async (req, res) => {
         mobile: emergencyMobile
     }
 
-    patient = new patientModel({
+    let entry = new patientModel({
         username, password, name, DOB, gender, email, mobile, emergency
     });
 
-    patient = await patient.save();
+    entry = await entry.save();
     doctors = await doctorModel.find().sort({ name: 1 });
     let results = await helper(doctors);
     res.status(201).render('patient/home', {results,one:true});
