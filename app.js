@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
 require('dotenv').config()
+const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
 const { createDoctor, goToHome, updateMyInfo, updateThis } = require('./controller/doctorController');
@@ -27,6 +28,7 @@ const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searc
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
+app.use(cookieParser());
 app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
 });
@@ -56,7 +58,7 @@ app.get("/doctor/Appointments",DocShowAppointments);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
-app.get("/admin/home", requireAuth, adminLogin);
+app.get("/admin/home", adminLogin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register", createAdmin);
@@ -66,7 +68,6 @@ app.get("/admin/HealthPackages", goToHealthPackages);
 app.post("/admin/healthPackages", addHealthPackages);
 app.post("/admin/healthPackages/updated", callUpdateHealthPackage);
 app.post("/admin/healthPackages/deleted", callDeleteHealthPackage);
-
 
 //ahmed Patient
 app.get("/patient/Prescriptions", ViewPrescriptions);
