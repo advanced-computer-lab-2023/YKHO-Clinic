@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
+require('dotenv').config()
+const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
 const { createDoctor, goToHome, updateMyInfo, updateThis } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
@@ -23,6 +25,7 @@ const { createRequest } = require('./controller/requestController');
 // patient controller
 const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor } = require('./controller/patientController.js')
 const port = 3000;
+const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
@@ -32,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use("/public", express.static('public'))
 mongoose
-  .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority")
+  .connect(MONGO_URI)
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
@@ -53,7 +56,7 @@ app.get("/doctor/Appointments",DocShowAppointments);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
-app.post("/admin/home", adminLogin);
+app.get("/admin/home", requireAuth, adminLogin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register", createAdmin);
