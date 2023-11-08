@@ -1,8 +1,11 @@
 const mongoose = require('mongoose')
 const express = require('express');
+const multer= require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 const ejs = require('ejs');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -16,7 +19,7 @@ const {
   goToHealthPackages,
   addHealthPackages,
   callUpdateHealthPackage,
-  callDeleteHealthPackage,
+  callDeleteHealthPackage,   
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
@@ -36,20 +39,21 @@ mongoose
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
-const id = "1";
+const id = "1"; 
 
 app.get("/",home);
 //Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
-app.get("/doctor/home",goToHome)
-app.get("/doctor/patients",showMyPatients);
-app.get("/doctor/patients/:id",showMyPatientInfo)
-app.get("/doctor/upcomingAppointments",showUpcomingAppointments)
-app.get("/doctor/updateInfo",updateMyInfo)
-app.post("/doctor/updateInfo",updateThis)
-app.get("/doctor/AppointmentsFilter",DocFilterAppointments);
-app.get("/doctor/Appointments",DocShowAppointments);
+app.get("/doctor/home",checkContract,goToHome)
+app.get("/doctor/patients",checkContract,showMyPatients);
+app.get("/doctor/patients/:id",checkContract,showMyPatientInfo)
+app.get("/doctor/upcomingAppointments",checkContract,showUpcomingAppointments)
+app.get("/doctor/updateInfo",checkContract,updateMyInfo)
+app.post("/doctor/updateInfo",checkContract,updateThis)
+app.get("/doctor/AppointmentsFilter",checkContract,DocFilterAppointments);
+app.get("/doctor/Appointments",checkContract,DocShowAppointments);
+app.get("/doctor/contract",checkContract); 
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -74,14 +78,14 @@ app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
 
 
-// register
-app.get('/guest/patient', function (req,res)  {
+// register 
+app.get('/guest/patient', function (req,res)  { 
   res.render('patient/register')
 });
 app.get('/guest/doctor', function (req,res)  {
   res.render('doctor/register')
 });
-app.post('/request/createRequest', createRequest );
+app.post('/request/createRequest',upload.array("files"), createRequest );
 // patient
 app.get('/patient/createFamilyMember', function (req,res)  {
   res.render('patient/addFamily');

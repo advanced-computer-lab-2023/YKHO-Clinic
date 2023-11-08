@@ -5,8 +5,7 @@
     <% if(onepatient){%>
     <form method="get|post" action="/doctor/patients">
         <input name="name" type="text" placeholder="Search patients by name....">
-        <label for="html">Upcoming appointments</label>
-        <input type="checkbox" id="html" name="Upcoming">
+        
         <button type="submit">Search</button>
     </form>
     <% } %>
@@ -16,9 +15,10 @@
     </table>
 </body>
 <script>
- 
+   
 
     function showThis(event){
         window.location.href = `http://localhost:3000/doctor/patients/${event.target.id}`
     }
+   
 </script>

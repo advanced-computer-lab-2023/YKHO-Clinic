@@ -14,7 +14,11 @@
         
         <label for="searchvalue">With value</label>
         <input id="searchvalue" input="text" name="searchvalue">
-           
+        <br>
+        <input type="radio" id="upcoming" name="filters" value="upcoming">
+        <label for="upcoming">Upcoming Appointments</label><br>
+        <input type="radio" id="past" name="filters" value="past">
+        <label for="past">Past Appointments</label><br>
         <button type="submit" style="display: block">Search</button>
     </form>
     <% } %>
@@ -38,4 +42,16 @@
             searchValueInput.type = 'text';
         }
     });
+    const radioButtons = document.querySelectorAll('input[type="radio"][name="filter"]');
+        radioButtons.forEach(function(radioButton) {
+            let prevChecked = false; // Initialize a variable to track the previous checked state
+            
+            radioButton.addEventListener('click', function() {
+                if (prevChecked) {
+                    // Deselect the clicked radio button
+                    this.checked = false;
+                }
+                prevChecked = this.checked; // Update the previous checked state
+            });
+        });
 </script>
