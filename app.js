@@ -23,6 +23,8 @@ const {
   addHealthPackages,
   callUpdateHealthPackage,
   callDeleteHealthPackage,   
+  adminLogout,
+  changePasswordAdmin
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
@@ -63,7 +65,8 @@ app.get("/doctor/contract",checkContract);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
-app.get("/admin/home", adminLogin);
+app.post("/admin/home", adminLogin);
+app.put("/admin/changePassword", changePasswordAdmin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register", createAdmin);
@@ -103,4 +106,4 @@ app.get("/patient/readFamilyMembers", readFamilyMembers);
 app.get('/patient/home', readDoctors );
 app.get("/patient/searchDoctors", searchDoctors);
 app.get("/patient/filterDoctors", filterDoctors);
-app.get("/patient/doctors/:id",selectDoctor)
+app.get("/patient/doctors/:id",selectDoctor);
