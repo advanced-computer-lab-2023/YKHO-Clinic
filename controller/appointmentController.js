@@ -77,8 +77,18 @@ async function showMyPatientInfo(req,res){
              <td style="text-align: center;"> ${result[0].patientID.emergency.name} </td>\
              <td style="text-align: center;"> ${result[0].patientID.emergency.mobile} \
              </td> <td style="text-align: center;">${result[0].patientID.healthPackage}</td>`
-        
-        res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:false})
+            let uploadButton = `<form id="uploadForm" method="POST" action="/doctor/patients/${req.params.id}/upload-pdf" enctype="multipart/form-data"">
+                <input type="file" name="healthRecords">
+                <input type="submit" value="Upload">
+                </form>`;
+            let healthRecords = [];
+            if (result[0].patientID.healthRecords && result[0].patientID.healthRecords.length > 0) {
+                healthRecords = result[0].patientID.healthRecords.map((record) => ({
+                    data: record.data,
+                    contentType: record.contentType,
+                }));
+            }
+            res.render("doctor/doctorPatients",{patientRows:patientRows, healthRecords: healthRecords, uploadButton: uploadButton, onepatient:false})
     }
     catch(error){
         res.send("Patient doesnt exist")

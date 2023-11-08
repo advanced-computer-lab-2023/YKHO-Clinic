@@ -2,8 +2,13 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const fs = require('fs');
+
 const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
+const patientModel = require('../model/patient');
+const appointmentsModel = require('../model/appointments');
 const id="606aa80e929a618584d2758b";
 
 const maxAge = 3 * 24 * 60 * 60;
@@ -128,18 +133,45 @@ const schema = Joi.object({
 }
 const checkContract=async (req,res,next)=>{
    
-    if(req.query.accept=="accept"){
-        await doctor.findByIdAndUpdate(id, {acceptedContract:true})
-        res.render("doctor/doctorHome",{name:req.body.name})
-    }
-    else{
-    const result=await doctor.findById(id)
-    if(result.acceptedContract){
-        next();
-    }
-    else{
-        res.render("doctor/doctorContract")
-    }
+  if(req.query.accept=="accept"){
+      await doctor.findByIdAndUpdate(id, {acceptedContract:true})
+      res.render("doctor/doctorHome",{name:req.body.name})
+  }
+  else{
+  const result=await doctor.findById(id)
+  if(result.acceptedContract){
+      next();
+  }
+  else{
+      res.render("doctor/doctorContract")
+  }
 }
 }
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin}; 
+const uploadHealthRecord = async (req, res) => {
+  const patientId = req.params.id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+   return res.status(404).send('Patient not found.');
+  }
+
+  if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+  }
+  const base64Data = req.file.buffer.toString('base64');
+
+  patient.healthRecords.push({
+    data: base64Data,
+    contentType: req.file.mimetype,
+  });
+
+  await patient.save()
+.then(() => {
+  res.redirect(`/doctor/patients/${patientId}`);
+})
+.catch((err) => {
+  console.error(err);
+  return res.status(500).send('Error saving patient data.');
+});
+
+};
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord}; 

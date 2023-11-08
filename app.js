@@ -8,7 +8,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -29,7 +29,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords } = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -62,6 +62,7 @@ app.post("/doctor/updateInfo",checkContract,updateThis)
 app.get("/doctor/AppointmentsFilter",checkContract,DocFilterAppointments);
 app.get("/doctor/Appointments",checkContract,DocShowAppointments);
 app.get("/doctor/contract",checkContract); 
+app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRecords'),uploadHealthRecord);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -84,7 +85,7 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments", PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-
+app.get("/patient/HealthRecords", viewHealthRecords);
 
 // register 
 app.get('/guest/patient', function (req,res)  { 
