@@ -27,7 +27,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor,showMedicalHistory,addMedicalHistory } = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -39,7 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use("/public", express.static('public'))
-mongoose
+mongoose  
   .connect(MONGO_URI)
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
@@ -81,7 +81,8 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments", PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-
+app.get("/patient/medicalHistory",showMedicalHistory);
+app.post("/patient/addMedicalHistory",upload.single("files"),addMedicalHistory);
 
 // register 
 app.get('/guest/patient', function (req,res)  { 

@@ -239,4 +239,30 @@ const FilterPrescriptions = async (req,res) => {
 async function patientHome(req,res){
     res.render("patient/patientHome");
 }
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor};
+async function showMedicalHistory(req,res){
+    let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
+    let medicalHistoryrows ='<tr><th>name</th> <th>document</th></tr>';
+    for(medicalHistory in result[0].medicalHistory){
+        medicalHistoryrows=medicalHistoryrows + `<tr><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
+        <td><a href="${result[0].medicalHistory[medicalHistory].document}" target="_blank">View</a></td></tr>`
+    }
+    res.render("patient/medicalHistory",{medicalHistory:medicalHistoryrows});
+}
+async function addMedicalHistory(req,res){
+    const  name  = req.body.docName;
+    console.log(name)
+    const document  = req.file.buffer;
+    const newRecord = { name, document };
+    const patientId = test._id;
+    try {
+        const updatedPatient = await patientModel.findByIdAndUpdate(
+            patientId,
+            { $push: { medicalHistory: newRecord } },
+            { new: true }
+        );
+        res.redirect("/patient/medicalHistory");
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,showMedicalHistory,addMedicalHistory};

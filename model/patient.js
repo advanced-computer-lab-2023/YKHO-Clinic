@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
-
+const { buffer } = require('stream/consumers');
+const medicalHistorySchema={
+    name:{
+        type:String,
+    },
+    document:{
+        type:buffer,
+    },
+    
+}
 const familyMemberSchema = {
     name: {
         type: String,
@@ -73,8 +82,8 @@ const patientSchema = new mongoose.Schema({
     healthPackage: {
         type: String,
         default: "none",
-    }
-
+    },
+    medicalHistory: [medicalHistorySchema]
 })
 
 // joi validation
