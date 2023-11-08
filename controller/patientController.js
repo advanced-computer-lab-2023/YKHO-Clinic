@@ -75,7 +75,7 @@ const readFamilyMembers = async (req, res) => {
 // helper
 async function helper(doctors) {
     let discount = 1;
-    if (patient.healthPackage != "none") {
+    if (patient.healthPackage && patient.healthPackage != "none") {
         let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
         discount = healthPackage.doctorDiscount;
         discount = (100 - discount) / 100;
@@ -239,4 +239,16 @@ const FilterPrescriptions = async (req,res) => {
 async function patientHome(req,res){
     res.render("patient/patientHome");
 }
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor};
+const viewHealthRecords = async (req, res) => 
+{
+        let healthRecords = [];
+            if (test.healthRecords && test.healthRecords.length > 0) {
+                healthRecords = test.healthRecords.map((record) => ({
+                    data: record.data,
+                    contentType: record.contentType,
+                }));
+            }
+            res.render("patient/HealthRecords",{healthRecords: healthRecords})
+}
+
+module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords};

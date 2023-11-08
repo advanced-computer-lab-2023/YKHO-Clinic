@@ -14,6 +14,35 @@
         
         <%- patientRows %>
     </table>
+    
+    <% if(!onepatient){%>
+        <h3>Health Records</h3>
+        <label>Upload a record</label>
+        <%- uploadButton %>
+        <table>
+            <% if(healthRecords.length > 0) {%>
+                <% healthRecords.forEach((record, index) => { %>
+                    <tr>
+                        <td>
+                            <% if (record.contentType === 'application/pdf') { %>
+                                <iframe src="data:application/pdf;base64,<%= record.data %>" style="width: 100%; height: 80vh;"></iframe>
+                            <% } else if (record.contentType.startsWith('image/')) { %>
+                                <img src="data:<%= record.contentType %>;base64,<%= record.data %>" alt="Image <%= index + 1 %>"
+                                    style="max-width: 300px;">
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else {%>
+                <tr>
+                    <td>
+                        <p>No health records found</p>
+                    </td>
+                </tr>
+            <% } %>
+        </table>
+    <% } %>
+
 </body>
 <script>
  

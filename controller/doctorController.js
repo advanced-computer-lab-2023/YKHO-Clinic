@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
+const multer = require('multer');
+const fs = require('fs');
+
 const {doctor,validateDoctor} = require('../model/doctor.js');
+const patientModel = require('../model/patient');
+const appointmentsModel = require('../model/appointments');
 const id="606aa80e929a618584d2758b";
 async function createDoctor(req,res){
     const result=validateDoctor(req.body);
@@ -49,4 +54,34 @@ const schema = Joi.object({
   }
 
 }
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis}; 
+
+const uploadHealthRecord = async (req, res) => {
+    const patientId = req.params.id;
+    const patient = await patientModel.findById(patientId);
+    if (!patient) {
+     return res.status(404).send('Patient not found.');
+    }
+  
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+    const base64Data = req.file.buffer.toString('base64');
+
+    patient.healthRecords.push({
+      data: base64Data,
+      contentType: req.file.mimetype,
+    });
+
+    await patient.save()
+  .then(() => {
+    res.redirect(`/doctor/patients/${patientId}`);
+  })
+  .catch((err) => {
+    console.error(err);
+    return res.status(500).send('Error saving patient data.');
+  });
+
+};
+
+
+module.exports={createDoctor, goToHome, updateMyInfo, updateThis, uploadHealthRecord}; 

@@ -1,8 +1,10 @@
 const mongoose = require('mongoose')
 const express = require('express');
 const ejs = require('ejs');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis, uploadHealthRecord } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -21,7 +23,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords } = require('./controller/patientController.js')
 const port = 3000;
 const app = express();
 app.listen(port, () => {
@@ -50,6 +52,7 @@ app.get("/doctor/updateInfo",updateMyInfo)
 app.post("/doctor/updateInfo",updateThis)
 app.get("/doctor/AppointmentsFilter",DocFilterAppointments);
 app.get("/doctor/Appointments",DocShowAppointments);
+app.post("/doctor/patients/:id/upload-pdf",upload.single('healthRecords'),uploadHealthRecord);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
@@ -72,7 +75,7 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments", PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-
+app.get("/patient/HealthRecords", viewHealthRecords);
 
 // register
 app.get('/guest/patient', function (req,res)  {
