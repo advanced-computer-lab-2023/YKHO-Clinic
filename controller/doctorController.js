@@ -2,12 +2,18 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const fs = require('fs');
+
+const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
+const patientModel = require('../model/patient');
+const appointmentsModel = require('../model/appointments');
 const id="606aa80e929a618584d2758b";
 
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = (name) => {
-    return jwt.sign({ name }, 'secret', {
+    return jwt.sign({ name }, process.env.SECRET, {
         expiresIn: maxAge
     });
 };
@@ -50,7 +56,7 @@ const doctorLogin = async (req, res) => {
     if (user) {
         const found = await bcrypt.compare(req.body.password, user.password);
         if (found) {
-        const token = createToken(user.name);
+        const token = createToken(user);
         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
 
         const data = {
@@ -62,6 +68,45 @@ const doctorLogin = async (req, res) => {
     // return res.render("doctor/login", { message: "Username or password is wrong" });
     res.status(404).send("Username or password is wrong");
   };
+
+const doctorLogout = (req, res) => {
+    res.clearCookie('jwt').send(200,"Logged out successfully");
+    res.render("/");
+}
+
+const changePasswordDoctor = async (req, res) => {
+    if ( req.body.oldPassword === "" || req.body.newPassword === "" || req.body.confirmationPassword === "") {
+      res.status(404).json({ message: "Fill the empty fields" });
+    }
+  
+    const token = req.cookies.jwt;
+    const decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
+    const user = await doctor.findOne({
+      username: decodedCookie.name,
+    });
+
+    if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
+      if (req.body.newPassword != req.body.confirmationPassword) {
+        return res.status(404).json({ message: "Passwords dont not match" });
+      }
+  
+      if (isStrongPassword(req.body.newPassword) === false) {
+        return res.status(404).json({ message: "Password is weak" });
+      }
+  
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+      await doctor.findOneAndUpdate(
+        { username: decodedCookie.name },
+        { password: hashedPassword }
+      );
+      return res.status(200).json({ message: "Password changed successfully" });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Password not changed successfully" });
+    }
+};
 
 async function goToHome(req,res){
     res.render("doctor/doctorHome",{name:req.body.name});
@@ -88,18 +133,45 @@ const schema = Joi.object({
 }
 const checkContract=async (req,res,next)=>{
    
-    if(req.query.accept=="accept"){
-        await doctor.findByIdAndUpdate(id, {acceptedContract:true})
-        res.render("doctor/doctorHome",{name:req.body.name})
-    }
-    else{
-    const result=await doctor.findById(id)
-    if(result.acceptedContract){
-        next();
-    }
-    else{
-        res.render("doctor/doctorContract")
-    }
+  if(req.query.accept=="accept"){
+      await doctor.findByIdAndUpdate(id, {acceptedContract:true})
+      res.render("doctor/doctorHome",{name:req.body.name})
+  }
+  else{
+  const result=await doctor.findById(id)
+  if(result.acceptedContract){
+      next();
+  }
+  else{
+      res.render("doctor/doctorContract")
+  }
 }
 }
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin}; 
+const uploadHealthRecord = async (req, res) => {
+  const patientId = req.params.id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+   return res.status(404).send('Patient not found.');
+  }
+
+  if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+  }
+  const base64Data = req.file.buffer.toString('base64');
+
+  patient.healthRecords.push({
+    data: base64Data,
+    contentType: req.file.mimetype,
+  });
+
+  await patient.save()
+.then(() => {
+  res.redirect(`/doctor/patients/${patientId}`);
+})
+.catch((err) => {
+  console.error(err);
+  return res.status(500).send('Error saving patient data.');
+});
+
+};
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord}; 

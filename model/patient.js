@@ -38,6 +38,17 @@ const familyMemberSchema = {
     },
 }
 
+const healthRecordSchema = {
+    data: {
+        type: Buffer,
+        required: true
+      },
+    contentType: {
+        type: String,
+        required: true
+    }
+}
+
 const patientSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -83,7 +94,8 @@ const patientSchema = new mongoose.Schema({
         type: String,
         default: "none",
     },
-    medicalHistory: [medicalHistorySchema]
+    healthRecords: [healthRecordSchema],
+    medicalHistory: [medicalHistorySchema],
 })
 
 // joi validation

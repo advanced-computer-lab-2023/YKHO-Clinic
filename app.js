@@ -8,7 +8,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -23,11 +23,13 @@ const {
   addHealthPackages,
   callUpdateHealthPackage,
   callDeleteHealthPackage,   
+  adminLogout,
+  changePasswordAdmin
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor,showMedicalHistory,addMedicalHistory } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory } = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -60,10 +62,12 @@ app.post("/doctor/updateInfo",checkContract,updateThis)
 app.get("/doctor/AppointmentsFilter",checkContract,DocFilterAppointments);
 app.get("/doctor/Appointments",checkContract,DocShowAppointments);
 app.get("/doctor/contract",checkContract); 
+app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRecords'),uploadHealthRecord);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
-app.get("/admin/home", adminLogin);
+app.post("/admin/home", adminLogin);
+app.put("/admin/changePassword", changePasswordAdmin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register", createAdmin);
@@ -81,7 +85,7 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments", PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-app.get("/patient/medicalHistory",showMedicalHistory);
+app.get("/patient/HealthRecords", viewHealthRecords);app.get("/patient/medicalHistory",showMedicalHistory);
 app.post("/patient/addMedicalHistory",upload.single("files"),addMedicalHistory);
 
 // register 
@@ -104,4 +108,4 @@ app.get("/patient/readFamilyMembers", readFamilyMembers);
 app.get('/patient/home', readDoctors );
 app.get("/patient/searchDoctors", searchDoctors);
 app.get("/patient/filterDoctors", filterDoctors);
-app.get("/patient/doctors/:id",selectDoctor)
+app.get("/patient/doctors/:id",selectDoctor);
