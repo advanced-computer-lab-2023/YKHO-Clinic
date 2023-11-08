@@ -86,4 +86,20 @@ const schema = Joi.object({
   }
 
 }
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis, doctorLogin}; 
+const checkContract=async (req,res,next)=>{
+   
+    if(req.query.accept=="accept"){
+        await doctor.findByIdAndUpdate(id, {acceptedContract:true})
+        res.render("doctor/doctorHome",{name:req.body.name})
+    }
+    else{
+    const result=await doctor.findById(id)
+    if(result.acceptedContract){
+        next();
+    }
+    else{
+        res.render("doctor/doctorContract")
+    }
+}
+}
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin}; 

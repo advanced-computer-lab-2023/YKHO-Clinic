@@ -44,6 +44,15 @@ const requestSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    id:{
+        type:Buffer
+    },
+    medicalLicense:{
+        type:Buffer
+    },
+    medicalDegree:{
+        type:Buffer
+    },
 });
 
 const Request = mongoose.model('Request', requestSchema);
