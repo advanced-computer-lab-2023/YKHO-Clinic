@@ -40,13 +40,8 @@ async function showMyPatients(req,res){
         
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
         
-    } 
-    if(req.query.Upcoming=="on"){
-        console.log(result);
-        result= result.filter((c)=>{
-            return c.date > new Date();
-        })
     }
+     
   
     for(i in result){
         for(j in result){
@@ -139,19 +134,36 @@ async function DocShowAppointments(req,res){
 async function PatientFilterAppointments(req,res){
     try{
         let result 
-        if(req.query.filter=="Status"){
+        if(req.query.filter=="Status" && req.query.searchvalue!=""){
             result =  await appointment.find({patientID:id,status:req.query.searchvalue}).populate("doctorID").select(["doctorID","date","status"]);
+        }
+        else if(req.query.filter=="Status"){
+            result =  await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status"]);
         }
         if(req.query.filter=="Date"){
             
             let date = new Date(req.query.searchvalue);
             result= await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status"]);
+            if(req.query.searchvalue!=""){
             result = result.filter((x) => {
                 if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
                     return true;
                 return false;
             })
+        }
+    }
     
+        
+        console.log(result);
+        if(req.query.filters=="upcoming"){ 
+            result= result.filter((c)=>{
+                return c.date > new Date();
+            })
+        }
+        else if(req.query.filters=="past"){
+            result= result.filter((c)=>{
+                return c.date < new Date();
+            })
         }
         let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
         
@@ -170,19 +182,34 @@ async function PatientFilterAppointments(req,res){
 async function DocFilterAppointments(req,res){
     try{
     let result 
-    if(req.query.filter=="Status"){
+    if(req.query.filter=="Status" && req.query.searchvalue!=""){
         result =  await appointment.find({doctorID:id,status:req.query.searchvalue}).populate("patientID").select(["patientID","date","status"]);
+    }
+    else if(req.query.filter=="Status"){
+        result =  await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
     }
     if(req.query.filter=="Date"){
         
         let date =new Date(req.query.searchvalue);
         result= await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
+        if(req.query.searchvalue!=""){
         result = result.filter((x) => {
             if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
                 return true;
             return false;
         })
+    }
 
+    }
+    if(req.query.filters=="upcoming"){ 
+        result= result.filter((c)=>{
+            return c.date > new Date();
+        })
+    }
+    else if(req.query.filters=="past"){
+        result= result.filter((c)=>{
+            return c.date < new Date();
+        })
     }
     let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
     

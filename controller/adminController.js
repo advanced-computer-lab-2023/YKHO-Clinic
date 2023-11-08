@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
+require('dotenv').config();
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');
 app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
 const {
@@ -11,23 +14,41 @@ const patientsTable = require("../model/patient.js");
 const { doctor: doctorsTable } = require("../model/doctor.js");
 const requestsTable = require("../model/request.js");
 
+// create json web token
+const maxAge = 3 * 24 * 60 * 60;
+const createToken = (name) => {
+    return jwt.sign({ name }, 'secret', {
+        expiresIn: maxAge
+    });
+};
+
 const goToAdminLogin = async (req, res) => {
   res.render("admin/login", {message: ""});//message deh 3ashan ay error yatl3 feh nafs el page bas ba3ml7a empty fel awl
 };
 
 const adminLogin = async (req, res) => {
-  if(req.body.username === "" || req.body.password === "")
-    res.render("admin/login",{message:"fill the empty fields"});
-  const user = await adminsTable.findOne({//bydwr 3ala ay had beh same user and pass
-    username: req.body.username,
-    password: req.body.password,
+  if (req.query.username === "" || req.query.password === "") {
+    res.render("admin/login", { message: "Fill the empty fields" });
+  }
+  console.log(req.query);
+  const user = await adminsTable.findOne({ // Change find to findOne to get a single user
+    username: req.query.username,
   });
-  if (user != null) {//if found a match
-    const data = {
-      username: user.username,//passing the username to the html so that i can say welcome "admin name"
-    };
-    return res.render("admin/home", data);
-  } else return res.render("admin/login",{message:"username or passowrd is wrong"});
+
+  if (user) {
+    const found = await bcrypt.compare(req.query.password, user.password);
+
+    if (found) {
+      const token = createToken(user.name);
+      res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
+
+      const data = {
+        username: user.username,
+      };
+      return res.render("admin/home", data);
+    }
+  }
+  return res.render("admin/login", { message: "Username or password is wrong" });
 };
 
 const createAdmin = async (req, res) => {
@@ -42,18 +63,47 @@ const createAdmin = async (req, res) => {
   if (userAvailable != null) {//if it exists 
     return res.render("admin/register", {message:"Username Unavailable"});
   }
-  const adminUser = new adminsTable({
-    username: req.body.username,//create the admin
-    password: req.body.password,
-  });
+
+  if(isStrongPassword(req.body.password) === false){
+    return res.render("admin/register", {message:"password is weak"});
+  }
+
   try {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const adminUser = new adminsTable({
+      username: req.body.username,//create the admin
+      password: hashedPassword,
+    });
     const result = await adminUser.save();//save into DB
+    const token = createToken(req.body.username);
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
+    
     console.log(result);
     res.render("admin/register",{message:"Admin created successfully"});
   } catch (ex) {
     res.render("admin/register",{message:ex.message});
   }
 };
+
+function isStrongPassword(password) {
+  if (password.length < 8) {
+    return false;
+  }
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+  if (!/\d/.test(password)) {
+    return false;
+  }
+  if (!/[*@#$%^&+=]/.test(password)) {
+    return false;
+  }
+  return true;
+}
 
 const adminRegister = async (req, res) => {
   res.render("admin/register", {message:""});

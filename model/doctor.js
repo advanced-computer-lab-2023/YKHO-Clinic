@@ -54,6 +54,20 @@ const doctorSchema = new mongoose.Schema({
         trim: true,
         enum: ['dermatology', 'pediatrics', 'orthopedics'],
     }
+    ,
+    acceptedContract:{
+        type: Boolean,
+        default: false,
+    },
+    id:{
+        type:Buffer
+    },
+    medicalLicense:{
+        type:Buffer
+    },
+    medicalDegree:{
+        type:Buffer
+    },
     });
 const doctor = mongoose.model('doctor', doctorSchema);
 
