@@ -27,26 +27,28 @@ const goToAdminLogin = async (req, res) => {
 };
 
 const adminLogin = async (req, res) => {
-  if(req.body.username === "" || req.body.password === "")
-    res.render("admin/login",{message:"fill the empty fields"});
-
-  const user = await adminsTable.findOne({//bydwr 3ala ay had beh same user and pass
-    username: req.body.username,
+  if (req.query.username === "" || req.query.password === "") {
+    res.render("admin/login", { message: "Fill the empty fields" });
+  }
+  console.log(req.query);
+  const user = await adminsTable.findOne({ // Change find to findOne to get a single user
+    username: req.query.username,
   });
-  let found = false;
-  if(user != null)
-    found = await bcrypt.compare(req.body.password, user.password);
-  console.log(found);
-  if (found) {//if found a match
 
-    const token = createToken(user.name);
-    res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge})
+  if (user) {
+    const found = await bcrypt.compare(req.query.password, user.password);
 
-    const data = {
-      username: user.username,//passing the username to the html so that i can say welcome "admin name"
-    };
-    return res.render("admin/home", data);
-  } else return res.render("admin/login",{message:"username or passowrd is wrong"});
+    if (found) {
+      const token = createToken(user.name);
+      res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
+
+      const data = {
+        username: user.username,
+      };
+      return res.render("admin/home", data);
+    }
+  }
+  return res.render("admin/login", { message: "Username or password is wrong" });
 };
 
 const createAdmin = async (req, res) => {

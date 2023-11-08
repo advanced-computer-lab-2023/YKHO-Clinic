@@ -1,7 +1,17 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const id="606aa80e929a618584d2758b";
+
+const maxAge = 3 * 24 * 60 * 60;
+const createToken = (name) => {
+    return jwt.sign({ name }, 'secret', {
+        expiresIn: maxAge
+    });
+};
+
 async function createDoctor(req,res){
     const result=validateDoctor(req.body);
     if(result.error){
@@ -26,6 +36,33 @@ async function createDoctor(req,res){
     } 
     
 }
+
+const doctorLogin = async (req, res) => {
+    if (req.body.username === "" || req.body.password === "") {
+    //   res.render("doctor/login", { message: "Fill the empty fields" });
+    res.status(404).error("Fill the empty fields");
+    }
+    
+    const user = await doctor.findOne({ // Change find to findOne to get a single user
+      username: req.body.username
+    });
+  
+    if (user) {
+        const found = await bcrypt.compare(req.body.password, user.password);
+        if (found) {
+        const token = createToken(user.name);
+        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
+
+        const data = {
+            name: user.username,
+        };
+        return res.render("doctor/doctorHome", data);
+        }
+    }
+    // return res.render("doctor/login", { message: "Username or password is wrong" });
+    res.status(404).send("Username or password is wrong");
+  };
+
 async function goToHome(req,res){
     res.render("doctor/doctorHome",{name:req.body.name});
 }
@@ -65,4 +102,4 @@ const checkContract=async (req,res,next)=>{
     }
 }
 }
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract}; 
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin}; 
