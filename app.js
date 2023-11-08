@@ -5,7 +5,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis, doctorLogin } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -47,6 +47,7 @@ app.get("/",home);
 //Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
+app.get("/doctor/login", doctorLogin);
 app.get("/doctor/home",goToHome)
 app.get("/doctor/patients",showMyPatients);
 app.get("/doctor/patients/:id",showMyPatientInfo)
