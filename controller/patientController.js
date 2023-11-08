@@ -290,7 +290,7 @@ const ViewPrescriptions = async (req,res) => {
     let result = await prescription.find({patientID:test._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
 
-    for(prescriptions in result){
+    for(prescriptions in result){  
         prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
         </tr>`
 
@@ -343,10 +343,10 @@ async function patientHome(req,res){
 }
 async function showMedicalHistory(req,res){
     let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
-    let medicalHistoryrows ='<tr><th>name</th> <th>document</th></tr>';
+    let medicalHistoryrows ='<tr><th>name</th> <th>document</th> <th>delete</th></tr>';
     for(medicalHistory in result[0].medicalHistory){
-        medicalHistoryrows=medicalHistoryrows + `<tr><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
-        <td><a href="${result[0].medicalHistory[medicalHistory].document}" target="_blank">View</a></td></tr>`
+        medicalHistoryrows=medicalHistoryrows + `<tr id=${medicalHistory}><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
+        <td><a href="/files/${medicalHistory}" target="_blank">View</a></td><td><form method="post" action="/patient/deleteMedicalHistory/${medicalHistory}" ><button onClick="patientId()" >delete</button></form></td></tr>`
     }
     res.render("patient/medicalHistory",{medicalHistory:medicalHistoryrows});
 }
@@ -354,7 +354,8 @@ async function addMedicalHistory(req,res){
     const  name  = req.body.docName;
     console.log(name)
     const document  = req.file.buffer;
-    const newRecord = { name, document };
+    const mimeType = req.file.mimetype;
+    const newRecord = { name, document,mimeType };
     const patientId = test._id;
     try {
         const updatedPatient = await patientModel.findByIdAndUpdate(
@@ -367,6 +368,16 @@ async function addMedicalHistory(req,res){
         res.status(500).json({ message: error.message });
     }
 }
+async function deleteMedicalHistory(req,res){
+    const patientId = test._id;
+    const recordId = req.params.id;
+    
+        const result = await patientModel.find({_id:patientId});
+        result[0].medicalHistory.splice(recordId,1);
+        const updatedPatient = await patientModel.findByIdAndUpdate(patientId,{ $set: { medicalHistory: result[0].medicalHistory } },{ new: true});
+        res.redirect("/patient/medicalHistory");
+  
+}
 const viewHealthRecords = async (req, res) => 
 {
         let healthRecords = [];
@@ -378,5 +389,14 @@ const viewHealthRecords = async (req, res) =>
             }
             res.render("patient/HealthRecords",{healthRecords: healthRecords})
 }
+async function showFile(req, res) {
+    const fileId = req.params.fileId;
+    let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
+    let file = result[0].medicalHistory[fileId].document;
+    let type = result[0].medicalHistory[fileId].mimeType;
+    res.contentType(type);
+    res.send(file);
+  }
+
 module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
-    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory};
+    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory};

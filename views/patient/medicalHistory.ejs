@@ -6,9 +6,9 @@
         <h1>Upload new files</h1>
         <form method="post" action="/patient/addMedicalHistory" enctype="multipart/form-data">
             <label for="docName">Document Name:</label>
-            <input type="text" name="docName">
+            <input type="text" name="docName" required>
             <label for="files">File:</label>
-            <input type="file" id="file" name="files" required>
+            <input type="file" id="file" name="files" accept=".jpg,.jpeg,.pdf,.png" required onchange="validateFile(this)">
             <br>
             <input type="submit" >
         </form>
@@ -17,4 +17,14 @@
         <%- medicalHistory %>
         </table>
     </body>
+    <script>
+        function validateFile(fileInput) {
+                const allowedExtensions = /(\.jpg|\.jpeg|\.pdf|\.png)$/i;
+                if (!allowedExtensions.exec(fileInput.value)) {
+                    alert('Invalid file type. Only JPG, JPEG, PDF and PNG files are allowed.');
+                    fileInput.value = '';
+                    return false;
+                }
+            }
+    </script>
 </html>
