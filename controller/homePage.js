@@ -4,7 +4,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 
 const home = async (req, res) => {
-  res.render("home");
+  res.render("home", { message:"" });
 };
 
 module.exports = { home };
