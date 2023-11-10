@@ -80,32 +80,6 @@ const createPatient = async (req, res) => {
     res.status(201).render('patient/home', {results,one:true});
 }
 
-const patientLogin = async (req, res) => {
-    if (req.body.username === "" || req.body.password === "") {
-    //   res.render("doctor/login", { message: "Fill the empty fields" });
-    res.status(404).error("Fill the empty fields");
-    }
-    
-    const user = await patientModel.findOne({ // Change find to findOne to get a single user
-      username: req.body.username
-    });
-  
-    if (user) {
-        const found = await bcrypt.compare(req.body.password, user.password);
-        if (found) {
-        const token = createToken(user);
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-
-        const data = {
-            name: user.username,
-        };
-        return res.render("patient/home", data);
-        }
-    }
-    // return res.render("doctor/login", { message: "Username or password is wrong" });
-    res.status(404).send("Username or password is wrong");
-  };
-
 const patientLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
     res.render("/");
@@ -436,4 +410,4 @@ async function showFile(req, res) {
   }
 
 module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
-    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
+    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};

@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
@@ -50,7 +52,7 @@ const Login = async (req, res) => {
   if (admin) {
     found = await bcrypt.compare(req.body.password, admin.password);
     if (found) {
-      const token = createToken(admin);
+      const token = createToken({ admin, type: "admin" });
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       const data = {
@@ -61,26 +63,42 @@ const Login = async (req, res) => {
     }
   } else if (patient) {
     found = await bcrypt.compare(req.body.password, patient.password);
-    
+
     if (found) {
-      const token = createToken({ _id: patient._id, username: patient.username });
+      const token = createToken({
+        _id: patient._id,
+        username: patient.username,
+        type: "patient",
+      });
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
-      
+
       let discount = 1;
       if (patient.healthPackage && patient.healthPackage != "none") {
-          let healthPackage = await healthPackageTable.findOne({ packageName: patient.healthPackage });
-          discount = healthPackage.doctorDiscount;
-          discount = (100 - discount) / 100;
+        let healthPackage = await healthPackageTable.findOne({
+          packageName: patient.healthPackage,
+        });
+        discount = healthPackage.doctorDiscount;
+        discount = (100 - discount) / 100;
       }
       doctor = await doctorTable.find().sort({ name: 1 });
-      let results = doctor.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: rate * 1.1 * discount }));
+      let results = doctor.map(({ _id, name, speciality, rate }) => ({
+        _id,
+        name,
+        speciality,
+        sessionPrice: rate * 1.1 * discount,
+      }));
 
-      return res.render("patient/home", {one:true, results});
+      return res.render("patient/home", { one: true, results });
     }
   } else if (doctor) {
     found = await bcrypt.compare(req.body.password, doctor.password);
     if (found) {
-      const token = createToken({ _id: doctor._id, username: doctor.username });
+      const token = createToken({
+        _id: doctor._id,
+        username: doctor.username,
+        rate: doctor.rate,
+        type: "doctor",
+      });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
 
       const data = {
@@ -95,34 +113,6 @@ const Login = async (req, res) => {
     return res.render("home", {
       message: "Username or password is wrong",
     });
-};
-
-const adminLogin = async (req, res) => {
-  if (req.query.username === "" || req.query.password === "") {
-    res.render("admin/login", { message: "Fill the empty fields" });
-  }
-  const user = await adminsTable.findOne({
-    username: req.query.username,
-  });
-
-  if (user) {
-    const found = await bcrypt.compare(req.query.password, user.password);
-
-    if (found) {
-      const token = createToken(user.username);
-      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
-
-      const data = {
-        username: user.username,
-      };
-      //return res.status(200).json({ message: "Logged in successfully" });
-      return res.render("admin/home", data);
-    }
-  }
-  // return res.render("admin/login", {
-  //   message: "Username or password is wrong",
-  // });
-  return res.status(404).json({ message: "Logged in not successfully" });
 };
 
 const changePasswordAdmin = async (req, res) => {
@@ -161,13 +151,78 @@ const changePasswordAdmin = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res) => {
+  let OTP = generateOTP();
+  let email = "";
+  console.log(req.user)
+
+  if (req.user.type == "patient") {
+    let patient = await patientsTable.findOne({
+      username: req.user.username,
+    });
+    patient.OTP = OTP;
+    await patient.save();
+    email = patient.email;
+  } else if (req.user.type == "doctor") {
+    let doctor = await doctorsTable.findOne({
+      username: req.user.username,
+    });
+    doctor.OTP = OTP;
+    await doctor.save();
+    email = doctor.email;
+  } else {
+    let admin = await adminsTable.findOne({
+      username: req.user.username,
+    });
+    admin.OTP = OTP;
+    await admin.save();
+    email = admin.email;
+  }
+
+  sendOTPByEmail(email, OTP);
+};
+
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+function sendOTPByEmail(email, OTP) {
+  const transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525, // or the port provided in your Mailtrap SMTP settings
+    auth: {
+      user: "784ac0344ac54c",
+      pass: "b21deaba2fab04",
+    },
+  });
+
+  // Extend the connection timeout to 30 seconds (in milliseconds)
+
+  const mailOptions = {
+    from: "ayebnmetnaka@inbox.mailtrap.io",
+    to: email,
+    subject: "Password Reset OTP",
+    text: `Your OTP for password reset is: ${OTP}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+
+  connectionTimeout: 30000;
+}
+
 const adminLogout = (req, res) => {
   res.clearCookie("jwt").send(200, "Logged out successfully");
   res.render("/");
 };
 
 const createAdmin = async (req, res) => {
-  if (req.body.password === "" || req.body.username === "") {
+  if (req.body.password === "" || req.body.username === "" || req.body.email === "") {
     //look for any missing fields
     return res.render("admin/register", { message: "Insert missing fields" });
   }
@@ -175,6 +230,15 @@ const createAdmin = async (req, res) => {
   const userAvailable = await adminsTable.findOne({
     username: req.body.username, //check if the username exists
   });
+
+  const emailAvailable = await adminsTable.findOne({
+    email: req.body.email, //check if the email exists
+  });
+
+  if (emailAvailable != null) {
+    //if it exists
+    return res.render("admin/register", { message: "Email Unavailable" });
+  }   
 
   if (userAvailable != null) {
     //if it exists
@@ -191,6 +255,7 @@ const createAdmin = async (req, res) => {
     const adminUser = new adminsTable({
       username: req.body.username, //create the admin
       password: hashedPassword,
+      email: req.body.email,
     });
     const result = await adminUser.save(); //save into DB
     console.log(result);
@@ -233,7 +298,6 @@ const goToHealthPackages = async (req, res) => {
   });
 };
 
-
 const addHealthPackages = async (req, res) => {
   const healthPackage = new healthPackageTable({
     packageName: req.body.packageName,
@@ -244,19 +308,7 @@ const addHealthPackages = async (req, res) => {
   });
   const healthPackageExists = await healthPackageTable.findOne({
     packageName: req.body.packageName, //check if the package exists already
-  }); //el code el commented dah kan mafrod joi validation ma3rftsh ashghlo wa i gave up lol, i use mongo validation now wa khalas
-
-  // const validated = validateHealthPackage(healthPackage);
-  // console.log(validated);
-  // if (validated.error) {
-  //   const healthPackages = await healthPackageTable.find();
-  //   res.render("admin/healthPackages", {
-  //     healthPackages,
-  //     createErrorMessage: validated.error.message,
-  //     updateErrorMessage: "",
-  //     deleteErrorMessage: "",
-  //   });
-  // } else {
+  });
   try {
     if (healthPackageExists == null) {
       //law mal2ash package bel esm el maktob by add it
@@ -452,7 +504,6 @@ const rejectRequest = async (req, res) => {
 
 module.exports = {
   goToAdminLogin,
-  adminLogin,
   adminRegister,
   createAdmin,
   deleteUser,
@@ -468,4 +519,5 @@ module.exports = {
   Login,
   acceptRequest,
   rejectRequest,
+  forgetPassword,
 };
