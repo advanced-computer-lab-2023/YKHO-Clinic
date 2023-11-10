@@ -66,7 +66,7 @@ app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRe
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
-app.post("/admin/home", adminLogin);
+app.get("/admin/home", requireAuth, adminLogin);
 app.put("/admin/changePassword", changePasswordAdmin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
 app.get("/admin/register", adminRegister);

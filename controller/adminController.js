@@ -45,8 +45,8 @@ const adminLogin = async (req, res) => {
       const data = {
         username: user.username,
       };
-      return res.status(200).json({ message: "Logged in successfully" });
-      //return res.render("admin/home", data);
+      //return res.status(200).json({ message: "Logged in successfully" });
+      return res.render("admin/home", data);
     }
   }
   // return res.render("admin/login", {
@@ -65,8 +65,7 @@ const changePasswordAdmin = async (req, res) => {
   const user = await adminsTable.findOne({
     username: decodedCookie.name,
   });
-  console.log(user);
-  console.log(req.body.oldPassword);
+
   if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
     if (req.body.newPassword != req.body.confirmationPassword) {
       return res.status(404).json({ message: "Passwords dont not match" });
