@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Doctor Time Slots</title>
+    </head>
+    <body>
+        <h1>Doctor Time Slots</h1>
+        <h2>
+            Current time slots
+        </h2>
+        <table>
+            <%- timeSlot %>
+        </table>
+        <h2>
+            Insert new time slot
+        </h2>
+        <form method="POST" action="/doctor/addTimeSlot">
+        <label for="day">Day of Week:</label>
+        <select name="day" id="dayOfWeek">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+        </select>
+        <br>
+        <label for="form">Start Time:</label>
+        <input type="time" name="from" id="startTime" min="0" max="24">
+        <br>
+        <label for="to">End Time:</label>
+        <input type="time" name="to" id="endTime" min="0" max="24">
+        <br>
+        <input type="submit" value="Submit">
+        </form>
+    </body>
+</html>

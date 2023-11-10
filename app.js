@@ -8,7 +8,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -32,7 +32,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory, LinkFamilyMemeber ,LinkF} = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -58,44 +58,46 @@ app.post("/login", Login)
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
 //app.get("/doctor/login", doctorLogin);
-app.get("/doctor/home",checkContract,goToHome)
-app.get("/doctor/patients",checkContract,showMyPatients);
-app.get("/doctor/patients/:id",checkContract,showMyPatientInfo)
-app.get("/doctor/upcomingAppointments",checkContract,showUpcomingAppointments)
-app.get("/doctor/updateInfo",checkContract,updateMyInfo)
-app.post("/doctor/updateInfo",checkContract,updateThis)
-app.get("/doctor/AppointmentsFilter",checkContract,DocFilterAppointments);
-app.get("/doctor/Appointments",checkContract,DocShowAppointments);
-app.get("/doctor/contract",checkContract); 
-app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRecords'),uploadHealthRecord);
+app.get("/doctor/home",requireAuth,checkContract,goToHome)
+app.get("/doctor/patients",requireAuth,checkContract,showMyPatients);
+app.get("/doctor/patients/:id",requireAuth,checkContract,showMyPatientInfo)
+app.get("/doctor/upcomingAppointments",requireAuth,checkContract,showUpcomingAppointments)
+app.get("/doctor/updateInfo",requireAuth,checkContract,updateMyInfo)
+app.post("/doctor/updateInfo",requireAuth,checkContract,updateThis)
+app.get("/doctor/AppointmentsFilter",requireAuth,checkContract,DocFilterAppointments);
+app.get("/doctor/Appointments",requireAuth,checkContract,DocShowAppointments);
+app.get("/doctor/contract",requireAuth,checkContract); 
+app.post("/doctor/patients/:id/upload-pdf",requireAuth,checkContract,upload.single('healthRecords'),uploadHealthRecord);
+app.get("/doctor/timeSlots",requireAuth,checkContract,showTimeSlots);
+app.post("/doctor/addTimeSlot",requireAuth,checkContract,createTimeSlot);
 
 //Admin
 //app.get("/admin/login", goToAdminLogin);
 app.get("/admin/home", requireAuth, adminLogin);
-app.put("/admin/changePassword", changePasswordAdmin);
-app.get("/admin/uploadedInfo", goToUploadedInfo);
+app.put("/admin/changePassword", requireAuth,changePasswordAdmin);
+app.get("/admin/uploadedInfo", requireAuth,goToUploadedInfo);
 app.get("/admin/acceptRequest", acceptRequest);
 app.get("/admin/rejectRequest", rejectRequest);
-app.get("/admin/register", adminRegister);
-app.post("/admin/register", createAdmin);
-app.get("/admin/deleteUser", goToDeleteUser);
-app.post("/admin/deleteUser", deleteUser);
-app.get("/admin/HealthPackages", goToHealthPackages);
-app.post("/admin/healthPackages", addHealthPackages);
-app.post("/admin/healthPackages/updated", callUpdateHealthPackage);
-app.post("/admin/healthPackages/deleted", callDeleteHealthPackage);
+app.get("/admin/register",requireAuth, adminRegister);
+app.post("/admin/register", requireAuth,createAdmin);
+app.get("/admin/deleteUser", requireAuth,goToDeleteUser);
+app.post("/admin/deleteUser", requireAuth,deleteUser);
+app.get("/admin/HealthPackages", requireAuth,goToHealthPackages);
+app.post("/admin/healthPackages",requireAuth, addHealthPackages);
+app.post("/admin/healthPackages/updated",requireAuth, callUpdateHealthPackage);
+app.post("/admin/healthPackages/deleted", requireAuth,callDeleteHealthPackage);
 
 //ahmed Patient
-app.get("/patient/Prescriptions", ViewPrescriptions);
-app.get("/Patient/PrescriptionsFiltered", FilterPrescriptions);
-app.get("/patient/Prescriptions/:id",selectPrescription)
-app.get("/Patient/Appointments", PatientShowAppointments);
-app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
-app.get("/patient/patientHome",patientHome);
-app.get("/patient/HealthRecords", viewHealthRecords);app.get("/patient/medicalHistory",showMedicalHistory);
-app.post("/patient/addMedicalHistory",upload.single("files"),addMedicalHistory);
-app.get("/files/:fileId",showFile)
-app.post("/patient/deleteMedicalHistory/:id",deleteMedicalHistory);
+app.get("/patient/Prescriptions",requireAuth, ViewPrescriptions);
+app.get("/Patient/PrescriptionsFiltered",requireAuth, FilterPrescriptions);
+app.get("/patient/Prescriptions/:id",requireAuth,selectPrescription)
+app.get("/Patient/Appointments", requireAuth,PatientShowAppointments);
+app.get("/Patient/AppointmentsFilter",requireAuth, PatientFilterAppointments);
+app.get("/patient/patientHome",requireAuth,patientHome);
+app.get("/patient/HealthRecords",requireAuth, viewHealthRecords);app.get("/patient/medicalHistory",showMedicalHistory);
+app.post("/patient/addMedicalHistory", requireAuth,upload.single("files"),addMedicalHistory);
+app.get("/files/:fileId",requireAuth,showFile)
+app.post("/patient/deleteMedicalHistory/:id",requireAuth,deleteMedicalHistory);
 // register  
 app.get('/guest/patient', function (req,res)  { 
   res.render('patient/register')
@@ -110,10 +112,11 @@ app.get('/patient/createFamilyMember', function (req,res)  {
 });
 
 app.post("/patient/createPatient", createPatient);
-app.post("/patient/createFamilyMember", createFamilyMember);
-app.get("/patient/readFamilyMembers", readFamilyMembers);
-//app.get("/patient/readDoctors", readDoctors);
-app.get('/patient/home', readDoctors );
-app.get("/patient/searchDoctors", searchDoctors);
-app.get("/patient/filterDoctors", filterDoctors);
-app.get("/patient/doctors/:id",selectDoctor);
+app.post("/patient/createFamilyMember",requireAuth, createFamilyMember);
+app.get("/patient/readFamilyMembers",requireAuth, readFamilyMembers);
+app.get("/patient/LinkFamily", LinkF);
+app.get("/patient/Linked",LinkFamilyMemeber);
+app.get('/patient/home',requireAuth, readDoctors );
+app.get("/patient/searchDoctors",requireAuth, searchDoctors);
+app.get("/patient/filterDoctors",requireAuth, filterDoctors);
+app.get("/patient/doctors/:id",requireAuth, selectDoctor);
