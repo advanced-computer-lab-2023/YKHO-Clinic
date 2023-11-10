@@ -50,32 +50,6 @@ async function createDoctor(req,res){
     
 }
 
-const doctorLogin = async (req, res) => {
-    if (req.body.username === "" || req.body.password === "") {
-    //   res.render("doctor/login", { message: "Fill the empty fields" });
-    res.status(404).error("Fill the empty fields");
-    }
-    
-    const user = await doctor.findOne({ // Change find to findOne to get a single user
-      username: req.body.username
-    });
-  
-    if (user) {
-        const found = await bcrypt.compare(req.body.password, user.password);
-        if (found) {
-        const token = createToken(user);
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-
-        const data = {
-            name: user.username,
-        };
-        return res.render("doctor/doctorHome", data);
-        }
-    }
-    // return res.render("doctor/login", { message: "Username or password is wrong" });
-    res.status(404).send("Username or password is wrong");
-  };
-
 const doctorLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
     res.render("/");
@@ -223,4 +197,4 @@ async function showTimeSlots(req,res){
   res.render("doctor/doctorTimeSlots",{timeSlot:html})
 }
  
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots};
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots};
