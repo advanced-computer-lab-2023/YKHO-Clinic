@@ -24,13 +24,14 @@ const {
   callUpdateHealthPackage,
   callDeleteHealthPackage,   
   adminLogout,
-  changePasswordAdmin
+  changePasswordAdmin,
+  Login
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords } = require('./controller/patientController.js')
-const port = 3000;
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory } = require('./controller/patientController.js')
+const port = 4000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.use(cookieParser());
@@ -41,14 +42,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use("/public", express.static('public'))
-mongoose
-  .connect(MONGO_URI)
+mongoose  
+  .connect("mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority"
+  )
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
-const id = "1"; 
+const id = "1";
 
 app.get("/",home);
+app.post("/login", Login)
 //Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
@@ -85,9 +88,11 @@ app.get("/patient/Prescriptions/:id",selectPrescription)
 app.get("/Patient/Appointments", PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", PatientFilterAppointments);
 app.get("/patient/patientHome",patientHome);
-app.get("/patient/HealthRecords", viewHealthRecords);
-
-// register 
+app.get("/patient/HealthRecords", viewHealthRecords);app.get("/patient/medicalHistory",showMedicalHistory);
+app.post("/patient/addMedicalHistory",upload.single("files"),addMedicalHistory);
+app.get("/files/:fileId",showFile)
+app.post("/patient/deleteMedicalHistory/:id",deleteMedicalHistory);
+// register  
 app.get('/guest/patient', function (req,res)  { 
   res.render('patient/register')
 });
