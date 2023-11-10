@@ -11,6 +11,7 @@ const schema = Joi.object({
   name: Joi.string().required(),
   DOB: Joi.date().iso().required(),
   email: Joi.string().email().required(),
+  speciality: Joi.string().required(),
   mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
   rate: Joi.number().positive().required(),
   affiliation: Joi.string().required(),
@@ -24,6 +25,7 @@ const createRequest = async (req, res) => {
     name,
     DOB,
     email,
+    speciality,
     mobile,
     rate,
     affiliation,
@@ -36,19 +38,23 @@ const createRequest = async (req, res) => {
     const id = req.files[0].buffer;
     const medicalLicense = req.files[1].buffer;
     const medicalDegree = req.files[2].buffer;
+
     if(isStrongPassword(req.body.password) === false){
         console.log("WEAK PASSWORD");
         return res.render("doctor/register", {message:"password is weak"});
     }
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     console.log(hashedPassword)
+    console.log(speciality)
     let request = new requestModel({
       username,
       password: hashedPassword,
       name,
       DOB,
       email,
+      speciality,
       mobile,
       rate,
       affiliation,

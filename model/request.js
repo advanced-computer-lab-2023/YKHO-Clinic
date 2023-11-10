@@ -25,6 +25,13 @@ const requestSchema = new mongoose.Schema({
         required: true,
 
     },
+    speciality:{
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+        enum: ['dermatology', 'pediatrics', 'orthopedics'],
+    },
     mobile: {
         type: String,
         required: true,

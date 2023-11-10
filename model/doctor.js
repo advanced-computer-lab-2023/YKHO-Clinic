@@ -21,7 +21,6 @@ const doctorSchema = new mongoose.Schema({
         type:String,
         required:true,
         minlength:5,
-        maxlength:20,
     },
     email:
     {
@@ -36,6 +35,10 @@ const doctorSchema = new mongoose.Schema({
     {
         type:Number,
         required:true,
+    },
+    mobile: {
+        type: String,  
+        required: true,
     },
     affiliation:
     {
@@ -53,8 +56,7 @@ const doctorSchema = new mongoose.Schema({
         lowercase: true,
         trim: true,
         enum: ['dermatology', 'pediatrics', 'orthopedics'],
-    }
-    ,
+    },
     acceptedContract:{
         type: Boolean,
         default: false,

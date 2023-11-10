@@ -28,10 +28,17 @@ async function createDoctor(req,res){
             username:req.body.username,
             password:req.body.password,
             email:req.body.email,
+            speciality:req.body.speciality,
             DOB:req.body.DOB,
+            mobile:req.body.mobile,
             rate:req.body.rate,
             affiliation:req.body.affiliation,
-            education:req.body.education})
+            education:req.body.education,
+            acceptedContract: true,
+            id:req.body.id,
+            medicalLicense:req.body.medicalLicense,
+            medicalDegree:req.body.medicalDegree
+          })
             try{
                 newDoctor = await newDoctor.save();
                 res.status(200).send(newDoctor)

@@ -25,7 +25,9 @@ const {
   callDeleteHealthPackage,   
   adminLogout,
   changePasswordAdmin,
-  Login
+  Login,
+  acceptRequest,
+  rejectRequest,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
@@ -55,7 +57,7 @@ app.post("/login", Login)
 //Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
-app.get("/doctor/login", doctorLogin);
+//app.get("/doctor/login", doctorLogin);
 app.get("/doctor/home",requireAuth,checkContract,goToHome)
 app.get("/doctor/patients",requireAuth,checkContract,showMyPatients);
 app.get("/doctor/patients/:id",requireAuth,checkContract,showMyPatientInfo)
@@ -70,10 +72,12 @@ app.get("/doctor/timeSlots",requireAuth,checkContract,showTimeSlots);
 app.post("/doctor/addTimeSlot",requireAuth,checkContract,createTimeSlot);
 
 //Admin
-app.get("/admin/login", goToAdminLogin);
+//app.get("/admin/login", goToAdminLogin);
 app.get("/admin/home", requireAuth, adminLogin);
 app.put("/admin/changePassword", requireAuth,changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth,goToUploadedInfo);
+app.get("/admin/acceptRequest", acceptRequest);
+app.get("/admin/rejectRequest", rejectRequest);
 app.get("/admin/register",requireAuth, adminRegister);
 app.post("/admin/register", requireAuth,createAdmin);
 app.get("/admin/deleteUser", requireAuth,goToDeleteUser);
