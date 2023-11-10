@@ -104,6 +104,7 @@ const patientSchema = new mongoose.Schema({
     },
     healthRecords: [healthRecordSchema],
     medicalHistory: [medicalHistorySchema],
+    OTP: { type:Number },
 })
 
 

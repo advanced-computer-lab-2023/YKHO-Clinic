@@ -29,10 +29,17 @@ async function createDoctor(req,res){
             username:req.body.username,
             password:req.body.password,
             email:req.body.email,
+            speciality:req.body.speciality,
             DOB:req.body.DOB,
+            mobile:req.body.mobile,
             rate:req.body.rate,
             affiliation:req.body.affiliation,
-            education:req.body.education})
+            education:req.body.education,
+            acceptedContract: true,
+            id:req.body.id,
+            medicalLicense:req.body.medicalLicense,
+            medicalDegree:req.body.medicalDegree
+          })
             try{
                 newDoctor = await newDoctor.save();
                 res.status(200).send(newDoctor)
@@ -44,32 +51,6 @@ async function createDoctor(req,res){
     
 }
 
-const doctorLogin = async (req, res) => {
-    if (req.body.username === "" || req.body.password === "") {
-    //   res.render("doctor/login", { message: "Fill the empty fields" });
-    res.status(404).error("Fill the empty fields");
-    }
-    
-    const user = await doctor.findOne({ // Change find to findOne to get a single user
-      username: req.body.username
-    });
-  
-    if (user) {
-        const found = await bcrypt.compare(req.body.password, user.password);
-        if (found) {
-        const token = createToken(user);
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-
-        const data = {
-            name: user.username,
-        };
-        return res.render("doctor/doctorHome", data);
-        }
-    }
-    // return res.render("doctor/login", { message: "Username or password is wrong" });
-    res.status(404).send("Username or password is wrong");
-  };
-
 const doctorLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
     res.render("/");
@@ -80,10 +61,8 @@ const changePasswordDoctor = async (req, res) => {
       res.status(404).json({ message: "Fill the empty fields" });
     }
     
-    const token = req.cookies.jwt;
-    const decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
     const user = await doctor.findOne({
-      username: decodedCookie.name,
+      username: req.user.username,
     });
 
     if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
@@ -277,4 +256,4 @@ duration= duration/60;
   res.redirect("/doctor/appointments")
 }
 
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};
