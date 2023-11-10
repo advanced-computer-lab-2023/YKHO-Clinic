@@ -84,7 +84,7 @@ const changePasswordDoctor = async (req, res) => {
     if ( req.body.oldPassword === "" || req.body.newPassword === "" || req.body.confirmationPassword === "") {
       res.status(404).json({ message: "Fill the empty fields" });
     }
-  
+    
     const token = req.cookies.jwt;
     const decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
     const user = await doctor.findOne({

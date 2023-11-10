@@ -7,6 +7,8 @@ const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
+const {doctor:doctorTable}= require("../model/doctor.js");
+const patientModel = require("../model/patient");
 const {
   healthPackage: healthPackageTable,
   validateHealthPackage,
@@ -27,6 +29,71 @@ const goToAdminLogin = async (req, res) => {
   res.render("admin/login", { message: "" }); //message deh 3ashan ay error yatl3 feh nafs el page bas ba3ml7a empty fel awl
 };
 
+const Login = async (req, res) => {
+  if (req.body.username === "" || req.body.password === "") {
+    return res.render("home", { message: "Fill the empty fields" });
+  }
+  let type = "";
+  let doctor;
+  let patient;
+  let admin = await adminsTable.findOne({
+    username: req.body.username,
+  });
+
+  if (!admin) {
+    doctor = await doctorTable.findOne({
+      username: req.body.username,
+    });
+    if (!doctor) {
+      let patient = await patientModel.findOne({
+        username: req.body.username,
+      });
+      if (patient) type = "patient";
+    } else {
+      type = "doctor";
+    }
+  } else {
+    const found = await bcrypt.compare(req.body.password, admin.password);
+
+    if (found) {
+      const token = createToken(admin.username);
+      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
+
+      const data = {
+        username: admin.username,
+      };
+      //return res.status(200).json({ message: "Logged in successfully" });
+      return res.render("admin/home", data);
+    }
+  }
+  if (doctor) {
+    const found = await bcrypt.compare(req.body.password, doctor.password);
+    if (found) {
+      const token = createToken(doctor);
+      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+
+      const data = {
+        name: user.username,
+      };
+      return res.render("doctor/doctorHome", data);
+    }
+  } else if (patient) {
+    const found = await bcrypt.compare(req.body.password, patient.password);
+    if (found) {
+      const token = createToken(patient);
+      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+
+      const data = {
+        name: user.username,
+      };
+      return res.render("patient/home", data);
+    }
+  } else {
+    return res.render("home", {
+      message: "Username or password is wrong",
+    });
+  }
+};
 const adminLogin = async (req, res) => {
   if (req.query.username === "" || req.query.password === "") {
     res.render("admin/login", { message: "Fill the empty fields" });
@@ -45,8 +112,8 @@ const adminLogin = async (req, res) => {
       const data = {
         username: user.username,
       };
-      return res.status(200).json({ message: "Logged in successfully" });
-      //return res.render("admin/home", data);
+      //return res.status(200).json({ message: "Logged in successfully" });
+      return res.render("admin/home", data);
     }
   }
   // return res.render("admin/login", {
@@ -56,7 +123,11 @@ const adminLogin = async (req, res) => {
 };
 
 const changePasswordAdmin = async (req, res) => {
-  if ( req.body.oldPassword === "" || req.body.newPassword === "" || req.body.confirmationPassword === "") {
+  if (
+    req.body.oldPassword === "" ||
+    req.body.newPassword === "" ||
+    req.body.confirmationPassword === ""
+  ) {
     res.status(404).json({ message: "Fill the empty fields" });
   }
 
@@ -65,8 +136,7 @@ const changePasswordAdmin = async (req, res) => {
   const user = await adminsTable.findOne({
     username: decodedCookie.name,
   });
-  console.log(user);
-  console.log(req.body.oldPassword);
+
   if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
     if (req.body.newPassword != req.body.confirmationPassword) {
       return res.status(404).json({ message: "Passwords dont not match" });
@@ -356,4 +426,5 @@ module.exports = {
   isStrongPassword,
   adminLogout,
   changePasswordAdmin,
+  Login,
 };
