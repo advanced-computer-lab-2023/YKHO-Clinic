@@ -30,14 +30,8 @@ const test = {
     "healthPackage": "kikamima"
 };
 */
-let decodedCookie
-let patient;
-let test; 
-
-
-
-
-
+let decodedCookie;
+let patient; 
 let doctors;
 
 const createPatient = async (req, res) => {
@@ -175,7 +169,9 @@ const readFamilyMembers = async (req, res) => {
 }
 
 // helper
-async function helper(doctors) {
+async function helper(doctors, req) {
+    patient = req.user;
+    console.log(req.user)
     let discount = 1;
     if (patient.healthPackage && patient.healthPackage != "none") {
         let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
@@ -188,7 +184,7 @@ async function helper(doctors) {
 
 const readDoctors = async (req, res) => {
     doctors = await doctorModel.find().sort({ name: 1 });
-    let results = await helper(doctors);
+    let results = await helper(doctors,req);
     res.status(201).render('patient/home', { results, one: true });
 }
 
@@ -287,8 +283,8 @@ async function selectDoctor(req,res){
 }
 
 const ViewPrescriptions = async (req,res) => {
-    test=req.user;
-    let result = await prescription.find({patientID:test._id}).select(["prescriptionName","doctorName"]);
+    patient=req.user;
+    let result = await prescription.find({patientID:patient._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
 
     for(prescriptions in result){  
@@ -299,9 +295,9 @@ const ViewPrescriptions = async (req,res) => {
     res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
 }
 async function selectPrescription(req,res){
-    test=req.user;
+    patient=req.user;
     try{
-        const result = await prescription.find({patientID:test._id,_id:req.params.id})
+        const result = await prescription.find({patientID:patient._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
          <th>Doctor Name</th> <th>Filled</th> </tr>';
         var date=result[0].date;
@@ -322,16 +318,16 @@ async function selectPrescription(req,res){
 
 const FilterPrescriptions = async (req,res) => {
     let result
-    test=req.user;
+    patient=req.user;
     if(req.query.filter=="DoctorName") {
-        result= await prescription.find({doctorName:req.query.searchvalue,patientID:test._id});
+        result= await prescription.find({doctorName:req.query.searchvalue,patientID:patient._id});
     }
     if(req.query.filter=="Date") {
         let temp=new Date(req.query.searchvalue+"T22:00:00.000+00:00");
-        result= await prescription.find({date:temp,patientID:test._id});
+        result= await prescription.find({date:temp,patientID:patient._id});
     }
     if(req.query.filter=="Filled") {
-        result= await prescription.find({filled:req.query.searchvalue,patientID:test._id});
+        result= await prescription.find({filled:req.query.searchvalue,patientID:patient._id});
     }
     let prescriptionrows ='<tr><th>Name</th></tr>';
     for(prescriptions in result){
@@ -345,8 +341,8 @@ async function patientHome(req,res){
     res.render("patient/patientHome");
 }
 async function showMedicalHistory(req,res){
-    test=req.user;
-    let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
+    patient=req.user;
+    let result = await patientModel.find({_id:patient._id}).select(["medicalHistory"]);
     let medicalHistoryrows ='<tr><th>name</th> <th>document</th> <th>delete</th></tr>';
     for(medicalHistory in result[0].medicalHistory){
         medicalHistoryrows=medicalHistoryrows + `<tr id=${medicalHistory}><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
@@ -360,8 +356,8 @@ async function addMedicalHistory(req,res){
     const document  = req.file.buffer;
     const mimeType = req.file.mimetype;
     const newRecord = { name, document,mimeType };
-    test=req.user;
-    const patientId = test._id;
+    patient=req.user;
+    const patientId = patient._id;
     try {
         const updatedPatient = await patientModel.findByIdAndUpdate(
             patientId,
@@ -374,8 +370,8 @@ async function addMedicalHistory(req,res){
     }
 }
 async function deleteMedicalHistory(req,res){
-    test=req.user;
-    const patientId = test._id;
+    patient=req.user;
+    const patientId = patient._id;
     const recordId = req.params.id;
     
         const result = await patientModel.find({_id:patientId});
@@ -386,10 +382,10 @@ async function deleteMedicalHistory(req,res){
 }
 const viewHealthRecords = async (req, res) => 
 {
-    test=req.user;
+    patient=req.user;
         let healthRecords = [];
-            if (test.healthRecords && test.healthRecords.length > 0) {
-                healthRecords = test.healthRecords.map((record) => ({
+            if (patient.healthRecords && patient.healthRecords.length > 0) {
+                healthRecords = patient.healthRecords.map((record) => ({
                     data: record.data,
                     contentType: record.contentType,
                 }));
@@ -403,7 +399,7 @@ const LinkF= async(req,res)=>{
 const LinkFamilyMemeber = async(req,res) =>{
     let familymemberk;
     let i=0;
-    let results  =await patientModel.find({_id:test._id}).select(["familyMembers"]);
+    let results  =await patientModel.find({_id:patient._id}).select(["familyMembers"]);
     for(familymem in results[0].familyMembers){
         if(results[0].familyMembers[familymem].name==req.query.filter){
             familymemberk=results[0].familyMembers[familymem];
@@ -425,15 +421,15 @@ const LinkFamilyMemeber = async(req,res) =>{
         }
     }
 
-    const updatedPatient = await patientModel.findByIdAndUpdate(test._id,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
     
     res.redirect("/patient/home");
     
 }
 async function showFile(req, res) {
     const fileId = req.params.fileId;
-    test=req.user;
-    let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
+    patient=req.user;
+    let result = await patientModel.find({_id:patient._id}).select(["medicalHistory"]);
     let file = result[0].medicalHistory[fileId].document;
     let type = result[0].medicalHistory[fileId].mimeType;
     res.contentType(type);

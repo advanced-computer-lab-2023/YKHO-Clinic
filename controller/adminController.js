@@ -7,7 +7,7 @@ const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
-const {doctor:doctorTable}= require("../model/doctor.js");
+const { doctor: doctorTable } = require("../model/doctor.js");
 const patientModel = require("../model/patient");
 const {
   healthPackage: healthPackageTable,
@@ -35,6 +35,7 @@ const Login = async (req, res) => {
   let type = "";
   let doctor;
   let patient;
+  let found;
   let admin = await adminsTable.findOne({
     username: req.body.username,
   });
@@ -44,16 +45,16 @@ const Login = async (req, res) => {
       username: req.body.username,
     });
     if (!doctor) {
-      let patient = await patientModel.findOne({
+      patient = await patientModel.findOne({
         username: req.body.username,
       });
+      console.log(patient.password);
       if (patient) type = "patient";
     } else {
       type = "doctor";
     }
   } else {
-    const found = await bcrypt.compare(req.body.password, admin.password);
-
+    found = await bcrypt.compare(req.body.password, admin.password);
     if (found) {
       const token = createToken(admin.username);
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
@@ -66,7 +67,7 @@ const Login = async (req, res) => {
     }
   }
   if (doctor) {
-    const found = await bcrypt.compare(req.body.password, doctor.password);
+    found = await bcrypt.compare(req.body.password, doctor.password);
     if (found) {
       const token = createToken(doctor);
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
@@ -77,21 +78,30 @@ const Login = async (req, res) => {
       return res.render("doctor/doctorHome", data);
     }
   } else if (patient) {
-    const found = await bcrypt.compare(req.body.password, patient.password);
+    found = await bcrypt.compare(req.body.password, patient.password);
     if (found) {
+      console.log("passsssssssssssssssss");
       const token = createToken(patient);
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
 
-      const data = {
-        name: patient.username,
-      };
-      return res.render("patient/home", data);
+      let discount = 1;
+      if (patient.healthPackage && patient.healthPackage != "none") {
+          let healthPackage = await healthPackageTable.findOne({ packageName: patient.healthPackage });
+          discount = healthPackage.doctorDiscount;
+          discount = (100 - discount) / 100;
+      }
+      doctor = await doctorTable.find().sort({ name: 1 });
+      let results = doctor.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: rate * 1.1 * discount }));
+
+      return res.render("home", {
+        message: "Username or password is wrong",
+      });
     }
-  } else {
+  }
+  if (!found)
     return res.render("home", {
       message: "Username or password is wrong",
     });
-  }
 };
 const adminLogin = async (req, res) => {
   if (req.query.username === "" || req.query.password === "") {
@@ -411,7 +421,9 @@ const goToUploadedInfo = async (req, res) => {
 };
 
 const acceptRequest = async (req, res) => {
-  const doctorToBeAccepted = await requestsTable.findOne({email: req.query.email});
+  const doctorToBeAccepted = await requestsTable.findOne({
+    email: req.query.email,
+  });
 
   let doctor = new doctorTable({
     name: doctorToBeAccepted.name,
@@ -430,20 +442,20 @@ const acceptRequest = async (req, res) => {
     acceptedContract: true,
   });
   doctor = await doctor.save();
-  await requestsTable.deleteOne({email: req.query.email});
+  await requestsTable.deleteOne({ email: req.query.email });
   const requests = await requestsTable.find();
   res.render("admin/uploadedInfo", {
     requests,
   });
-}
+};
 
 const rejectRequest = async (req, res) => {
-  await requestsTable.deleteOne({email: req.query.email});
+  await requestsTable.deleteOne({ email: req.query.email });
   const requests = await requestsTable.find();
   res.render("admin/uploadedInfo", {
     requests,
   });
-}
+};
 
 module.exports = {
   goToAdminLogin,
