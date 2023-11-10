@@ -25,13 +25,15 @@ const {
   callDeleteHealthPackage,   
   adminLogout,
   changePasswordAdmin,
-  Login
+  Login,
+  acceptRequest,
+  rejectRequest,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
 const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory } = require('./controller/patientController.js')
-const port = 4000;
+const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.use(cookieParser());
@@ -55,7 +57,7 @@ app.post("/login", Login)
 //Doctor
 app.post("/addDoctor",createDoctor);
 app.post("/addAppointment",createAppointment)
-app.get("/doctor/login", doctorLogin);
+//app.get("/doctor/login", doctorLogin);
 app.get("/doctor/home",checkContract,goToHome)
 app.get("/doctor/patients",checkContract,showMyPatients);
 app.get("/doctor/patients/:id",checkContract,showMyPatientInfo)
@@ -68,10 +70,12 @@ app.get("/doctor/contract",checkContract);
 app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRecords'),uploadHealthRecord);
 
 //Admin
-app.get("/admin/login", goToAdminLogin);
+//app.get("/admin/login", goToAdminLogin);
 app.get("/admin/home", requireAuth, adminLogin);
 app.put("/admin/changePassword", changePasswordAdmin);
 app.get("/admin/uploadedInfo", goToUploadedInfo);
+app.get("/admin/acceptRequest", acceptRequest);
+app.get("/admin/rejectRequest", rejectRequest);
 app.get("/admin/register", adminRegister);
 app.post("/admin/register", createAdmin);
 app.get("/admin/deleteUser", goToDeleteUser);

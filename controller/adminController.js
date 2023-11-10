@@ -14,7 +14,6 @@ const {
   validateHealthPackage,
 } = require("../model/healthPackage.js");
 const patientsTable = require("../model/patient.js");
-const { doctor: doctorsTable } = require("../model/doctor.js");
 const requestsTable = require("../model/request.js");
 
 // create json web token
@@ -411,6 +410,41 @@ const goToUploadedInfo = async (req, res) => {
   });
 };
 
+const acceptRequest = async (req, res) => {
+  const doctorToBeAccepted = await requestsTable.findOne({email: req.query.email});
+
+  let doctor = new doctorTable({
+    name: doctorToBeAccepted.name,
+    username: doctorToBeAccepted.username,
+    password: doctorToBeAccepted.password,
+    email: doctorToBeAccepted.email,
+    speciality: doctorToBeAccepted.speciality,
+    DOB: doctorToBeAccepted.DOB,
+    mobile: doctorToBeAccepted.mobile,
+    rate: doctorToBeAccepted.rate,
+    affiliation: doctorToBeAccepted.affiliation,
+    education: doctorToBeAccepted.education,
+    medicalDegree: doctorToBeAccepted.medicalDegree,
+    medicalLicense: doctorToBeAccepted.medicalLicense,
+    id: doctorToBeAccepted.id,
+    acceptedContract: true,
+  });
+  doctor = await doctor.save();
+  await requestsTable.deleteOne({email: req.query.email});
+  const requests = await requestsTable.find();
+  res.render("admin/uploadedInfo", {
+    requests,
+  });
+}
+
+const rejectRequest = async (req, res) => {
+  await requestsTable.deleteOne({email: req.query.email});
+  const requests = await requestsTable.find();
+  res.render("admin/uploadedInfo", {
+    requests,
+  });
+}
+
 module.exports = {
   goToAdminLogin,
   adminLogin,
@@ -427,4 +461,6 @@ module.exports = {
   adminLogout,
   changePasswordAdmin,
   Login,
+  acceptRequest,
+  rejectRequest,
 };
