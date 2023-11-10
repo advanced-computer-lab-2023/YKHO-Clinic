@@ -11,7 +11,14 @@ const medicalHistorySchema={
         type:String,
     }
 }
+
 const familyMemberSchema = {
+    patientID:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:false,
+        ref:'Patient',
+        unique: true,
+    },
     name: {
         type: String,
         required: true,
@@ -34,12 +41,11 @@ const familyMemberSchema = {
     relation: {
         type: String,
         required: true,
-        enum: ['husband', 'wife', 'son', 'daugther'],
+        enum: ['husband', 'wife', 'son','daughter'],
         lowercase: true,
         trim: true,
     },
 }
-
 const healthRecordSchema = {
     data: {
         type: Buffer,
@@ -99,6 +105,7 @@ const patientSchema = new mongoose.Schema({
     healthRecords: [healthRecordSchema],
     medicalHistory: [medicalHistorySchema],
 })
+
 
 // joi validation
 

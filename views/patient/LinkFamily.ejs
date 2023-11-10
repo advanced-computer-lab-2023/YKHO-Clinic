@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <title>clinic</title>
+    </head>
+    <body>
+        <h1>Link Family Member</h1>
+        <form method="GET" action="/patient/Linked">
+            <label for="filter">Link </label>
+            <select id="filter" name="filter">
+                <%results.forEach((result)=> {%>
+                <option value=<%=result.name%>><%=result.name%></option>
+                <%})%>
+            </select>
+            <label for="filter1">Using </label>
+            <select id="filter1" name="filter1">
+                <option value=Email>Email</option>
+                <option value=MobileNumber>Mobile Number</option>
+            </select>
+            <label for="searchvalue">With value</label>
+            <input id="searchvalue" input="text" name="searchvalue">
+            <button type="submit" style="display: block">Link</button>
+        </form>
+       
+    
+    <%if (results.length> 0) {%>
+        <table>
+            <tr>
+                <th>name</th>
+                <th>national ID</th>
+                <th>age</th>
+                <th>gender</th>
+                <th>relation</th>
+                <th>linked</th>
+            </tr>
+            <%results.forEach((result)=> {%>
+                <tr>
+                    
+                        <td><%=result.name%>
+                    </td>
+                    <td>
+                        <%=result.nationalID%>
+                    </td>
+                    <td>
+                        <%=result.age%>
+                    </td>
+                    <td>
+                        <%=result.gender%>
+                    </td>
+                    <td>
+                        <%=result.relation%>
+                    </td>
+                    <td>
+                        <%=result.patientID!=null%>
+                    </td>
+                </tr>
+                <%})%>
+        </table>
+        <%}%>
+    </body>
+</html>
