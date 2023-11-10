@@ -30,13 +30,17 @@ const test = {
     "healthPackage": "kikamima"
 };
 */
-
+let decodedCookie
 let patient;
 let test;
-(async function () {
-    patient = await patientModel.findOne();
-    test = patient;
-})();
+async function cookie(){
+    const token = req.cookies.jwt;
+    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
+    test = decodedCookie;
+}
+
+
+
 
 let doctors;
 

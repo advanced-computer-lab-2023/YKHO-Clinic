@@ -4,13 +4,19 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
-
+const timeSlot = require('../model/timeSlots');
 const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const patientModel = require('../model/patient');
 const appointmentsModel = require('../model/appointments');
-const id="606aa80e929a618584d2758b";
-
+let decodedCookie;
+let id;
+async function cookie(){
+    const token = req.cookies.jwt;
+    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
+    id=decodedCookie._id;
+}
+ 
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = (name) => {
     return jwt.sign({ name }, process.env.SECRET, {
@@ -140,7 +146,7 @@ const checkContract=async (req,res,next)=>{
   else{
   const result=await doctor.findById(id)
   if(result.acceptedContract){
-      next();
+      next(); 
   }
   else{
       res.render("doctor/doctorContract")
@@ -174,4 +180,42 @@ const uploadHealthRecord = async (req, res) => {
 });
 
 };
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord}; 
+async function createTimeSlot(req, res) {
+  const day = req.body.day;
+
+  const { from, to } = req.body;
+
+  // Check if the new timeslot clashes with any previously added timeslots
+  const existingTimeSlots = await timeSlot.find({
+      $or: [
+          { from: { $lte: from }, to: { $gte: from } },
+          { from: { $lte: to }, to: { $gte: to } },
+          { from: { $gte: from }, to: { $lte: to } },
+      ],
+  });
+
+  if (existingTimeSlots.length > 0) {
+      return res.status(400).json({ message: "Timeslot clashes with existing timeslots" });
+  }
+
+  // Create the new timeslot
+  const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
+  await newTimeSlot.save();
+
+  res.status(201).json({ message: "Timeslot created successfully" });
+}
+async function showTimeSlots(req,res){
+  const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const html="";
+  for(day in days){
+    
+    html+=`<tr><th>${days[day]}</th>`;
+    const results=await timeSlot.find({day:days[day],doctorID:id})
+    for(result in results){
+      html+=`<td id=${result._id}>${result.from},${result.to}</td>`
+    }
+    html+="</tr>"
+  }
+  res.render("doctor/doctorTimeSlots",{timeSlot:html})
+}
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots};

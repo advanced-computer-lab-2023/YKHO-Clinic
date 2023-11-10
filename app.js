@@ -8,7 +8,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -63,6 +63,7 @@ app.get("/doctor/AppointmentsFilter",checkContract,DocFilterAppointments);
 app.get("/doctor/Appointments",checkContract,DocShowAppointments);
 app.get("/doctor/contract",checkContract); 
 app.post("/doctor/patients/:id/upload-pdf",checkContract,upload.single('healthRecords'),uploadHealthRecord);
+app.get("/doctor/timeSlots",checkContract,showTimeSlots);
 
 //Admin
 app.get("/admin/login", goToAdminLogin);
