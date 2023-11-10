@@ -17,7 +17,7 @@ const patientsTable = require("../model/patient.js");
 const requestsTable = require("../model/request.js");
 
 // create json web token
-const maxAge = 3 * 24 * 60 * 60;
+const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (user) => {
   return jwt.sign({ user }, process.env.SECRET, {
     expiresIn: maxAge,
@@ -32,31 +32,25 @@ const Login = async (req, res) => {
   if (req.body.username === "" || req.body.password === "") {
     return res.render("home", { message: "Fill the empty fields" });
   }
-  let type = "";
-  let doctor;
-  let patient;
-  let found;
+
+  let found = false;
+
   let admin = await adminsTable.findOne({
     username: req.body.username,
   });
 
-  if (!admin) {
-    doctor = await doctorTable.findOne({
-      username: req.body.username,
-    });
-    if (!doctor) {
-      patient = await patientModel.findOne({
-        username: req.body.username,
-      });
-      console.log(patient.password);
-      if (patient) type = "patient";
-    } else {
-      type = "doctor";
-    }
-  } else {
+  let patient = await patientModel.findOne({
+    username: req.body.username,
+  });
+
+  let doctor = await doctorTable.findOne({
+    username: req.body.username,
+  });
+
+  if (admin) {
     found = await bcrypt.compare(req.body.password, admin.password);
     if (found) {
-      const token = createToken(admin.username);
+      const token = createToken(admin);
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       const data = {
@@ -65,25 +59,13 @@ const Login = async (req, res) => {
       //return res.status(200).json({ message: "Logged in successfully" });
       return res.render("admin/home", data);
     }
-  }
-  if (doctor) {
-    found = await bcrypt.compare(req.body.password, doctor.password);
-    if (found) {
-      const token = createToken(doctor);
-      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-
-      const data = {
-        name: doctor.username,
-      };
-      return res.render("doctor/doctorHome", data);
-    }
   } else if (patient) {
     found = await bcrypt.compare(req.body.password, patient.password);
+    
     if (found) {
-      console.log("passsssssssssssssssss");
-      const token = createToken(patient);
-      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-
+      const token = createToken({ _id: patient._id, username: patient.username });
+      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
+      
       let discount = 1;
       if (patient.healthPackage && patient.healthPackage != "none") {
           let healthPackage = await healthPackageTable.findOne({ packageName: patient.healthPackage });
@@ -93,16 +75,28 @@ const Login = async (req, res) => {
       doctor = await doctorTable.find().sort({ name: 1 });
       let results = doctor.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: rate * 1.1 * discount }));
 
-      return res.render("home", {
-        message: "Username or password is wrong",
-      });
+      return res.render("patient/home", {one:true, results});
+    }
+  } else if (doctor) {
+    found = await bcrypt.compare(req.body.password, doctor.password);
+    if (found) {
+      const token = createToken({ _id: doctor._id, username: doctor.username });
+      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+
+      const data = {
+        name: doctor.username,
+      };
+      console.log(res);
+      return res.render("doctor/doctorHome", data);
     }
   }
+
   if (!found)
     return res.render("home", {
       message: "Username or password is wrong",
     });
 };
+
 const adminLogin = async (req, res) => {
   if (req.query.username === "" || req.query.password === "") {
     res.render("admin/login", { message: "Fill the empty fields" });
@@ -140,10 +134,8 @@ const changePasswordAdmin = async (req, res) => {
     res.status(404).json({ message: "Fill the empty fields" });
   }
 
-  const token = req.cookies.jwt;
-  const decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
   const user = await adminsTable.findOne({
-    username: decodedCookie.name,
+    username: req.user.username,
   });
 
   if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {

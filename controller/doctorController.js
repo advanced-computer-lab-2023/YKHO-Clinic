@@ -86,10 +86,8 @@ const changePasswordDoctor = async (req, res) => {
       res.status(404).json({ message: "Fill the empty fields" });
     }
     
-    const token = req.cookies.jwt;
-    const decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
     const user = await doctor.findOne({
-      username: decodedCookie.name,
+      username: req.user.username,
     });
 
     if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
