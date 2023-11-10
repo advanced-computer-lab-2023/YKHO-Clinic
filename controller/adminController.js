@@ -233,6 +233,7 @@ const goToHealthPackages = async (req, res) => {
   });
 };
 
+
 const addHealthPackages = async (req, res) => {
   const healthPackage = new healthPackageTable({
     packageName: req.body.packageName,
