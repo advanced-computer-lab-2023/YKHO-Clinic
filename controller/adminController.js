@@ -46,7 +46,7 @@ const Login = async (req, res) => {
     });
     if (!doctor) {
       let patient = await patientModel.findOne({
-        username: req.body.username,
+        username: req.body.username, 
       });
       if (patient) type = "patient";
     } else {
