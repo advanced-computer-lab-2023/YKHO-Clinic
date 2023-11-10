@@ -29,7 +29,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory } = require('./controller/patientController.js')
+const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory, LinkFamilyMemeber ,LinkF} = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -104,7 +104,8 @@ app.get('/patient/createFamilyMember', function (req,res)  {
 app.post("/patient/createPatient", createPatient);
 app.post("/patient/createFamilyMember", createFamilyMember);
 app.get("/patient/readFamilyMembers", readFamilyMembers);
-//app.get("/patient/readDoctors", readDoctors);
+app.get("/patient/LinkFamily", LinkF);
+app.get("/patient/Linked",LinkFamilyMemeber);
 app.get('/patient/home', readDoctors );
 app.get("/patient/searchDoctors", searchDoctors);
 app.get("/patient/filterDoctors", filterDoctors);

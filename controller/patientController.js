@@ -378,5 +378,39 @@ const viewHealthRecords = async (req, res) =>
             }
             res.render("patient/HealthRecords",{healthRecords: healthRecords})
 }
+const LinkF= async(req,res)=>{
+    let results = patient.familyMembers;
+    res.render("patient/LinkFamily",{results});
+}
+const LinkFamilyMemeber = async(req,res) =>{
+    let familymemberk;
+    let i=0;
+    let results  =await patientModel.find({_id:test._id}).select(["familyMembers"]);
+    for(familymem in results[0].familyMembers){
+        if(results[0].familyMembers[familymem].name==req.query.filter){
+            familymemberk=results[0].familyMembers[familymem];
+            i=familymem;
+        }
+    }
+    let relate;
+    if(req.query.filter1=="Email"){
+        relate = await patientModel.find({email:req.query.searchvalue})
+    }
+    if(req.query.filter1=="MobileNumber"){
+        relate = await patientModel.find({mobile:req.query.searchvalue})
+    }
+    results[0].familyMembers[i].patientID=relate[0]._id;
+    for(familymem in results[0].familyMembers){
+        if(relate[0]._id==results[0].familyMembers[familymem].patientID){
+            res.status(500).json("This user is already linked to another family member");
+            return;
+        }
+    }
+
+    const updatedPatient = await patientModel.findByIdAndUpdate(test._id,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
+    
+    res.redirect("/patient/home");
+    
+}
 module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
-    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory};
+    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber};
