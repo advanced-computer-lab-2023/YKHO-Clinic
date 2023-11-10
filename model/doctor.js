@@ -75,6 +75,7 @@ const doctorSchema = new mongoose.Schema({
         type:Number,
         required:true,
     },
+    OTP: { type:Number },
     });
 const doctor = mongoose.model('doctor', doctorSchema);
 

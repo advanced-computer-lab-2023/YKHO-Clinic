@@ -8,10 +8,11 @@ const {timeSlot} = require('../model/timeSlots');
 const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const patientModel = require('../model/patient');
-const appointmentsModel = require('../model/appointments');
+const {appointment} = require('../model/appointments');
+const axios = require('axios');
 let id;
-
-const maxAge = 3 * 24 * 60 * 60;
+let html;
+const maxAge = 3 * 24 * 60 * 60  ;
 const createToken = (name) => {
     return jwt.sign({ name }, process.env.SECRET, {
         expiresIn: maxAge
@@ -49,32 +50,6 @@ async function createDoctor(req,res){
     } 
     
 }
-
-const doctorLogin = async (req, res) => {
-    if (req.body.username === "" || req.body.password === "") {
-    //   res.render("doctor/login", { message: "Fill the empty fields" });
-    res.status(404).error("Fill the empty fields");
-    }
-    
-    const user = await doctor.findOne({ // Change find to findOne to get a single user
-      username: req.body.username
-    });
-  
-    if (user) {
-        const found = await bcrypt.compare(req.body.password, user.password);
-        if (found) {
-        const token = createToken(user);
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-
-        const data = {
-            name: user.username,
-        };
-        return res.render("doctor/doctorHome", data);
-        }
-    }
-    // return res.render("doctor/login", { message: "Username or password is wrong" });
-    res.status(404).send("Username or password is wrong");
-  };
 
 const doctorLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
@@ -198,29 +173,87 @@ async function createTimeSlot(req, res) {
   });
 
   if (existingTimeSlots.length > 0) {
-      return res.status(400).json({ message: "Timeslot clashes with existing timeslots" });
+    return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"Timeslot clashes with an existing timeslot"})
+  }
+  if(from>to){
+   return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"end time is less than starting time"})
   }
 
   // Create the new timeslot
   const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
   await newTimeSlot.save();
 
-  res.status(201).json({ message: "Timeslot created successfully" });
+  res.redirect("/doctor/timeSlots");
 }
-async function showTimeSlots(req,res){
+async function deleteTimeSlot(req, res) {
+  const id = req.params.id;
+  const result = await timeSlot.findByIdAndDelete(id);
+  res.redirect("/doctor/timeSlots");
+}
+async function showTimeSlots(req,res){ 
    id=req.user._id;
   const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  let html="";
+  html="";
   for(day in days){
     
-    html+=`<tr><th>${days[day]}</th>`;
+    html+=`<tr><th >${days[day]}</th>`;
     const results=await timeSlot.find({day:days[day],doctorID:id})
     for(result in results){
-      html+=`<td id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
+      html+=`<td  cursor:pointer" onClick="handleDelete(this)" id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
     }
     html+="</tr>"
   }
-  res.render("doctor/doctorTimeSlots",{timeSlot:html})
+  res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
 }
- 
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots};
+async function showFollowUp(req, res) {
+  const doctorID = req.user._id;
+  const id = req.params.id;
+  if (req.query.date) {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const date = new Date(req.query.date);
+    const day = days[date.getDay()];
+    const result = await timeSlot.find({ doctorID: doctorID, day: day });
+    let html=""
+    for( resu in result){
+      html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+    }
+    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: html ,date:req.query.date});
+  } else {
+    const result = await timeSlot.find({ doctorID: id });
+    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: "",date:"" });
+  }
+}
+async function createFollowUp(req,res){
+  doctorID=req.user._id;
+  const id=req.params.id;
+  const date=new Date(req.query.date);
+  const time=req.query.time;
+  const startTime=time.split(",")[0];
+  const endTime=time.split(",")[1];
+  const startH = parseInt(startTime.split(":")[0]);
+  const startM = parseInt(startTime.split(":")[1]);
+  const endH = parseInt(endTime.split(":")[0]);
+  const endM = parseInt(endTime.split(":")[1]);
+
+let duration = (endH - startH) * 60 + (endM - startM);
+
+duration= duration/60;
+  let price= duration*req.user.rate;
+  // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
+  const startHour=startTime.split(":")[0];
+  const startMinute=startTime.split(":")[1];
+  date.setHours(startHour);
+  date.setMinutes(startMinute);
+
+  // Check if there is an existing appointment at the specified time
+  const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
+  if (existingAppointment) {
+    return res.status(400).send("There is already an appointment at the specified time.");
+  }
+
+  const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
+  await newAppointment.save();
+  res.redirect("/doctor/appointments")
+}
+
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};

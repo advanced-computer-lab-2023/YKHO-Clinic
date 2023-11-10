@@ -28,6 +28,14 @@ const appointmentSchema = new mongoose.Schema({
         lowercase: true,
         trim: true,
     },
+    duration:{
+        type:Number,
+        required:true,
+    },
+    price:{
+        type:Number,
+        required:true,
+    },
     paid:
     {
         type: boolean,

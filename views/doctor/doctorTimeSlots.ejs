@@ -1,7 +1,23 @@
 <html>
     <head>
         <title>Doctor Time Slots</title>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     </head>
+    <style>
+        th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+            
+        }
+        td{
+            cursor:pointer;
+        }
+        td:hover{
+            background-color: red;
+            transition: all 0.5s ease-in-out;
+        }
+    </style>
     <body>
         <h1>Doctor Time Slots</h1>
         <h2>
@@ -26,12 +42,23 @@
         </select>
         <br>
         <label for="form">Start Time:</label>
-        <input type="time" name="from" id="startTime" min="0" max="24">
+        <input type="time" name="from" id="startTime" min="0" max="24" required>
         <br>
         <label for="to">End Time:</label>
-        <input type="time" name="to" id="endTime" min="0" max="24">
+        <input type="time" name="to" id="endTime" min="0" max="24" required>
         <br>
         <input type="submit" value="Submit">
         </form>
+       
+            <p>
+                <%= message %>
+            </p>
+           
     </body>
+    <script>
+        function handleDelete(element){
+            window.location.href=(`http://localhost:3000/doctor/deleteTimeSlot/${element.id}`)
+        }
+       
+    </script>
 </html>
