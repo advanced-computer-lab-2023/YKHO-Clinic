@@ -6,14 +6,12 @@
     <title>Document</title>
 </head>
 <body>
-    <form method="get" action="/admin/login">
-        <button>Admin</button>
+    <form method="post" action="/login">
+        <input name="username" type="text" placeholder="username">
+        <input name="password" type="password" placeholder="password">
+        <button>Login</button>
+        <p><%= message %></p>
     </form>
-    <form method="get" action="/doctor/home">
-        <button>Doctor</button>
-    </form>
-    <form method="get" action="/patient/home">
-        <button>Patient</button>
     </form>
     <form method="get" action="/guest/doctor">
         <button>register doctor</button>

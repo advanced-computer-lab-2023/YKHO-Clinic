@@ -7,7 +7,9 @@ const medicalHistorySchema={
     document:{
         type:buffer,
     },
-    
+    mimeType:{
+        type:String,
+    }
 }
 
 const familyMemberSchema = {

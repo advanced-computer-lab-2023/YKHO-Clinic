@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const {appointment,validateAppointments} = require('../model/appointments.js');
-const id="606aa80e929a618584d2758b";
+let decodedCookie
+let id;
+async function cookie(){
+    const token = req.cookies.jwt;
+    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
+    id=decodedCookie._id;
+}  
+
 async function createAppointment(req,res){
     const result=validateAppointments(req.body);
     if(result.error){
