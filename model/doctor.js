@@ -70,6 +70,11 @@ const doctorSchema = new mongoose.Schema({
     medicalDegree:{
         type:Buffer
     },
+    Wallet:
+    {
+        type:Number,
+        required:true,
+    },
     });
 const doctor = mongoose.model('doctor', doctorSchema);
 

@@ -4,6 +4,7 @@ const multer= require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const ejs = require('ejs');
+const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY)
 require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
@@ -32,7 +33,7 @@ const {
 // request controller
 const { createRequest } = require('./controller/requestController');
 // patient controller
-const { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory, LinkFamilyMemeber ,LinkF} = require('./controller/patientController.js')
+const { createPatient, createFamilyMember,PayByCredit,PayByWallet, readFamilyMembers, readDoctors, searchDoctors, filterDoctors, ViewPrescriptions, FilterPrescriptions,patientHome,selectPrescription, selectDoctor, viewHealthRecords,showMedicalHistory,addMedicalHistory,showFile,deleteMedicalHistory, LinkFamilyMemeber ,LinkF} = require('./controller/patientController.js')
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
@@ -114,9 +115,11 @@ app.get('/patient/createFamilyMember', function (req,res)  {
 app.post("/patient/createPatient", createPatient);
 app.post("/patient/createFamilyMember",requireAuth, createFamilyMember);
 app.get("/patient/readFamilyMembers",requireAuth, readFamilyMembers);
-app.get("/patient/LinkFamily", LinkF);
-app.get("/patient/Linked",LinkFamilyMemeber);
+app.get("/patient/LinkFamily", requireAuth, LinkF);
+app.get("/patient/Linked",requireAuth,LinkFamilyMemeber);
 app.get('/patient/home',requireAuth, readDoctors );
 app.get("/patient/searchDoctors",requireAuth, searchDoctors);
 app.get("/patient/filterDoctors",requireAuth, filterDoctors);
 app.get("/patient/doctors/:id",requireAuth, selectDoctor);
+app.get("/patient/paymentcredit",requireAuth,PayByCredit);
+app.get("/patient/paymentWallet",requireAuth,PayByWallet);

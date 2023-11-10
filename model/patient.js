@@ -104,6 +104,18 @@ const patientSchema = new mongoose.Schema({
     },
     healthRecords: [healthRecordSchema],
     medicalHistory: [medicalHistorySchema],
+    agentID:
+    {
+        type:mongoose.Schema.Types.ObjectId,
+        required:false,
+        ref:'Patient',
+    },
+    Wallet:
+    {
+        type:Number,
+        required:true,
+    },
+
 })
 
 

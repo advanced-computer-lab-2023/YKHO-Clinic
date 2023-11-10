@@ -7,9 +7,10 @@
         <form method="GET" action="/patient/Linked">
             <label for="filter">Link </label>
             <select id="filter" name="filter">
+                <%if (results.length> 0) {%>
                 <%results.forEach((result)=> {%>
                 <option value=<%=result.name%>><%=result.name%></option>
-                <%})%>
+                <%})%> <%}%>
             </select>
             <label for="filter1">Using </label>
             <select id="filter1" name="filter1">

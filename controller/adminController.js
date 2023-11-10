@@ -86,7 +86,7 @@ const Login = async (req, res) => {
       const data = {
         name: doctor.username,
       };
-      console.log(res);
+      
       return res.render("doctor/doctorHome", data);
     }
   }

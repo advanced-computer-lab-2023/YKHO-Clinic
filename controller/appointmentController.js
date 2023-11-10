@@ -111,6 +111,7 @@ async function showUpcomingAppointments(req,res){
     res.render("doctor/doctorAppointments",{patientRows:patientRows})
 } 
    async function PatientShowAppointments(req,res){
+    id=req.user._id;
     const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status"]);
     let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
     

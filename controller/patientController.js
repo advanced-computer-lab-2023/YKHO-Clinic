@@ -163,14 +163,18 @@ const createFamilyMember = async (req, res) => {
 };
 
 const readFamilyMembers = async (req, res) => {
+    patient=patientModel.findOne({_id:req.user._id});
     let results = patient.familyMembers;
+    if(results==null){
+        results=[];
+    }
     res.status(201).render('patient/family', {results});
 }
 
 // helper
 async function helper(doctors, req) {
     patient = req.user;
-    console.log(req.user)
+    
     let discount = 1;
     if (patient.healthPackage && patient.healthPackage != "none") {
         let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
@@ -282,7 +286,7 @@ async function selectDoctor(req,res){
 }
 
 const ViewPrescriptions = async (req,res) => {
-    patient=req.user;
+    patient=patientModel.findOne({_id:req.user._id});
     let result = await prescription.find({patientID:patient._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
 
@@ -294,7 +298,7 @@ const ViewPrescriptions = async (req,res) => {
     res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
 }
 async function selectPrescription(req,res){
-    patient=req.user;
+    patient=patientModel.findOne({_id:req.user._id});
     try{
         const result = await prescription.find({patientID:patient._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
@@ -317,7 +321,7 @@ async function selectPrescription(req,res){
 
 const FilterPrescriptions = async (req,res) => {
     let result
-    patient=req.user;
+    patient=patientModel.findOne({_id:req.user._id});
     if(req.query.filter=="DoctorName") {
         result= await prescription.find({doctorName:req.query.searchvalue,patientID:patient._id});
     }
@@ -369,7 +373,7 @@ async function addMedicalHistory(req,res){
     }
 }
 async function deleteMedicalHistory(req,res){
-    patient=req.user;
+    patient=patientModel.findOne({_id:req.user._id});
     const patientId = patient._id;
     const recordId = req.params.id;
     
@@ -381,7 +385,7 @@ async function deleteMedicalHistory(req,res){
 }
 const viewHealthRecords = async (req, res) => 
 {
-    patient=req.user;
+    patient=patientModel.findOne({_id:req.user._id});
         let healthRecords = [];
             if (patient.healthRecords && patient.healthRecords.length > 0) {
                 healthRecords = patient.healthRecords.map((record) => ({
@@ -392,13 +396,24 @@ const viewHealthRecords = async (req, res) =>
             res.render("patient/HealthRecords",{healthRecords: healthRecords})
 }
 const LinkF= async(req,res)=>{
-    let results = patient.familyMembers;
+    patientid=req.user._id;
+    
+    let results1 =await patientModel.findOne({_id:patientid});
+    let results= results1.familyMembers;
+   
+   
     res.render("patient/LinkFamily",{results});
 }
 const LinkFamilyMemeber = async(req,res) =>{
+    
+    patientid=req.user._id;
+    
     let familymemberk;
     let i=0;
-    let results  =await patientModel.find({_id:patient._id}).select(["familyMembers"]);
+    let results  =await patientModel.find({_id:patientid}).select(["familyMembers"]);
+    if(results[0].familyMembers.length==0){
+        res.status(500).json("No Family Members to link");
+    }
     for(familymem in results[0].familyMembers){
         if(results[0].familyMembers[familymem].name==req.query.filter){
             familymemberk=results[0].familyMembers[familymem];
@@ -412,15 +427,17 @@ const LinkFamilyMemeber = async(req,res) =>{
     if(req.query.filter1=="MobileNumber"){
         relate = await patientModel.find({mobile:req.query.searchvalue})
     }
-    results[0].familyMembers[i].patientID=relate[0]._id;
+    
     for(familymem in results[0].familyMembers){
-        if(relate[0]._id==results[0].familyMembers[familymem].patientID){
+        if(relate[0]._id.equals(results[0].familyMembers[familymem].patientID)&&familymem!=i){
             res.status(500).json("This user is already linked to another family member");
+            
             return;
         }
     }
-
-    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
+    const updatedPatient2= await patientModel.findByIdAndUpdate(relate[0]._id,{ $set: { agentID: patientid } },{ new: true});
+    results[0].familyMembers[i].patientID=relate[0]._id;
+    const updatedPatient = await patientModel.findByIdAndUpdate(patientid,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
     
     res.redirect("/patient/home");
     
@@ -434,6 +451,11 @@ async function showFile(req, res) {
     res.contentType(type);
     res.send(file);
   }
-
-module.exports = { createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
+const PayByCredit = async (req, res) => {
+    
+}
+const PayByWallet = async (req, res) => {
+    
+}
+module.exports = {PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
     ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords, patientLogin,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
