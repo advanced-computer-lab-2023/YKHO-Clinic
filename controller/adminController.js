@@ -19,8 +19,8 @@ const requestsTable = require("../model/request.js");
 
 // create json web token
 const maxAge = 3 * 24 * 60 * 60;
-const createToken = (name) => {
-  return jwt.sign({ name }, process.env.SECRET, {
+const createToken = (user) => {
+  return jwt.sign({ user }, process.env.SECRET, {
     expiresIn: maxAge,
   });
 };
@@ -73,7 +73,7 @@ const Login = async (req, res) => {
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
 
       const data = {
-        name: user.username,
+        name: doctor.username,
       };
       return res.render("doctor/doctorHome", data);
     }
@@ -84,7 +84,7 @@ const Login = async (req, res) => {
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
 
       const data = {
-        name: user.username,
+        name: patient.username,
       };
       return res.render("patient/home", data);
     }

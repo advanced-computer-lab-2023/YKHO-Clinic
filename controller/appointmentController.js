@@ -1,12 +1,7 @@
 const mongoose = require('mongoose');
 const {appointment,validateAppointments} = require('../model/appointments.js');
-let decodedCookie
 let id;
-async function cookie(){
-    const token = req.cookies.jwt;
-    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
-    id=decodedCookie._id;
-}  
+
 
 async function createAppointment(req,res){
     const result=validateAppointments(req.body);
@@ -30,7 +25,7 @@ async function createAppointment(req,res){
 }
 async function showMyPatients(req,res){
     let result
-    
+    id=req.user._id;
     if(req.query.name){
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
          result=result.filter((c)=>{
@@ -68,6 +63,7 @@ async function showMyPatients(req,res){
     res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:true})
 }
 async function showMyPatientInfo(req,res){
+    id=req.user._id;
     try{
         const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
         let patientRows ='<tr><th>name</th> <th>Date of birth</th> <th>Gender</th>\
@@ -103,7 +99,7 @@ async function showMyPatientInfo(req,res){
     
 }
 async function showUpcomingAppointments(req,res){
-    
+    id=req.user._id;
     const result = await appointment.find({doctorID:id,date:{$gt:Date.now()}}).populate("patientID").select(["patientID","-_id","date"])
     let patientRows ='<tr><th>name</th> <th>date</th></tr>';
     for(patients in result){
@@ -127,6 +123,7 @@ async function showUpcomingAppointments(req,res){
     res.render("patient/Appointments",{appointmentrows:appointmentrows,onepatient:true});
 }
 async function DocShowAppointments(req,res){
+    id=req.user._id;
     const result = await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
     let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
     
@@ -139,6 +136,7 @@ async function DocShowAppointments(req,res){
     res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
 }
 async function PatientFilterAppointments(req,res){
+    id=req.user._id;
     try{
         let result 
         if(req.query.filter=="Status" && req.query.searchvalue!=""){
@@ -187,6 +185,7 @@ async function PatientFilterAppointments(req,res){
         }
 }
 async function DocFilterAppointments(req,res){
+    id=req.user._id;
     try{
     let result 
     if(req.query.filter=="Status" && req.query.searchvalue!=""){

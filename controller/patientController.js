@@ -32,12 +32,8 @@ const test = {
 */
 let decodedCookie
 let patient;
-let test;
-async function cookie(){
-    const token = req.cookies.jwt;
-    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
-    test = decodedCookie;
-}
+let test; 
+
 
 
 
@@ -291,6 +287,7 @@ async function selectDoctor(req,res){
 }
 
 const ViewPrescriptions = async (req,res) => {
+    test=req.user;
     let result = await prescription.find({patientID:test._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
 
@@ -302,6 +299,7 @@ const ViewPrescriptions = async (req,res) => {
     res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
 }
 async function selectPrescription(req,res){
+    test=req.user;
     try{
         const result = await prescription.find({patientID:test._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
@@ -324,6 +322,7 @@ async function selectPrescription(req,res){
 
 const FilterPrescriptions = async (req,res) => {
     let result
+    test=req.user;
     if(req.query.filter=="DoctorName") {
         result= await prescription.find({doctorName:req.query.searchvalue,patientID:test._id});
     }
@@ -346,6 +345,7 @@ async function patientHome(req,res){
     res.render("patient/patientHome");
 }
 async function showMedicalHistory(req,res){
+    test=req.user;
     let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
     let medicalHistoryrows ='<tr><th>name</th> <th>document</th> <th>delete</th></tr>';
     for(medicalHistory in result[0].medicalHistory){
@@ -360,6 +360,7 @@ async function addMedicalHistory(req,res){
     const document  = req.file.buffer;
     const mimeType = req.file.mimetype;
     const newRecord = { name, document,mimeType };
+    test=req.user;
     const patientId = test._id;
     try {
         const updatedPatient = await patientModel.findByIdAndUpdate(
@@ -373,6 +374,7 @@ async function addMedicalHistory(req,res){
     }
 }
 async function deleteMedicalHistory(req,res){
+    test=req.user;
     const patientId = test._id;
     const recordId = req.params.id;
     
@@ -384,6 +386,7 @@ async function deleteMedicalHistory(req,res){
 }
 const viewHealthRecords = async (req, res) => 
 {
+    test=req.user;
         let healthRecords = [];
             if (test.healthRecords && test.healthRecords.length > 0) {
                 healthRecords = test.healthRecords.map((record) => ({
@@ -395,6 +398,7 @@ const viewHealthRecords = async (req, res) =>
 }
 async function showFile(req, res) {
     const fileId = req.params.fileId;
+    test=req.user;
     let result = await patientModel.find({_id:test._id}).select(["medicalHistory"]);
     let file = result[0].medicalHistory[fileId].document;
     let type = result[0].medicalHistory[fileId].mimeType;

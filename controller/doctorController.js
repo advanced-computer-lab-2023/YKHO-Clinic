@@ -4,19 +4,13 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
-const timeSlot = require('../model/timeSlots');
+const {timeSlot} = require('../model/timeSlots');
 const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const patientModel = require('../model/patient');
 const appointmentsModel = require('../model/appointments');
-let decodedCookie;
 let id;
-async function cookie(){
-    const token = req.cookies.jwt;
-    decodedCookie = await promisify(jwt.verify)(token, process.env.SECRET);
-    id=decodedCookie._id;
-}
- 
+
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = (name) => {
     return jwt.sign({ name }, process.env.SECRET, {
@@ -121,6 +115,7 @@ async function updateMyInfo(req,res){
     res.render("doctor/doctorUpdate",{errormessage:""})
 }
 async function updateThis(req,res){
+ id=req.user._id;
 const updateTerm = req.body.updateTerm
 const schema = Joi.object({
     email: Joi.string().email().min(1),
@@ -138,7 +133,7 @@ const schema = Joi.object({
 
 }
 const checkContract=async (req,res,next)=>{
-   
+  id=req.user._id;
   if(req.query.accept=="accept"){
       await doctor.findByIdAndUpdate(id, {acceptedContract:true})
       res.render("doctor/doctorHome",{name:req.body.name})
@@ -181,6 +176,7 @@ const uploadHealthRecord = async (req, res) => {
 
 };
 async function createTimeSlot(req, res) {
+  id=req.user._id;
   const day = req.body.day;
 
   const { from, to } = req.body;
@@ -192,6 +188,8 @@ async function createTimeSlot(req, res) {
           { from: { $lte: to }, to: { $gte: to } },
           { from: { $gte: from }, to: { $lte: to } },
       ],
+      doctorID: id,
+      day: day,
   });
 
   if (existingTimeSlots.length > 0) {
@@ -205,17 +203,19 @@ async function createTimeSlot(req, res) {
   res.status(201).json({ message: "Timeslot created successfully" });
 }
 async function showTimeSlots(req,res){
+   id=req.user._id;
   const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const html="";
+  let html="";
   for(day in days){
     
     html+=`<tr><th>${days[day]}</th>`;
     const results=await timeSlot.find({day:days[day],doctorID:id})
     for(result in results){
-      html+=`<td id=${result._id}>${result.from},${result.to}</td>`
+      html+=`<td id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
     }
     html+="</tr>"
   }
   res.render("doctor/doctorTimeSlots",{timeSlot:html})
 }
+ 
 module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots};
