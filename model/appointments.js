@@ -27,7 +27,15 @@ const appointmentSchema = new mongoose.Schema({
         enum: ['upcoming', 'completed', 'cancelled', 'rescheduled'],
         lowercase: true,
         trim: true,
-    }
+    },
+    duration:{
+        type:Number,
+        required:true,
+    },
+    price:{
+        type:Number,
+        required:true,
+    },
 });
 function validateAppointments(newAppointment){
     const schema = Joi.object({

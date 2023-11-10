@@ -57,7 +57,7 @@ const createPatient = async (req, res) => {
 
     const { error, value } = schema.validate(req.body);
 
-    if (error) {
+    if (error) { 
         // If validation fails, send a response with the validation error
         return res.status(400).json({ error: error.details[0].message });
     }

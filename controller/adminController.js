@@ -18,7 +18,7 @@ const { doctor: doctorsTable } = require("../model/doctor.js");
 const requestsTable = require("../model/request.js");
 
 // create json web token
-const maxAge = 3 * 24 * 60 * 60;
+const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (user) => {
   return jwt.sign({ user }, process.env.SECRET, {
     expiresIn: maxAge,
@@ -192,7 +192,7 @@ const createAdmin = async (req, res) => {
       password: hashedPassword,
     });
     const result = await adminUser.save(); //save into DB
-    console.log(result);
+   
     res.render("admin/register", { message: "Admin created successfully" });
   } catch (ex) {
     res.render("admin/register", { message: ex.message });
@@ -266,7 +266,7 @@ const addHealthPackages = async (req, res) => {
         updateErrorMessage: "",
         deleteErrorMessage: "",
       });
-      console.log(result);
+      
     } else {
       healthPackages = await healthPackageTable.find();
       res.render("admin/healthPackages", {
@@ -357,9 +357,9 @@ const deleteHealthPackages = async (req, res) => {
     const healthPackage = await healthPackageTable.deleteOne({
       packageName: req.body.packageName, //deletes
     });
-    console.log(req.body);
+    
     const healthPackages = await healthPackageTable.find(); //re get the packages excluding el deleted one b2a to update the page
-    console.log(healthPackage.deletedCount); //with the new table
+
     if (healthPackage.deletedCount == 1)
       //if deleted
       res.render("admin/healthPackages", {
@@ -401,7 +401,7 @@ const deleteUser = async (req, res) => {
   if (deletedUser.deletedCount == 1)
     res.render("admin/deleteUser", { message: "User deleted successfully" });
   else res.render("admin/deleteUser", { message: "User not found" });
-  console.log(deletedUser);
+
 };
 
 const goToUploadedInfo = async (req, res) => {

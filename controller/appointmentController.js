@@ -130,8 +130,7 @@ async function DocShowAppointments(req,res){
     for(appointmentl in result){
         appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
         <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td></tr>`
-
+        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td><td> <button id=${result[appointmentl].patientID._id} onClick="schedFollow(this)">Schedule follow up</button></td> </tr>`
     }
     res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
 }

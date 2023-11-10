@@ -8,7 +8,7 @@ require('dotenv').config()
 const cookieParser = require('cookie-parser');
 const { requireAuth } = require('./Middleware/authMiddleware');
 const {home} = require("./controller/homePage");
-const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots } = require('./controller/doctorController');
+const { createDoctor, goToHome, updateMyInfo, updateThis,checkContract, doctorLogin, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp } = require('./controller/doctorController');
 const { createAppointment, showMyPatients, showMyPatientInfo, showUpcomingAppointments
   , PatientFilterAppointments, DocFilterAppointments, PatientShowAppointments, DocShowAppointments } = require('./controller/appointmentController');
 const {
@@ -53,7 +53,7 @@ const id = "1";
 app.get("/",home);
 app.post("/login", Login)
 //Doctor
-app.post("/addDoctor",createDoctor);
+app.post("/addDoctor",createDoctor); 
 app.post("/addAppointment",createAppointment)
 app.get("/doctor/login", doctorLogin);
 app.get("/doctor/home",requireAuth,checkContract,goToHome)
@@ -68,7 +68,9 @@ app.get("/doctor/contract",requireAuth,checkContract);
 app.post("/doctor/patients/:id/upload-pdf",requireAuth,checkContract,upload.single('healthRecords'),uploadHealthRecord);
 app.get("/doctor/timeSlots",requireAuth,checkContract,showTimeSlots);
 app.post("/doctor/addTimeSlot",requireAuth,checkContract,createTimeSlot);
-
+app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
+app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
+app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp);
 //Admin
 app.get("/admin/login", goToAdminLogin);
 app.get("/admin/home", requireAuth, adminLogin);
