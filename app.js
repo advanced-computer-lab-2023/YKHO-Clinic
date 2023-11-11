@@ -45,7 +45,9 @@ const {
   Login,
   acceptRequest,
   rejectRequest,
+  sendOTP,
   forgetPassword,
+  goToNewPassword 
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -92,7 +94,11 @@ const id = "1";
 
 app.get("/", home);
 app.post("/login", Login);
-app.post("/forgetPassword", requireAuth, forgetPassword);//req.params.username
+app.post("/forgetPassword/enterUsername", (req, res) => {res.render("forgetPassword/enterUsername", { message: "" })});
+app.get("/forgetPassword/enterOTP", sendOTP);//send otp to mail and pass otp to the function
+app.get("/forgetPassword/enterNewPassword", goToNewPassword);
+app.post("/forgetPassword/done", forgetPassword);
+
 //Doctor
 app.post("/addDoctor", createDoctor);
 app.post("/addAppointment", createAppointment);
@@ -102,8 +108,7 @@ app.get("/doctor/patients/:id", requireAuth, checkContract, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuth, checkContract, showUpcomingAppointments);
 app.get("/doctor/updateInfo", requireAuth, checkContract, updateMyInfo);
 app.post("/doctor/updateInfo", requireAuth, checkContract, updateThis);
-app.get("/doctor/AppointmentsFilter", requireAuth, checkContract, DocFilterAppointments
-);
+app.get("/doctor/AppointmentsFilter", requireAuth, checkContract, DocFilterAppointments);
 app.get("/doctor/Appointments", requireAuth, checkContract, DocShowAppointments);
 app.get("/doctor/contract", requireAuth, checkContract);
 app.post("/doctor/patients/:id/upload-pdf", requireAuth, checkContract, upload.single("healthRecords"), uploadHealthRecord);

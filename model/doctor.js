@@ -70,7 +70,6 @@ const doctorSchema = new mongoose.Schema({
     medicalDegree:{
         type:Buffer
     },
-    OTP: { type:Number },
     });
 const doctor = mongoose.model('doctor', doctorSchema);
 
