@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 const express = require("express");
 const multer = require("multer");
-const mongoose = require("mongoose");
-const express = require("express");
-const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const ejs = require("ejs");
@@ -44,7 +41,7 @@ const {
   addHealthPackages,
   callUpdateHealthPackage,
   callDeleteHealthPackage,
-  adminLogout,
+  logout,
   changePasswordAdmin,
   Login,
   acceptRequest,
@@ -52,7 +49,6 @@ const {
   sendOTP,
   forgetPassword,
   goToNewPassword,
-  forgetPassword,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -107,7 +103,7 @@ const id = "1";
 
 app.get("/",  home);
 app.post("/login", Login);
-app.post("/forgetPassword", forgetPassword);//req.params.username;
+app.get("/home", logout);
 app.post("/forgetPassword/enterUsername", (req, res) => {res.render("forgetPassword/enterUsername", { message: "" })});
 app.get("/forgetPassword/enterOTP", sendOTP);//send otp to mail and pass otp to the function
 app.get("/forgetPassword/enterNewPassword", goToNewPassword);

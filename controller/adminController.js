@@ -5,8 +5,6 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
@@ -53,7 +51,7 @@ const Login = async (req, res) => {
   if (admin) {
     found = await bcrypt.compare(req.body.password, admin.password);
     if (found) {
-      const token = createToken({ admin, type: "{ admin, type: "admin" }" });
+      const token = createToken({ admin, type: "admin" });
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       const data = {
@@ -65,23 +63,17 @@ const Login = async (req, res) => {
   } else if (patient) {
     found = await bcrypt.compare(req.body.password, patient.password);
 
-
     if (found) {
       const token = createToken({
         _id: patient._id,
         username: patient.username,
         type: "patient",
       });
-      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
+      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       let discount = 1;
       if (patient.healthPackage && patient.healthPackage != "none") {
-        let healthPackage = await healthPackageTable.findOne({
-          packageName: patient.healthPackage,
-        });
-        discount = healthPackage.doctorDiscount;
-        discount = (100 - discount) / 100;
         let healthPackage = await healthPackageTable.findOne({
           packageName: patient.healthPackage,
         });
@@ -95,14 +87,7 @@ const Login = async (req, res) => {
         speciality,
         sessionPrice: rate * 1.1 * discount,
       }));
-      let results = doctor.map(({ _id, name, speciality, rate }) => ({
-        _id,
-        name,
-        speciality,
-        sessionPrice: rate * 1.1 * discount,
-      }));
 
-      return res.render("patient/home", { one: true, results });
       return res.render("patient/home", { one: true, results });
     }
   } else if (doctor) {
@@ -114,14 +99,7 @@ const Login = async (req, res) => {
         rate: doctor.rate,
         type: "doctor",
       });
-      const token = createToken({
-        _id: doctor._id,
-        username: doctor.username,
-        rate: doctor.rate,
-        type: "doctor",
-      });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-
       const data = {
         name: doctor.username,
       };
@@ -287,36 +265,6 @@ const forgetPassword = async (req, res) => {
   res.render("home", { message: "Password changed" });
 };
 
-const forgetPassword = async (req, res) => {
-  let OTP = generateOTP();
-  let email = "";
-
-  if (req.user.type == "patient") {
-    let patient = await patientModel.findOne({
-      username: req.user.username,
-    });
-    patient.OTP = OTP;
-    await patient.save();
-    email = patient.email;
-  } else if (req.user.type == "doctor") {
-    let doctor = await doctorTable.findOne({
-      username: req.user.username,
-    });
-    doctor.OTP = OTP;
-    await doctor.save();
-    email = doctor.email;
-  } else {
-    let admin = await adminsTable.findOne({
-      username: req.user.username,
-    });
-    admin.OTP = OTP;
-    await admin.save();
-    email = admin.email;
-  }
-
-  sendOTPByEmail(email, OTP);
-};
-
 function generateOTP() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
@@ -351,9 +299,9 @@ function sendOTPByEmail(email, OTP) {
   connectionTimeout: 30000;
 }
 
-const adminLogout = (req, res) => {
-  res.clearCookie("jwt").send(200, "Logged out successfully");
-  res.render("/");
+const logout = (req, res) => {
+  res.clearCookie("jwt");
+  res.render("home", { message: "logged out" });
 };
 
 const createAdmin = async (req, res) => {
@@ -448,7 +396,6 @@ const addHealthPackages = async (req, res) => {
   });
   const healthPackageExists = await healthPackageTable.findOne({
     packageName: req.body.packageName, //check if the package exists already
-  });
   });
   try {
     if (healthPackageExists == null) {
@@ -655,7 +602,7 @@ module.exports = {
   callUpdateHealthPackage,
   callDeleteHealthPackage,
   isStrongPassword,
-  adminLogout,
+  logout,
   changePasswordAdmin,
   Login,
   acceptRequest,
