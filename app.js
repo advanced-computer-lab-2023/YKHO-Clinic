@@ -51,7 +51,7 @@ const {
   rejectRequest,
   sendOTP,
   forgetPassword,
-  goToNewPassword 
+  goToNewPassword,
   forgetPassword,
 } = require("./controller/adminController.js");
 // request controller
@@ -162,7 +162,7 @@ app.get("/files/:fileId", requireAuth, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuth, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
-  res.render("patient/register");
+  res.render("patient/register")});
 app.get("/patient/Prescriptions", requireAuth, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuth, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuth, selectPrescription);
@@ -179,7 +179,7 @@ app.get("/guest/patient", function (req, res) {
   res.render("patient/register");
 });
 app.get("/guest/doctor", function (req, res) { 
-  res.render("doctor/register");
+  res.render("doctor/register")});
 app.get("/guest/doctor", function (req, res) { 
   res.render("doctor/register");
 });
@@ -187,7 +187,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 app.get("/patient/createFamilyMember", function (req, res) {
-  res.render("patient/addFamily");
+  res.render("patient/addFamily")});
 app.get("/patient/createFamilyMember", function (req, res) {
   res.render("patient/addFamily");
 });
