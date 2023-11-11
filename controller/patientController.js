@@ -1,5 +1,7 @@
 const patientModel = require('../model/patient');
 const doctorModel = require('../model/doctor').doctor;
+const timeSlot = require('../model/timeSlots').timeSlot;
+const {appointment} = require('../model/appointments');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
@@ -251,13 +253,132 @@ async function selectDoctor(req,res){
             "> ${result[0].speciality} </td>\
              <td style="text-align: center;"> ${result[0].rate} </td> <td style="text-align: center;">\
               ${result[0].affiliation} </td> <td style="text-align: center;">${result[0].education}</td> `
+        let slotsrows = '<h3>Reserve Appointment with the doctor</h3>';
+        
+        slotsrows = slotsrows + `<br><button onclick="reserveForMyself()">Reserve for Myself</button>
+        <button onclick="reserveForFamilyMember()">Reserve for Family Member</button>`;
+       
 
-        res.render("patient/home",{doctorrows:doctorrows,one:false})
+        res.render("patient/home",{doctorrows:doctorrows, slotsrows ,one:false})
     }
     catch(error){
         res.send(error)
     }
 }
+
+async function showSlots(req, res) {
+    const doctorID = req.params.id;
+    const id = req.user._id;
+    if (req.query.date) {
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const date = new Date(req.query.date);
+      const day = days[date.getDay()];
+      const result = await timeSlot.find({ doctorID: doctorID, day: day });
+      let html=""
+      for( resu in result){
+        html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+      }
+      res.render("patient/reserveSlot", { id: req.params.id, buttons: html ,date:req.query.date});
+    } else {
+      const result = await timeSlot.find({ doctorID: id });
+      res.render("patient/reserveSlot", { id: req.params.id, buttons: "",date:"" });
+    }
+  }
+  async function reserveSlot(req,res){
+    const doctorID= req.params.id;
+    const id= req.user._id;
+    const date=new Date(req.query.date);
+    const time=req.query.time;
+    const startTime=time.split(",")[0];
+    const endTime=time.split(",")[1];
+    const startH = parseInt(startTime.split(":")[0]);
+    const startM = parseInt(startTime.split(":")[1]);
+    const endH = parseInt(endTime.split(":")[0]);
+    const endM = parseInt(endTime.split(":")[1]);
+    const doctor = await doctorModel.find({ _id: doctorID });
+  let duration = (endH - startH) * 60 + (endM - startM);
+  
+  duration= duration/60;
+    let price= duration*doctor[0].rate;
+    // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
+    const startHour=startTime.split(":")[0];
+    const startMinute=startTime.split(":")[1];
+    date.setHours(startHour);
+    date.setMinutes(startMinute);
+  
+    // Check if there is an existing appointment at the specified time
+    const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
+    if (existingAppointment) {
+      return res.status(400).send("There is already an appointment at the specified time.");
+    }
+  
+    const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
+    await newAppointment.save();
+    res.redirect(`/patient/doctors/${doctorID}`)
+  }
+
+  async function showSlotsFam(req, res) {
+    const doctorID = req.params.id;
+    const id = req.user._id;
+    const familyMembers = await patientModel.find({_id:id}).select(["familyMembers"]);
+    let dropdown=""
+    for(fam in familyMembers[0].familyMembers){
+    dropdown+= `<option value=${familyMembers[0].familyMembers[fam].patientID}>${familyMembers[0].familyMembers[fam].name}</option>`
+    }
+    if (req.query.date) {
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const date = new Date(req.query.date);
+      const day = days[date.getDay()];
+      const result = await timeSlot.find({ doctorID: doctorID, day: day });
+      let html=""
+      for( resu in result){
+        html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+      }
+      res.render("patient/reserveSlotFam", { id: req.params.id, buttons: html ,date:req.query.date,dropdown: dropdown});
+    } else {
+      const result = await timeSlot.find({ doctorID: id });
+      res.render("patient/reserveSlotFam", { id: req.params.id, buttons: "",date:"",dropdown: dropdown});
+    }
+  }
+  
+  async function reserveSlotFam(req,res){
+    const doctorID= req.params.id;
+    const doctor = await doctorModel.find({ _id: doctorID });
+    const date=new Date(req.query.date);
+    const time=req.query.time;
+    const startTime=time.split(",")[0];
+    const endTime=time.split(",")[1];
+    const startH = parseInt(startTime.split(":")[0]);
+    const startM = parseInt(startTime.split(":")[1]);
+    const endH = parseInt(endTime.split(":")[0]);
+    const endM = parseInt(endTime.split(":")[1]);
+    if(req.query.famID==undefined){
+        res.status(400).send("Please select a family member that is already a patient of the clinic")
+    }
+    else{
+        const familyMemberID=req.query.famID;
+    
+        let duration = (endH - startH) * 60 + (endM - startM);
+    
+        duration= duration/60;
+        let price= duration*doctor[0].rate;
+        // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
+        const startHour=startTime.split(":")[0];
+        const startMinute=startTime.split(":")[1];
+        date.setHours(startHour);
+        date.setMinutes(startMinute);
+    
+        // Check if there is an existing appointment at the specified time
+        const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
+        if (existingAppointment) {
+        return res.status(400).send("There is already an appointment at the specified time.");
+        }
+    
+        const newAppointment=new appointment({doctorID:doctorID,patientID:familyMemberID,date:date,status:"upcoming",duration:duration,price:price})
+        await newAppointment.save();
+        res.redirect(`/patient/doctors/${doctorID}`)
+    }
+  }
 
 const ViewPrescriptions = async (req,res) => {
     patient=patientModel.findOne({_id:req.user._id});
@@ -432,4 +553,4 @@ const PayByWallet = async (req, res) => {
     
 }
 module.exports = {PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
-    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
+    ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory,showSlots,reserveSlot,showSlotsFam,reserveSlotFam,};

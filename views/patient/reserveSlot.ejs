@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>clinic</title>
+    </head>
+    <body>
+        <h1>Schedule Appointement</h1>
+        <input name="date" type="date" id="date" oninput="changeWeb()" value=<%=date%>>
+        <p style="display:none" name="myId" id="myId"><%=id%></p>
+        <%- buttons %>
+    </body>
+    <script>
+        const date = document.getElementById('date');
+        const tomorrow = new Date();
+        tomorrow.setDate(new Date().getDate() + 1);
+        date.min = tomorrow.toISOString().split('T')[0];
+        function changeWeb() {
+            window.location.href = `http://localhost:3000/patient/doctors/${myId.innerHTML}/showSlots/?date=${date.value}`;
+        }
+        function reserveTHIS(element){
+            window.location.href = `http://localhost:3000/patient/doctors/${myId.innerHTML}/reserve/?date=${date.value}&time=${element.innerHTML}`;
+        }
+      
+    </script>
+</html>

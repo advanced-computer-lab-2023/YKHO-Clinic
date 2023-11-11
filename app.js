@@ -70,6 +70,10 @@ const {
   deleteMedicalHistory,
   LinkFamilyMemeber,
   LinkF,
+  showSlots,
+  reserveSlot,
+  showSlotsFam,
+  reserveSlotFam,
 } = require("./controller/patientController.js");
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
@@ -163,4 +167,8 @@ app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
 app.get("/patient/paymentcredit",requireAuth,PayByCredit);
 app.get("/patient/paymentWallet",requireAuth,PayByWallet);
+app.get("/patient/doctors/:id/showSlots", requireAuth, showSlots);
+app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
+app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
+app.get("/patient/doctors/:id/familyMember/reserve", requireAuth, reserveSlotFam);
 
