@@ -5,6 +5,8 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
@@ -51,7 +53,7 @@ const Login = async (req, res) => {
   if (admin) {
     found = await bcrypt.compare(req.body.password, admin.password);
     if (found) {
-      const token = createToken({ admin, type: "admin" });
+      const token = createToken({ admin, type: "{ admin, type: "admin" }" });
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       const data = {
@@ -63,6 +65,7 @@ const Login = async (req, res) => {
   } else if (patient) {
     found = await bcrypt.compare(req.body.password, patient.password);
 
+
     if (found) {
       const token = createToken({
         _id: patient._id,
@@ -71,8 +74,14 @@ const Login = async (req, res) => {
       });
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
+
       let discount = 1;
       if (patient.healthPackage && patient.healthPackage != "none") {
+        let healthPackage = await healthPackageTable.findOne({
+          packageName: patient.healthPackage,
+        });
+        discount = healthPackage.doctorDiscount;
+        discount = (100 - discount) / 100;
         let healthPackage = await healthPackageTable.findOne({
           packageName: patient.healthPackage,
         });
@@ -86,7 +95,14 @@ const Login = async (req, res) => {
         speciality,
         sessionPrice: rate * 1.1 * discount,
       }));
+      let results = doctor.map(({ _id, name, speciality, rate }) => ({
+        _id,
+        name,
+        speciality,
+        sessionPrice: rate * 1.1 * discount,
+      }));
 
+      return res.render("patient/home", { one: true, results });
       return res.render("patient/home", { one: true, results });
     }
   } else if (doctor) {
@@ -98,12 +114,18 @@ const Login = async (req, res) => {
         rate: doctor.rate,
         type: "doctor",
       });
+      const token = createToken({
+        _id: doctor._id,
+        username: doctor.username,
+        rate: doctor.rate,
+        type: "doctor",
+      });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
 
       const data = {
         name: doctor.username,
       };
-      console.log(res);
+      
       return res.render("doctor/doctorHome", data);
     }
   }
@@ -265,6 +287,70 @@ const forgetPassword = async (req, res) => {
   res.render("home", { message: "Password changed" });
 };
 
+const forgetPassword = async (req, res) => {
+  let OTP = generateOTP();
+  let email = "";
+
+  if (req.user.type == "patient") {
+    let patient = await patientModel.findOne({
+      username: req.user.username,
+    });
+    patient.OTP = OTP;
+    await patient.save();
+    email = patient.email;
+  } else if (req.user.type == "doctor") {
+    let doctor = await doctorTable.findOne({
+      username: req.user.username,
+    });
+    doctor.OTP = OTP;
+    await doctor.save();
+    email = doctor.email;
+  } else {
+    let admin = await adminsTable.findOne({
+      username: req.user.username,
+    });
+    admin.OTP = OTP;
+    await admin.save();
+    email = admin.email;
+  }
+
+  sendOTPByEmail(email, OTP);
+};
+
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+function sendOTPByEmail(email, OTP) {
+  const transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525, // or the port provided in your Mailtrap SMTP settings
+    auth: {
+      user: "784ac0344ac54c",
+      pass: "b21deaba2fab04",
+    },
+  });
+
+  // Extend the connection timeout to 30 seconds (in milliseconds)
+
+  const mailOptions = {
+    from: "ayebnmetnaka@inbox.mailtrap.io",
+    to: email,
+    subject: "Password Reset OTP",
+    text: `Your OTP for password reset is: ${OTP}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+
+  connectionTimeout: 30000;
+}
+
 const adminLogout = (req, res) => {
   res.clearCookie("jwt").send(200, "Logged out successfully");
   res.render("/");
@@ -309,9 +395,10 @@ const createAdmin = async (req, res) => {
       username: req.body.username, //create the admin
       password: hashedPassword,
       email: req.body.email,
+      email: req.body.email,
     });
     const result = await adminUser.save(); //save into DB
-    console.log(result);
+   
     res.render("admin/register", { message: "Admin created successfully" });
   } catch (ex) {
     res.render("admin/register", { message: ex.message });
@@ -362,6 +449,7 @@ const addHealthPackages = async (req, res) => {
   const healthPackageExists = await healthPackageTable.findOne({
     packageName: req.body.packageName, //check if the package exists already
   });
+  });
   try {
     if (healthPackageExists == null) {
       //law mal2ash package bel esm el maktob by add it
@@ -373,7 +461,7 @@ const addHealthPackages = async (req, res) => {
         updateErrorMessage: "",
         deleteErrorMessage: "",
       });
-      console.log(result);
+      
     } else {
       healthPackages = await healthPackageTable.find();
       res.render("admin/healthPackages", {
@@ -464,9 +552,9 @@ const deleteHealthPackages = async (req, res) => {
     const healthPackage = await healthPackageTable.deleteOne({
       packageName: req.body.packageName, //deletes
     });
-    console.log(req.body);
+    
     const healthPackages = await healthPackageTable.find(); //re get the packages excluding el deleted one b2a to update the page
-    console.log(healthPackage.deletedCount); //with the new table
+
     if (healthPackage.deletedCount == 1)
       //if deleted
       res.render("admin/healthPackages", {
@@ -508,7 +596,7 @@ const deleteUser = async (req, res) => {
   if (deletedUser.deletedCount == 1)
     res.render("admin/deleteUser", { message: "User deleted successfully" });
   else res.render("admin/deleteUser", { message: "User not found" });
-  console.log(deletedUser);
+
 };
 
 const goToUploadedInfo = async (req, res) => {

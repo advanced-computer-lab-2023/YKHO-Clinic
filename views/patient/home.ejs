@@ -74,6 +74,9 @@
         
         <%- doctorrows %>
     </table>
+    <table> 
+        <%- slotsrows %>
+    </table>
     <% }%>
 </body>
 
@@ -83,5 +86,15 @@
 
     function showThis(event){
         window.location.href = `http://localhost:3000/patient/doctors/${event.target.id}`
+    }
+    function reserveForMyself(){
+        var currentUrl = window.location.href;
+        var doctorId = currentUrl.split('/').pop();
+        window.location.href = `http://localhost:3000/patient/doctors/${doctorId}/showSlots`
+    }
+    function reserveForFamilyMember(){
+        var currentUrl = window.location.href;
+        var doctorId = currentUrl.split('/').pop();
+        window.location.href = `http://localhost:3000/patient/doctors/${doctorId}/showSlots/familyMember`
     }
 </script>

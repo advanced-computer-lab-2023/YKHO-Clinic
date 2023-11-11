@@ -8,7 +8,7 @@ day: {
     lowercase: true,
     trim: true,
 },
-from: {
+from: {   
     type: String,
     required: true,
 },
