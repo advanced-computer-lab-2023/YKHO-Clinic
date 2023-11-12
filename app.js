@@ -86,16 +86,9 @@ app.listen(port, () => {
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
-app.use("/public", express.static("public"));
+app.set("view engine", "ejs");app.use("/public", express.static("public"));
 mongoose
-  .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority");
-app.use("/public", express.static("public"));
-mongoose
-  .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority"
-  )
+  .connect(MONGO_URI)
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
@@ -203,4 +196,3 @@ app.get("/patient/doctors/:id/showSlots", requireAuth, showSlots);
 app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
 app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
 app.get("/patient/doctors/:id/familyMember/reserve", requireAuth, reserveSlotFam);
-

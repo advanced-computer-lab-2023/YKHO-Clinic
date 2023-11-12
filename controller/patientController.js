@@ -33,8 +33,6 @@ const test = {
 };
 */
 let decodedCookie;
-let patient; 
-let doctors;
 
 const createPatient = async (req, res) => {
     const schema = Joi.object({
@@ -75,11 +73,8 @@ const createPatient = async (req, res) => {
     });
 
     entry = await entry.save();
-    doctors = await doctorModel.find().sort({ name: 1 });
-    const token = createToken(entry);
-    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-    let results = await helper(doctors);
-    res.status(201).render('patient/home', {results,one:true});
+    
+    res.status(201).render('home', {message:"sign up succ"});
 }
 
 const patientLogout = (req, res) => {
@@ -148,10 +143,10 @@ const readFamilyMembers = async (req, res) => {
 }
 
 // helper
-async function helper(doctors, req) {
-    patient = req.user;
-    
+async function helper(doctors, id) {
+    let patient = await patientModel.findById(id);  
     let discount = 1;
+    
     if (patient.healthPackage && patient.healthPackage != "none") {
         let healthPackage = await healthPackageModel.findOne({ packageName: patient.healthPackage });
         discount = healthPackage.doctorDiscount;
@@ -173,8 +168,7 @@ function isEmpty(input) {
 }
 
 const searchDoctors = async (req, res) => {
-    //let presentSpecialities = doctorModel.schema.path('speciality').enumValues;
-    doctors = await doctorModel.find().sort({ name: 1 });
+    let doctors = await doctorModel.find().sort({ name: 1 });
     let searchedDoctors = req.query.doctors;
     // empty input fields
     if (!isEmpty(searchedDoctors)) {
@@ -199,20 +193,14 @@ const searchDoctors = async (req, res) => {
             return false;
         });
     }
-    let results = await helper(doctors);
+    let results = await helper(doctors, req.user._id);
     res.status(201).render('patient/home', { results, one: true });
 }
 
 const filterDoctors = async (req, res) => {
-    let speciality = req.query.speciality
-    let results;
-    if (speciality != 'any') {
-        results = doctors.filter(doctor => {
-            if (doctor.speciality == speciality)
-                return true;
-            return false;
-        });
-    }
+    let doctors = await doctorModel.find({speciality:req.query.speciality}).sort({ name: 1 });
+    console.log(doctors)
+    
 
     let date = req.query.date;
     if (date != "") {
@@ -232,15 +220,16 @@ const filterDoctors = async (req, res) => {
 
         // map appointments to 
         appointments = appointments.map(({ doctorID }) => (doctorID.toString()));
-
+        
         // filter doctors
-        results = results.filter((doctor) => {
+        doctors = doctors.filter((doctor) => {
+
             return !appointments.includes(doctor._id.toString());
         })
 
     }
 
-    results = await helper(results);
+    results = await helper(doctors,req.user._id);
     res.status(201).render('patient/home', {results,one:true});
 }
 async function selectDoctor(req,res){
