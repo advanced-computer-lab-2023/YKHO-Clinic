@@ -1,6 +1,7 @@
 const patientModel = require('../model/patient');
 const doctorModel = require('../model/doctor').doctor;
 const timeSlot = require('../model/timeSlots').timeSlot;
+const timeSlotModel = timeSlot;
 const {appointment} = require('../model/appointments');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
@@ -33,8 +34,6 @@ const test = {
 };
 */
 let decodedCookie;
-let patient; 
-let doctors;
 
 const createPatient = async (req, res) => {
     const schema = Joi.object({
@@ -75,11 +74,8 @@ const createPatient = async (req, res) => {
     });
 
     entry = await entry.save();
-    doctors = await doctorModel.find().sort({ name: 1 });
-    const token = createToken(entry);
-    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge });
-    let results = await helper(doctors);
-    res.status(201).render('patient/home', {results,one:true});
+
+    res.status(201).render('home', {message:"sign up succ"});
 }
 
 const patientLogout = (req, res) => {
@@ -148,8 +144,8 @@ const readFamilyMembers = async (req, res) => {
 }
 
 // helper
-async function helper(doctors, req) {
-    patient = req.user;
+async function helper(doctors, id) {
+    let patient = await patientModel.findById(id);  
     
     let discount = 1;
     if (patient.healthPackage && patient.healthPackage != "none") {
@@ -157,12 +153,12 @@ async function helper(doctors, req) {
         discount = healthPackage.doctorDiscount;
         discount = (100 - discount) / 100;
     }
-    let results = doctors.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: rate * 1.1 * discount }));
+    let results = doctors.map(({ _id, name, speciality, rate }) => ({ _id, name, speciality, sessionPrice: Math.floor(rate * 1.1 * discount) }));
     return results;
 }
 
 const readDoctors = async (req, res) => {
-    doctors = await doctorModel.find().sort({ name: 1 });
+    let doctors = await doctorModel.find().sort({ name: 1 });
     let results = await helper(doctors,req);
     res.status(201).render('patient/home', { results, one: true });
 }
@@ -174,7 +170,7 @@ function isEmpty(input) {
 
 const searchDoctors = async (req, res) => {
     //let presentSpecialities = doctorModel.schema.path('speciality').enumValues;
-    doctors = await doctorModel.find().sort({ name: 1 });
+    let doctors = await doctorModel.find().sort({ name: 1 });
     let searchedDoctors = req.query.doctors;
     // empty input fields
     if (!isEmpty(searchedDoctors)) {
@@ -199,48 +195,34 @@ const searchDoctors = async (req, res) => {
             return false;
         });
     }
-    let results = await helper(doctors);
+    let results = await helper(doctors,req.user._id);
     res.status(201).render('patient/home', { results, one: true });
 }
 
 const filterDoctors = async (req, res) => {
-    let speciality = req.query.speciality
-    let results;
-    if (speciality != 'any') {
-        results = doctors.filter(doctor => {
-            if (doctor.speciality == speciality)
-                return true;
-            return false;
-        });
-    }
+    let doctors;
+    if (req.query.speciality != 'any')
+        doctors = await doctorModel.find({speciality:req.query.speciality}).sort({ name: 1 });
+    else
+        doctors = await doctorModel.find().sort({ name: 1 });
 
     let date = req.query.date;
     if (date != "") {
-
         date = new Date(date);
-        let appointments = await appointmentModel.find();
+        
+        // filter doctors with appointments
+        let appointments = await appointmentModel.find({date:date}).select({doctorID:1, _id:0});
+        let arr = appointments.map(appointment => String(appointment.doctorID));
+        doctors = doctors.filter(doctor => !arr.includes(String(doctor._id)));
 
-        // filter appointments by date
-        appointments = appointments.filter((x) => {
-            if (x.date.getDate() == date.getDate()) {
-                let diff = date.getTime() - x.date.getTime();
-                if (diff <= 1000 * 60 * 60 && diff >= 0)
-                    return true
-            }
-            return false;
-        });
-
-        // map appointments to 
-        appointments = appointments.map(({ doctorID }) => (doctorID.toString()));
-
-        // filter doctors
-        results = results.filter((doctor) => {
-            return !appointments.includes(doctor._id.toString());
-        })
-
+        // filter doctors with not available time slots
+        const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        let timeSlots = await timeSlotModel.find({day:weekday[date.getDay()], from:`${date.getHours()>10?date.getHours():'0' + date.getHours()}:${date.getMinutes()>10?date.getMinutes():'0' + date.getMinutes()}`})
+        arr = timeSlots.map(timeSlot => String(timeSlot.doctorID))
+        doctors = doctors.filter(doctor => arr.includes(String(doctor._id)));
     }
 
-    results = await helper(results);
+    let results = await helper(doctors, req.user._id);
     res.status(201).render('patient/home', {results,one:true});
 }
 async function selectDoctor(req,res){

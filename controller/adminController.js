@@ -85,7 +85,7 @@ const Login = async (req, res) => {
         _id,
         name,
         speciality,
-        sessionPrice: rate * 1.1 * discount,
+        sessionPrice: Math.floor(rate * 1.1 * discount),
       }));
 
       return res.render("patient/home", { one: true, results });

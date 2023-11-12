@@ -90,11 +90,7 @@ app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 mongoose
   .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority");
-app.use("/public", express.static("public"));
-mongoose
-  .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority"
+    MONGO_URI
   )
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
