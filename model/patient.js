@@ -113,7 +113,6 @@ const patientSchema = new mongoose.Schema({
     Wallet:
     {
         type:Number,
-        default:0,
         required:true,
     },
 
