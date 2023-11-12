@@ -137,7 +137,7 @@ const createFamilyMember = async (req, res) => {
 };
 
 const readFamilyMembers = async (req, res) => {
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     let results = patient.familyMembers;
     if(results==null){
         results=[];
@@ -260,19 +260,20 @@ async function selectDoctor(req,res){
 }
 
 const ViewPrescriptions = async (req,res) => {
-    patient=patientModel.findOne({_id:req.user._id});
+    patient = await patientModel.findById(req.user._id).select(["_id"]);
     let result = await prescription.find({patientID:patient._id}).select(["prescriptionName","doctorName"]);
-    let prescriptionrows ='<tr><th>name</th></tr>';
+    // let prescriptionrows ='<tr><th>name</th></tr>';
 
-    for(prescriptions in result){  
-        prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
-        </tr>`
+    // for(prescriptions in result){  
+    //     prescriptionrows=prescriptionrows + `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
+    //     </tr>`
 
-    }
-    res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
+    // }
+    // res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
+    res.status(200).json({result,onePatient:true});
 }
 async function selectPrescription(req,res){
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     try{
         const result = await prescription.find({patientID:patient._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
@@ -295,7 +296,7 @@ async function selectPrescription(req,res){
 
 const FilterPrescriptions = async (req,res) => {
     let result
-    patient=patientModel.findOne({_id:req.user._id});
+    patient = await patientModel.findOne({_id:req.user._id});
     if(req.query.filter=="DoctorName") {
         result= await prescription.find({doctorName:req.query.searchvalue,patientID:patient._id});
     }
