@@ -5,6 +5,8 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const ejs = require("ejs");
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY)
+const cors=require('cors')
+
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const { requireAuth } = require("./Middleware/authMiddleware");
@@ -17,7 +19,7 @@ const {
   checkContract,
   uploadHealthRecord,
   createTimeSlot,
-  showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,
+  showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp, loggedIn,showHealthRecord
 } = require("./controller/doctorController");
 const {
   createAppointment,
@@ -89,6 +91,7 @@ mongoose
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
+  app.use(cors( {origin:"http://localhost:5173",credentials: true}));
 const id = "1";
 
 app.get("/", home);
@@ -112,13 +115,15 @@ app.get("/doctor/timeSlots", requireAuth, checkContract, showTimeSlots);
 app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
-app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp);
+app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp); 
+app.get("/doctor/patients/:id/:healthId", requireAuth, checkContract, showHealthRecord);
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
 app.get("/admin/acceptRequest", acceptRequest);
 app.get("/admin/rejectRequest", rejectRequest);
 app.get("/admin/register", requireAuth, adminRegister);
+app.get("/admin/home",requireAuth,goToHome);
 app.post("/admin/register", requireAuth, createAdmin);
 app.get("/admin/deleteUser", requireAuth, goToDeleteUser);
 app.post("/admin/deleteUser", requireAuth, deleteUser);
@@ -157,10 +162,11 @@ app.post("/patient/createFamilyMember", requireAuth, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuth, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuth, LinkF);
 app.get("/patient/Linked",requireAuth, LinkFamilyMemeber);
-app.get("/patient/home", requireAuth, readDoctors);
+app.get("/patient/home",requireAuth, readDoctors);
 app.get("/patient/searchDoctors", requireAuth, searchDoctors);
 app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
 app.get("/patient/paymentcredit",requireAuth,PayByCredit);
 app.get("/patient/paymentWallet",requireAuth,PayByWallet);
 
+app.get("/loggedIn",requireAuth,loggedIn);

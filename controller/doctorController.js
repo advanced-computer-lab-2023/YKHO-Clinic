@@ -50,6 +50,13 @@ async function createDoctor(req,res){
     } 
     
 }
+async function loggedIn(req,res){
+  if(req.user){
+    res.status(200).json({loggedIn:true,type:req.user.type})
+  }else{
+    res.status(200).json({loggedIn:false,type:""})
+  }
+}
 
 const doctorLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
@@ -89,7 +96,7 @@ const changePasswordDoctor = async (req, res) => {
 };
 
 async function goToHome(req,res){
-    res.render("doctor/doctorHome",{name:req.body.name});
+    res.status(200);
 }
 async function updateMyInfo(req,res){
     res.render("doctor/doctorUpdate",{errormessage:""})
@@ -104,13 +111,12 @@ const schema = Joi.object({
   }); 
   const result = schema.validate({ [updateTerm]: req.body.updateValue });
   if(result.error){
-   res.render("doctor/doctorUpdate",{errormessage:result.error.message})
+   res.status(200).json({message:result.error.message})
   }
   else{
         await doctor.findByIdAndUpdate(id, { [updateTerm]: req.body.updateValue })
-        res.render("doctor/doctorUpdate",{errormessage:"Updated"})
+        res.status(200).json({message:"updated successfully"})
   }
-
 }
 const checkContract=async (req,res,next)=>{
   id=req.user._id;
@@ -130,6 +136,7 @@ const checkContract=async (req,res,next)=>{
 }
 const uploadHealthRecord = async (req, res) => {
   const patientId = req.params.id;
+  const name = req.body.name;
   const patient = await patientModel.findById(patientId);
   if (!patient) {
    return res.status(404).send('Patient not found.');
@@ -138,16 +145,17 @@ const uploadHealthRecord = async (req, res) => {
   if (!req.file) {
       return res.status(400).send('No file uploaded.');
   }
-  const base64Data = req.file.buffer.toString('base64');
+  const base64Data = req.file.buffer;
 
   patient.healthRecords.push({
     data: base64Data,
     contentType: req.file.mimetype,
+    name: name
   });
-
+  result={patientID:patient}
   await patient.save()
 .then(() => {
-  res.redirect(`/doctor/patients/${patientId}`);
+  res.status(200).json({result:result});
 })
 .catch((err) => {
   console.error(err);
@@ -255,5 +263,15 @@ duration= duration/60;
   await newAppointment.save();
   res.redirect("/doctor/appointments")
 }
-
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};
+async function showHealthRecord(req,res){
+const patientId=req.params.id;
+const healthId=req.params.healthId;
+let result = await patientModel.find({_id:patientId}).select(["healthRecords"]);
+let file = result[0].healthRecords[healthId].data;
+let type = result[0].healthRecords[healthId].contentType;
+let name = result[0].healthRecords[healthId].name;
+res.set('Content-Type', 'application/octet-stream');
+res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
+res.send(file);
+}
+module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord};

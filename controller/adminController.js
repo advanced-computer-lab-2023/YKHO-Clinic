@@ -31,8 +31,9 @@ const goToAdminLogin = async (req, res) => {
 };
 
 const Login = async (req, res) => {
+  try{
   if (req.body.username === "" || req.body.password === "") {
-    return res.render("home", { message: "Fill the empty fields" });
+    return res.status(200).json({ message: "Fill the empty fields" });
   }
 
   let found = false;
@@ -59,7 +60,7 @@ const Login = async (req, res) => {
         username: admin.username,
       };
       //return res.status(200).json({ message: "Logged in successfully" });
-      return res.render("admin/home", data);
+      return res.status(200).json({token:token,type:"admin"});
     }
   } else if (patient) {
     found = await bcrypt.compare(req.body.password, patient.password);
@@ -88,7 +89,7 @@ const Login = async (req, res) => {
         sessionPrice: rate * 1.1 * discount,
       }));
 
-      return res.render("patient/home", { one: true, results });
+      return res.status(200).json({token:token,type:"patient"});
     }
   } else if (doctor) {
     found = await bcrypt.compare(req.body.password, doctor.password);
@@ -105,14 +106,15 @@ const Login = async (req, res) => {
         name: doctor.username,
       };
       
-      return res.render("doctor/doctorHome", data);
+      return res.status(200).json({token:token,type:"doctor"});
     }
   }
 
   if (!found)
-    return res.render("home", {
-      message: "Username or password is wrong",
-    });
+    return res.status(200).json({ message: "Username or password incorrect" });
+} catch (err) { 
+  return res.status(404).json({ message: err.message });
+}
 };
 
 const changePasswordAdmin = async (req, res) => {

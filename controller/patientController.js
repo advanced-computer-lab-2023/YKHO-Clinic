@@ -329,7 +329,6 @@ async function showMedicalHistory(req,res){
 }
 async function addMedicalHistory(req,res){
     const  name  = req.body.docName;
-    console.log(name)
     const document  = req.file.buffer;
     const mimeType = req.file.mimetype;
     const newRecord = { name, document,mimeType };

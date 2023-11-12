@@ -1,0 +1,34 @@
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import viteLogo from '/vite.svg'
+import './App.css'
+import Login from './components/Login'
+import DoctorHome from './components/DoctorHome'
+import AdminHome from './components/AdminHome'
+import PatientHome from './components/PatientHome'
+import DoctorRegister from './components/DoctorRegister'
+import PatientRegister from './components/PatientRegister'
+import DoctorInfo from './components/DoctorInfo'
+import DoctorPatients from './components/DoctorPatients'
+function App() {
+  return (
+    <div>
+      <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login/>} />
+        <Route path="/doctor/home" element={<DoctorHome/>} />
+        <Route path="/doctor/edit" element={<DoctorInfo/>} />
+        <Route path="/doctor/patients" element={<DoctorPatients/>} />
+        <Route path="/admin/home" element={<AdminHome/>} />
+        <Route path="/patient/home" element={<PatientHome/>} />
+        <Route path="/register/doctor" element={<DoctorRegister/>} />
+        <Route path="/register/patient" element={<PatientRegister/>} />
+        
+      </Routes>
+      </BrowserRouter>
+    </div>
+  )
+}
+
+export default App

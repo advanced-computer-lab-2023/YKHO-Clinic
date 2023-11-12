@@ -32,11 +32,7 @@ async function showMyPatients(req,res){
             
             return c.patientID.name.substring(0,req.query.name.length)==req.query.name
          }
-         
-         
-         )
-       
-         
+         ) 
     }
     else{
         
@@ -44,54 +40,27 @@ async function showMyPatients(req,res){
         
     }
      
-  
     for(i in result){
-        for(j in result){
+        for(let j=0 ;j< result.length;j++){
             if(i!=j){
                 if(result[i]&& result[j])
                 if(result[i].patientID._id==result[j].patientID._id){
-                    result.splice(j,1)
+                    result.splice(j,1);
+                    j--;
                 }
             }
         } 
-    } 
-    let patientRows ='<tr><th>name</th></tr>';
-    for(patients in result){
-        patientRows=patientRows + `<tr><td id="${result[patients].patientID._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[patients].patientID.name} </td></tr>`
-
     }
-    res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:true})
+   
+   
+    res.status(200).json({result:result});
 }
 async function showMyPatientInfo(req,res){
     id=req.user._id;
     try{
-        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
-        let patientRows ='<tr><th>name</th> <th>Date of birth</th> <th>Gender</th>\
-         <th>Mobile number</th> <th>Emergency contact name</th> <th>Emergency contact number</th>\
-           <th>Health package</th> </tr>';
-            var date=result[0].patientID.DOB;
-            if(date){
-                date=date.toISOString().split('T')[0]
-            }
-            patientRows=patientRows + `<tr><td style="text-align: center;"> ${result[0].patientID.name} </td><td style="text-align: center;\
-            "> ${date} </td>\
-             <td style="text-align: center;"> ${result[0].patientID.gender} </td> <td style="text-align: center;">\
-              ${result[0].patientID.mobile} </td> \
-             <td style="text-align: center;"> ${result[0].patientID.emergency.name} </td>\
-             <td style="text-align: center;"> ${result[0].patientID.emergency.mobile} \
-             </td> <td style="text-align: center;">${result[0].patientID.healthPackage}</td>`
-            let uploadButton = `<form id="uploadForm" method="POST" action="/doctor/patients/${req.params.id}/upload-pdf" enctype="multipart/form-data"">
-                <input type="file" name="healthRecords">
-                <input type="submit" value="Upload">
-                </form>`;
-            let healthRecords = [];
-            if (result[0].patientID.healthRecords && result[0].patientID.healthRecords.length > 0) {
-                healthRecords = result[0].patientID.healthRecords.map((record) => ({
-                    data: record.data,
-                    contentType: record.contentType,
-                }));
-            }
-            res.render("doctor/doctorPatients",{patientRows:patientRows, healthRecords: healthRecords, uploadButton: uploadButton, onepatient:false})
+        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID").select(["patientID","-_id"])
+       
+        res.status(200).json({result:result[0]})
     }
     catch(error){
         res.send("Patient doesnt exist")
@@ -159,7 +128,7 @@ async function PatientFilterAppointments(req,res){
     }
     
         
-        console.log(result);
+  
         if(req.query.filters=="upcoming"){ 
             result= result.filter((c)=>{
                 return c.date > new Date();
@@ -180,7 +149,7 @@ async function PatientFilterAppointments(req,res){
         }
         res.render("patient/Appointments",{appointmentrows:appointmentrows,onepatient:true});}
         catch(error){
-            console.log(req.query.filter);
+      
             console.log(error);
         }
 }
@@ -227,7 +196,6 @@ async function DocFilterAppointments(req,res){
     }
     res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});}
     catch(error){
-        console.log(req.query.filter);
         console.log(error);
     }
 }
