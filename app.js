@@ -106,16 +106,15 @@ app.get("/doctor/patients/:id", requireAuth, checkContract, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuth, checkContract, showUpcomingAppointments);
 app.get("/doctor/updateInfo", requireAuth, checkContract, updateMyInfo);
 app.post("/doctor/updateInfo", requireAuth, checkContract, updateThis);
-app.get("/doctor/AppointmentsFilter", requireAuth, checkContract, DocFilterAppointments
-);
+app.get("/doctor/AppointmentsFilter", requireAuth, checkContract, DocFilterAppointments);
 app.get("/doctor/Appointments", requireAuth, checkContract, DocShowAppointments);
 app.get("/doctor/contract", requireAuth, checkContract);
 app.post("/doctor/patients/:id/upload-pdf", requireAuth, checkContract, upload.single("healthRecords"), uploadHealthRecord);
 app.get("/doctor/timeSlots", requireAuth, checkContract, showTimeSlots);
 app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
-app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
-app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp); 
+app.get("/doctor/schedFollowUp/:id/:date",requireAuth,checkContract,showFollowUp);
+app.post("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp); 
 app.get("/doctor/patients/:id/:healthId", requireAuth, checkContract, showHealthRecord);
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);

@@ -39,7 +39,6 @@ async function showMyPatients(req,res){
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
         
     }
-     
     for(i in result){
         for(let j=0 ;j< result.length;j++){
             if(i!=j){
@@ -58,8 +57,7 @@ async function showMyPatients(req,res){
 async function showMyPatientInfo(req,res){
     id=req.user._id;
     try{
-        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID").select(["patientID","-_id"])
-       
+        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","name DOB gender mobile emergency healthPackage healthRecords.name").select(["patientID","-_id"])
         res.status(200).json({result:result[0]})
     }
     catch(error){
@@ -94,15 +92,14 @@ async function showUpcomingAppointments(req,res){
 }
 async function DocShowAppointments(req,res){
     id=req.user._id;
-    const result = await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
-    let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
-    
-    for(appointmentl in result){
-        appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td><td> <button id=${result[appointmentl].patientID._id} onClick="schedFollow(this)">Schedule follow up</button></td> </tr>`
-    }
-    res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
+    const result = await appointment.find({doctorID:id}).populate("patientID","_id name").select(["patientID","date","status"]);
+    // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
+    // for(appointmentl in result){
+    //     appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td><td> <button id=${result[appointmentl].patientID._id} onClick="schedFollow(this)">Schedule follow up</button></td> </tr>`
+    // }
+    res.status(200).json({result:result});
 }
 async function PatientFilterAppointments(req,res){
     id=req.user._id;
@@ -158,15 +155,15 @@ async function DocFilterAppointments(req,res){
     try{
     let result 
     if(req.query.filter=="Status" && req.query.searchvalue!=""){
-        result =  await appointment.find({doctorID:id,status:req.query.searchvalue}).populate("patientID").select(["patientID","date","status"]);
+        result =  await appointment.find({doctorID:id,status:req.query.searchvalue}).populate("patientID","_id name").select(["patientID","date","status"]);
     }
     else if(req.query.filter=="Status"){
-        result =  await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
+        result =  await appointment.find({doctorID:id}).populate("patientID","_id name").select(["patientID","date","status"]);
     }
     if(req.query.filter=="Date"){
         
         let date =new Date(req.query.searchvalue);
-        result= await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
+        result= await appointment.find({doctorID:id}).populate("patientID","_id name").select(["patientID","date","status"]);
         if(req.query.searchvalue!=""){
         result = result.filter((x) => {
             if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
@@ -186,15 +183,8 @@ async function DocFilterAppointments(req,res){
             return c.date < new Date();
         })
     }
-    let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
-    
-    for(appointmentl in result){
-        appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td></tr>`
-
+    res.status(200).json({result:result});
     }
-    res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});}
     catch(error){
         console.log(error);
     }
