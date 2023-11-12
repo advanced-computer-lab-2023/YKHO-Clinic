@@ -1,24 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import Joi from 'joi';
 const DoctorPatients = () => {
     const [result, setResult] = useState(false);
     const [patients, setPatients] = useState([]);
     const [onePatient, setOnePatient] = useState([]);
+    const [message, setMessage] = useState("");
     useEffect(() => {
         check();
     }, []);
 
     async function check() {
+        await axios.get("http://localhost:3000/doctor/contract",{
+        withCredentials:true
+    }).then((res)=>{
+        if(res.data.contract=="rej"){
+            window.location.href="/doctor/contract"
+        }
+        else{
+          setResult(true)
+        }
+    }).catch((err)=>{
+        console.log(err);
+    })
         try {
             const res = await axios.get("http://localhost:3000/loggedIn", {
                 withCredentials: true
             });
-            if (res.data.type !== "doctor") {
-                window.location.href = "/";
-            } else {
-                setResult(true);
-            }
+            if(res.data.type!="doctor" ){
+                if(res.data.type=="patient"){
+                    window.location.href="/patient/home"
+                }
+                else if(res.data.type=="admin"){
+                    window.location.href="/admin/home"
+                }
+                else{
+                 window.location.href="/"
+                }
+             } 
         } catch (err) {
             if (err.response.status === 401) {
                 window.location.href = "/";
@@ -67,6 +86,14 @@ const DoctorPatients = () => {
         try {
             const name = document.getElementById("healthName").value;
             const file = document.getElementById("healthFile").files[0];
+            const uploadSchema = Joi.object({
+                name: Joi.string().required(),
+                file: Joi.required()
+            });
+            const { error, result } = uploadSchema.validate({name:name,file:file});
+            if (error) {
+                    return setMessage(error.details[0].message);
+            }
             const id = onePatient.patientID._id;
             const formData = new FormData();
             formData.append("name", name);
@@ -160,6 +187,7 @@ const DoctorPatients = () => {
                         <br/>
                         <button onClick={uploadFile}>Upload</button>
                         <br/>
+                        <p>{message}</p>
                         <table>
                             <thead>
                                 <tr>

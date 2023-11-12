@@ -13,6 +13,8 @@ import DoctorInfo from './components/doctorComponents/DoctorInfo'
 import DoctorPatients from './components/doctorComponents/DoctorPatients'
 import DoctorAppointments from './components/doctorComponents/DoctorAppointments'
 import DoctorFollowUp from './components/doctorComponents/DoctorFollowUp'
+import DoctorTimeSlots from './components/doctorComponents/DoctorTimeSlots'
+import DoctorContract from './components/doctorComponents/DoctorContract'
 function App() {
   let id=0;
   return (
@@ -25,6 +27,8 @@ function App() {
         <Route path="/doctor/patients" element={<DoctorPatients/>} />
         <Route path="/doctor/appointments" element={<DoctorAppointments/>} />
         <Route path="/doctor/followup/:id" element={<DoctorFollowUp  />}/>
+        <Route path="/doctor/timeslots" element={<DoctorTimeSlots/>} />
+        <Route path="/doctor/contract" element={<DoctorContract/>} />
         <Route path="/admin/home" element={<AdminHome/>} />
         <Route path="/patient/home" element={<PatientHome/>} />
         <Route path="/register/doctor" element={<DoctorRegister/>} />

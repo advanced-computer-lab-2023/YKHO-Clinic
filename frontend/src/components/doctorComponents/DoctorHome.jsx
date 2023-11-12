@@ -9,18 +9,34 @@ function DoctorHome() {
     const [result,setResult]=useState(false);
     useEffect(()=>{check()},[]);
     async function check(){
-        
+        await axios.get("http://localhost:3000/doctor/contract",{
+        withCredentials:true
+    }).then((res)=>{
+        if(res.data.contract=="rej"){
+            window.location.href="/doctor/contract"
+        }
+        else{
+          setResult(true)
+        }
+    }).catch((err)=>{
+        console.log(err);
+    })
         const res= await axios.get("http://localhost:3000/loggedIn",{
             withCredentials:true
         }).then((res)=>{
             
             if(res.data.type!="doctor" ){
-              
+                if(res.data.type=="patient"){
+                    window.location.href="/patient/home"
+                }
+                else if(res.data.type=="admin"){
+                    window.location.href="/admin/home"
+                }
+                else{
                  window.location.href="/"
+                }
              }
-             else{
-                    setResult(true)
-             }
+           
          }
          ).catch((err)=>{
             if(err.response.status==401){
@@ -34,9 +50,18 @@ function DoctorHome() {
     function handlePatients(){
         window.location.href="/doctor/patients"
     }
-    function handleAppointments
-    (){
+    function handleAppointments(){
         window.location.href="/doctor/appointments"
+    }
+    function handleTimeSlots(){
+        window.location.href="/doctor/timeslots"
+    }
+    async function Logout(){
+        await axios.get("http://localhost:3000/logout",{withCredentials:true}).then((res)=>{
+            window.location.href="/"
+        }).catch((err)=>{
+            console.log(err);
+        })
     }
     return (
         <div>
@@ -54,8 +79,12 @@ function DoctorHome() {
                     All Appointments
                 </button>
                 <br />
-                <button id="time">
+                <button id="time" onClick={handleTimeSlots}>
                     Time Slots
+                </button>
+                <br />
+                <button id="logout" onClick={Logout}>
+                    Logout
                 </button>
             </div>}
         </div>

@@ -218,8 +218,7 @@ function sendOTPByEmail(email, OTP) {
 }
 
 const adminLogout = (req, res) => {
-  res.clearCookie("jwt").send(200, "Logged out successfully");
-  res.render("/");
+  res.clearCookie("jwt").status(200).json({ message: "Logged out successfully" });
 };
 
 const createAdmin = async (req, res) => {

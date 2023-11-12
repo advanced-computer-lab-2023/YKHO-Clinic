@@ -100,22 +100,22 @@ app.post("/forgetPassword", forgetPassword);//req.params.username
 //Doctor
 app.post("/addDoctor", createDoctor); 
 app.post("/addAppointment", createAppointment);
-app.get("/doctor/home", requireAuth, checkContract, goToHome);
-app.get("/doctor/patients", requireAuth, checkContract, showMyPatients);
-app.get("/doctor/patients/:id", requireAuth, checkContract, showMyPatientInfo);
-app.get("/doctor/upcomingAppointments", requireAuth, checkContract, showUpcomingAppointments);
-app.get("/doctor/updateInfo", requireAuth, checkContract, updateMyInfo);
-app.post("/doctor/updateInfo", requireAuth, checkContract, updateThis);
-app.get("/doctor/AppointmentsFilter", requireAuth, checkContract, DocFilterAppointments);
-app.get("/doctor/Appointments", requireAuth, checkContract, DocShowAppointments);
+app.get("/doctor/home", requireAuth, goToHome);
+app.get("/doctor/patients", requireAuth, showMyPatients);
+app.get("/doctor/patients/:id", requireAuth, showMyPatientInfo);
+app.get("/doctor/upcomingAppointments", requireAuth, showUpcomingAppointments);
+app.get("/doctor/updateInfo", requireAuth, updateMyInfo);
+app.post("/doctor/updateInfo", requireAuth, updateThis);
+app.get("/doctor/AppointmentsFilter", requireAuth, DocFilterAppointments);
+app.get("/doctor/Appointments", requireAuth, DocShowAppointments);
 app.get("/doctor/contract", requireAuth, checkContract);
-app.post("/doctor/patients/:id/upload-pdf", requireAuth, checkContract, upload.single("healthRecords"), uploadHealthRecord);
-app.get("/doctor/timeSlots", requireAuth, checkContract, showTimeSlots);
-app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
-app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
-app.get("/doctor/schedFollowUp/:id/:date",requireAuth,checkContract,showFollowUp);
-app.post("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp); 
-app.get("/doctor/patients/:id/:healthId", requireAuth, checkContract, showHealthRecord);
+app.post("/doctor/patients/:id/upload-pdf", requireAuth, upload.single("healthRecords"), uploadHealthRecord);
+app.get("/doctor/timeSlots", requireAuth, showTimeSlots);
+app.post("/doctor/addTimeSlot", requireAuth, createTimeSlot);
+app.get("/doctor/deleteTimeSlot/:id",requireAuth,deleteTimeSlot);
+app.get("/doctor/schedFollowUp/:id/:date",requireAuth,showFollowUp);
+app.post("/doctor/reserve/:id",requireAuth,createFollowUp); 
+app.get("/doctor/patients/:id/:healthId", requireAuth, showHealthRecord);
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
@@ -167,5 +167,5 @@ app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
 app.get("/patient/paymentcredit",requireAuth,PayByCredit);
 app.get("/patient/paymentWallet",requireAuth,PayByWallet);
-
 app.get("/loggedIn",requireAuth,loggedIn);
+app.get("/logout",requireAuth,adminLogout);
