@@ -216,26 +216,22 @@ async function showTimeSlots(req,res){
 async function showFollowUp(req, res) {
   const doctorID = req.user._id;
   const id = req.params.id;
-  if (req.query.date) {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const date = new Date(req.query.date);
-    const day = days[date.getDay()];
-    const result = await timeSlot.find({ doctorID: doctorID, day: day });
-    let html=""
-    for( resu in result){
-      html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
-    }
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: html ,date:req.query.date});
-  } else {
-    const result = await timeSlot.find({ doctorID: id });
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: "",date:"" });
-  }
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  console.log(req.params.date)
+  const date = new Date(req.params.date);
+  const day = days[date.getDay()];
+  const result = await timeSlot.find({ doctorID: doctorID, day: day });
+    // for( resu in result){
+    //   html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+    // }
+  res.status(200).json({ result: result });
 }
 async function createFollowUp(req,res){
   doctorID=req.user._id;
   const id=req.params.id;
-  const date=new Date(req.query.date);
-  const time=req.query.time;
+  const date=new Date(req.body.date);
+  const time=req.body.time;
+  console.log(date,time)
   const startTime=time.split(",")[0];
   const endTime=time.split(",")[1];
   const startH = parseInt(startTime.split(":")[0]);
@@ -256,12 +252,12 @@ duration= duration/60;
   // Check if there is an existing appointment at the specified time
   const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
   if (existingAppointment) {
-    return res.status(400).send("There is already an appointment at the specified time.");
+    return res.status(200).json({message:"There is already an appointment at the specified time."});
   }
 
   const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
   await newAppointment.save();
-  res.redirect("/doctor/appointments")
+  res.status(200).json({message:"Appointment created successfully."});
 }
 async function showHealthRecord(req,res){
 const patientId=req.params.id;

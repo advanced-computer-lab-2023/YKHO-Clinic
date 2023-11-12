@@ -12,6 +12,7 @@ import PatientRegister from './components/PatientRegister'
 import DoctorInfo from './components/doctorComponents/DoctorInfo'
 import DoctorPatients from './components/doctorComponents/DoctorPatients'
 import DoctorAppointments from './components/doctorComponents/DoctorAppointments'
+import DoctorFollowUp from './components/doctorComponents/DoctorFollowUp'
 import PatientPrescriptions from './components/patientComponents/PatientPrescriptions'
 import PatientAppointment from './components/patientComponents/PatientAppointment'
 import PatientHealthRecords from './components/patientComponents/PatientHealthRecords'
@@ -20,6 +21,7 @@ import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
 
 function App() {
+  let id=0;
   return (
     <div>
       <BrowserRouter>
@@ -29,6 +31,7 @@ function App() {
         <Route path="/doctor/edit" element={<DoctorInfo/>} />
         <Route path="/doctor/patients" element={<DoctorPatients/>} />
         <Route path="/doctor/appointments" element={<DoctorAppointments/>} />
+        <Route path="/doctor/followup/:id" element={<DoctorFollowUp  />}/>
         <Route path="/admin/home" element={<AdminHome/>} />
         <Route path="/patient/home" element={<PatientHome/>} />
         <Route path="/patient/Prescriptions" element={<PatientPrescriptions/>} />
