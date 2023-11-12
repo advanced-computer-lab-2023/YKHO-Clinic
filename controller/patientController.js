@@ -3,6 +3,11 @@ const doctorModel = require('../model/doctor').doctor;
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+
+const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY)
+require("dotenv").config();
+
+
 const { isStrongPassword } = require("./adminController.js");
 const healthPackageModel = require('../model/healthPackage').healthPackage;
 //const { date } = require('joi');
@@ -137,11 +142,12 @@ const createFamilyMember = async (req, res) => {
 };
 
 const readFamilyMembers = async (req, res) => {
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     let results = patient.familyMembers;
-    if(results==null){
-        results=[];
+   if(results==null){
+       results=[];
     }
+   
     res.status(201).render('patient/family', {results});
 }
 
@@ -426,10 +432,72 @@ async function showFile(req, res) {
     res.send(file);
   }
 const PayByCredit = async (req, res) => {
+    const appoitmentid=req.params.id;
+    const appoitment= await appointmentModel.findOne({_id:appoitmentid}).populate("doctorID");
     
+    try{
+        const session= await stripe.checkout.sessions.create({
+            payment_method_types:['card'],
+            mode:'payment',
+            line_items: [{
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: "Appointment With Dr." + appoitment.doctorID.name,
+                    },
+                    unit_amount: appoitment.price * 100,
+                },
+                quantity: 1,
+            }],
+            success_url: `http://localhost:${process.env.PORT}/success/${appoitmentid}`,
+            cancel_url: `http://localhost:${process.env.PORT}/fail` ,
+        })
+        res.redirect(session.url);
+    
+    } catch (e){
+        console.error(e);
+        res.status(500).send('Internal Server Error');
+    }
 }
 const PayByWallet = async (req, res) => {
+    const appoitmentid=req.params.id;
+    const appoitment= await appointmentModel.findOne({_id:appoitmentid});
+    const appoitmentCost= appoitment.price;
+    const doctor= await doctorModel.findOne({_id:appoitment.doctorID});
+    const patient= await patientModel.findOne({_id:appoitment.patientID});
+    const Walletp= patient.Wallet - appoitmentCost;
+    const doctorw= doctor.Wallet + appoitmentCost;
+    if(patient.Wallet>=appoitmentCost){
+        const updatedPatient2= await patientModel.findByIdAndUpdate(appoitment.patientID,{ $set: { Wallet: Walletp } },{ new: true});
+        const updatedoctor= await doctorModel.findByIdAndUpdate(appoitment.doctorID,{ $set: { Wallet: doctorw } },{ new: true});
+        const appointmentupdated= await appointmentModel.findByIdAndUpdate(appoitmentid,{ $set: { paid: true } },{ new: true})
+        res.redirect("/patient/home");
+    }
+    else{
+        res.status(500).send('Insufficient funds');
+    }
     
 }
-module.exports = {PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
+const ViewWallet = async(req,res) =>{
+    patientID=req.user._id;
+    patient= await patientModel.findOne({_id:patientID});
+    Wallett=patient.Wallet;
+    console.log(Wallett);
+    res.render("patient/Wallet",{Wallett: Wallett});
+}
+const success = async(req,res) =>{
+    const appoitmentid=req.params.id;
+    const appoitment= await appointmentModel.findOne({_id:appoitmentid});
+    const appoitmentCost= appoitment.price;
+    const doctor= await doctorModel.findOne({_id:appoitment.doctorID});
+    const doctorw= doctor.Wallet + appoitmentCost;
+    const updatedoctor= await doctorModel.findByIdAndUpdate(appoitment.doctorID,{ $set: { Wallet: doctorw } },{ new: true});
+    const appointmentupdated= await appointmentModel.findByIdAndUpdate(appoitmentid,{ $set: { paid: true } },{ new: true});
+    res.render("success");
+   
+}
+const fail = async(req,res)=>{
+    res.render("fail");
+}
+module.exports = {success,fail,ViewWallet,PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
     ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
