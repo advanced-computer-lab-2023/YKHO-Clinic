@@ -620,5 +620,5 @@ const success = async(req,res) =>{
 const fail = async(req,res)=>{
     res.render("fail");
 }
-module.exports = {success,fail,ViewWallet,PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
+module.exports = {showSlots,reserveSlot,showSlotsFam,reserveSlotFam,success,fail,ViewWallet,PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
     ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
