@@ -14,10 +14,10 @@ const DoctorInfo = () => {
            setError(res.data.message);
         })
     }
+    //checks if logged in and if not redirects to login page
     const [result,setResult]=useState(false);
     useEffect(()=>{check()},[]);
     async function check(){
-        
         const res= await axios.get("http://localhost:3000/loggedIn",{
             withCredentials:true
         }).then((res)=>{

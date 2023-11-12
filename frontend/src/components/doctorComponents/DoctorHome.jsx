@@ -34,6 +34,10 @@ function DoctorHome() {
     function handlePatients(){
         window.location.href="/doctor/patients"
     }
+    function handleAppointments
+    (){
+        window.location.href="/doctor/appointments"
+    }
     return (
         <div>
 
@@ -46,7 +50,7 @@ function DoctorHome() {
                     Show My Patients
                 </button>
                 <br />
-                <button id="Allapp">
+                <button id="Allapp" onClick={handleAppointments}>
                     All Appointments
                 </button>
                 <br />
