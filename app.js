@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 const { requireAuth } = require("./Middleware/authMiddleware");
 const { home } = require("./controller/homePage");
 const {
+  docViewWallet,
   createDoctor,
   goToHome,
   updateMyInfo,
@@ -72,6 +73,8 @@ const {
   deleteMedicalHistory,
   LinkFamilyMemeber,
   LinkF,
+  ViewWallet,
+  fail,success,
   showSlots,
   reserveSlot,
   showSlotsFam,
@@ -124,6 +127,7 @@ app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
 app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp);
+app.get("/doctor/Wallet",requireAuth,docViewWallet);
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
@@ -193,8 +197,11 @@ app.get("/patient/home", requireAuth, readDoctors);
 app.get("/patient/searchDoctors", requireAuth, searchDoctors);
 app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
-app.get("/patient/paymentcredit",requireAuth,PayByCredit);
-app.get("/patient/paymentWallet",requireAuth,PayByWallet);
+app.get("/patient/paymentcredit/:id",requireAuth,PayByCredit);
+app.get("/patient/paymentWallet/:id",requireAuth,PayByWallet);
+app.get("/patient/Wallet",requireAuth,ViewWallet);
+app.get("/success/:id",requireAuth,success);
+app.get("/fail",requireAuth,fail);
 app.get("/patient/doctors/:id/showSlots", requireAuth, showSlots);
 app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
 app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
