@@ -3,6 +3,7 @@ const doctorModel = require('../model/doctor').doctor;
 const timeSlot = require('../model/timeSlots').timeSlot;
 const timeSlotModel = timeSlot;
 const {appointment} = require('../model/appointments');
+const {healthPackage} = require('../model/healthPackage');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
@@ -284,10 +285,18 @@ async function showSlots(req, res) {
     const endH = parseInt(endTime.split(":")[0]);
     const endM = parseInt(endTime.split(":")[1]);
     const doctor = await doctorModel.find({ _id: doctorID });
-  let duration = (endH - startH) * 60 + (endM - startM);
-  
-  duration= duration/60;
-    let price= duration*doctor[0].rate;
+    const patient = await patientModel.find({ _id: id }).select(["healthPackage"]);
+    let duration = (endH - startH) * 60 + (endM - startM);
+    console.log(patient)
+    duration= duration/60;
+    let price;
+    if(patient[0].healthPackage!="none"){
+        const healthPack = await healthPackage.find({packageName:patient[0].healthPackage});
+        price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
+    }
+    else{
+        price= duration*doctor[0].rate;
+    }
     // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
     const startHour=startTime.split(":")[0];
     const startMinute=startTime.split(":")[1];
@@ -345,11 +354,18 @@ async function showSlots(req, res) {
     }
     else{
         const familyMemberID=req.query.famID;
-    
+        const familyPatient = await patientModel.find({ _id: familyMemberID }).select(["healthPackage"]);
         let duration = (endH - startH) * 60 + (endM - startM);
     
         duration= duration/60;
-        let price= duration*doctor[0].rate;
+        let price;
+        if(familyPatient[0].healthPackage!="none"){
+            const healthPack = await healthPackage.find({packageName:familyPatient[0].healthPackage});
+            price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
+        }
+        else{
+            price= duration*doctor[0].rate;
+        }
         // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
         const startHour=startTime.split(":")[0];
         const startMinute=startTime.split(":")[1];
@@ -369,7 +385,7 @@ async function showSlots(req, res) {
   }
 
 const ViewPrescriptions = async (req,res) => {
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     let result = await prescription.find({patientID:patient._id}).select(["prescriptionName","doctorName"]);
     let prescriptionrows ='<tr><th>name</th></tr>';
 
@@ -381,7 +397,7 @@ const ViewPrescriptions = async (req,res) => {
     res.render("patient/Prescriptions",{prescriptionrows:prescriptionrows,onepatient:true});
 }
 async function selectPrescription(req,res){
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     try{
         const result = await prescription.find({patientID:patient._id,_id:req.params.id})
         let prescriptionrows ='<tr><th>Name</th> <th>Date</th> \
@@ -404,7 +420,7 @@ async function selectPrescription(req,res){
 
 const FilterPrescriptions = async (req,res) => {
     let result
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     if(req.query.filter=="DoctorName") {
         result= await prescription.find({doctorName:req.query.searchvalue,patientID:patient._id});
     }
@@ -456,7 +472,7 @@ async function addMedicalHistory(req,res){
     }
 }
 async function deleteMedicalHistory(req,res){
-    patient=patientModel.findOne({_id:req.user._id});
+    patient= await patientModel.findOne({_id:req.user._id});
     const patientId = patient._id;
     const recordId = req.params.id;
     
@@ -468,7 +484,7 @@ async function deleteMedicalHistory(req,res){
 }
 const viewHealthRecords = async (req, res) => 
 {
-    patient=patientModel.findOne({_id:req.user._id});
+    patient=await patientModel.findOne({_id:req.user._id});
         let healthRecords = [];
             if (patient.healthRecords && patient.healthRecords.length > 0) {
                 healthRecords = patient.healthRecords.map((record) => ({
