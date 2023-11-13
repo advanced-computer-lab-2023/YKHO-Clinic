@@ -27,11 +27,19 @@
             View my medical history
         </button>
     </form>
+    <form method="GET" action="/patient/Wallet">
+        <button type="submit" id="infoButton">
+            View Wallet
+        </button>
+    </form>
     <form method="GET" action="/patient/LinkFamily">
         <button type="submit" id="infoButton">
             Link Family Members
         </button>
     </form>
+    <form method="get" action="/home">
+        <button id="Logout">Logout</button>
+    </form> 
     <a href="/patient/readFamilyMembers">manage family members</a>
     <h3>search</h3>
     <form method="get" action="/patient/searchDoctors">
@@ -74,6 +82,9 @@
         
         <%- doctorrows %>
     </table>
+    <table> 
+        <%- slotsrows %>
+    </table>
     <% }%>
 </body>
 
@@ -83,5 +94,15 @@
 
     function showThis(event){
         window.location.href = `http://localhost:3000/patient/doctors/${event.target.id}`
+    }
+    function reserveForMyself(){
+        var currentUrl = window.location.href;
+        var doctorId = currentUrl.split('/').pop();
+        window.location.href = `http://localhost:3000/patient/doctors/${doctorId}/showSlots`
+    }
+    function reserveForFamilyMember(){
+        var currentUrl = window.location.href;
+        var doctorId = currentUrl.split('/').pop();
+        window.location.href = `http://localhost:3000/patient/doctors/${doctorId}/showSlots/familyMember`
     }
 </script>

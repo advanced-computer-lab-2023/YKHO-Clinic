@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 const { requireAuth } = require("./Middleware/authMiddleware");
 const { home } = require("./controller/homePage");
 const {
+  docViewWallet,
   createDoctor,
   goToHome,
   updateMyInfo,
@@ -41,12 +42,14 @@ const {
   addHealthPackages,
   callUpdateHealthPackage,
   callDeleteHealthPackage,
-  adminLogout,
+  logout,
   changePasswordAdmin,
   Login,
   acceptRequest,
   rejectRequest,
+  sendOTP,
   forgetPassword,
+  goToNewPassword,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -70,6 +73,12 @@ const {
   deleteMedicalHistory,
   LinkFamilyMemeber,
   LinkF,
+  ViewWallet,
+  fail,success,
+  showSlots,
+  reserveSlot,
+  showSlotsFam,
+  reserveSlotFam,
 } = require("./controller/patientController.js");
 const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
@@ -84,16 +93,21 @@ app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 mongoose
   .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority"
+    MONGO_URI
   )
   .then(() => console.log("connected to clinicDB"))
   .catch((err) => console.log(err.message));
 
 const id = "1";
 
-app.get("/", home);
+app.get("/",  home);
 app.post("/login", Login);
-app.post("/forgetPassword", forgetPassword);//req.params.username
+app.get("/home", logout);
+app.post("/forgetPassword/enterUsername", (req, res) => {res.render("forgetPassword/enterUsername", { message: "" })});
+app.get("/forgetPassword/enterOTP", sendOTP);//send otp to mail and pass otp to the function
+app.get("/forgetPassword/enterNewPassword", goToNewPassword);
+app.post("/forgetPassword/done", forgetPassword);
+
 //Doctor
 app.post("/addDoctor", createDoctor); 
 app.post("/addAppointment", createAppointment);
@@ -113,21 +127,38 @@ app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
 app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp);
+app.get("/doctor/Wallet",requireAuth,docViewWallet);
 //Admin
+app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
+app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
 app.get("/admin/acceptRequest", acceptRequest);
 app.get("/admin/rejectRequest", rejectRequest);
-app.get("/admin/register", requireAuth, adminRegister);
-app.post("/admin/register", requireAuth, createAdmin);
-app.get("/admin/deleteUser", requireAuth, goToDeleteUser);
-app.post("/admin/deleteUser", requireAuth, deleteUser);
-app.get("/admin/HealthPackages", requireAuth, goToHealthPackages);
-app.post("/admin/healthPackages", requireAuth, addHealthPackages);
-app.post("/admin/healthPackages/updated", requireAuth, callUpdateHealthPackage);
-app.post("/admin/healthPackages/deleted", requireAuth, callDeleteHealthPackage);
+app.get("/admin/register",  requireAuth, adminRegister);
+app.post("/admin/register", requireAuth,  createAdmin);
+app.get("/admin/deleteUser", requireAuth,  goToDeleteUser);
+app.post("/admin/deleteUser", requireAuth,  deleteUser);
+app.get("/admin/HealthPackages", requireAuth,  goToHealthPackages);
+app.post("/admin/healthPackages",  requireAuth, addHealthPackages);
+app.post("/admin/healthPackages/updated",  requireAuth, callUpdateHealthPackage);
+app.post("/admin/healthPackages/deleted", requireAuth,  callDeleteHealthPackage);
 
 //ahmed Patient
+app.get("/patient/Prescriptions", requireAuth, ViewPrescriptions);
+app.get("/Patient/PrescriptionsFiltered", requireAuth, FilterPrescriptions);
+app.get("/patient/Prescriptions/:id", requireAuth, selectPrescription);
+app.get("/Patient/Appointments", requireAuth, PatientShowAppointments);
+app.get("/Patient/AppointmentsFilter", requireAuth, PatientFilterAppointments);
+app.get("/patient/patientHome", requireAuth, patientHome);
+app.get("/patient/HealthRecords", requireAuth, viewHealthRecords);
+app.get("/patient/medicalHistory", showMedicalHistory);
+app.post("/patient/addMedicalHistory", requireAuth, upload.single("files"), addMedicalHistory);
+app.get("/files/:fileId", requireAuth, showFile);
+app.post( "/patient/deleteMedicalHistory/:id", requireAuth, deleteMedicalHistory);
+// register
+app.get("/guest/patient", function (req, res) {
+  res.render("patient/register")});
 app.get("/patient/Prescriptions", requireAuth, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuth, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuth, selectPrescription);
@@ -144,10 +175,15 @@ app.get("/guest/patient", function (req, res) {
   res.render("patient/register");
 });
 app.get("/guest/doctor", function (req, res) { 
+  res.render("doctor/register")});
+app.get("/guest/doctor", function (req, res) { 
   res.render("doctor/register");
 });
 app.post("/request/createRequest", upload.array("files"), createRequest);
+app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
+app.get("/patient/createFamilyMember", function (req, res) {
+  res.render("patient/addFamily")});
 app.get("/patient/createFamilyMember", function (req, res) {
   res.render("patient/addFamily");
 });
@@ -161,6 +197,13 @@ app.get("/patient/home", requireAuth, readDoctors);
 app.get("/patient/searchDoctors", requireAuth, searchDoctors);
 app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
-app.get("/patient/paymentcredit",requireAuth,PayByCredit);
-app.get("/patient/paymentWallet",requireAuth,PayByWallet);
+app.get("/patient/paymentcredit/:id",requireAuth,PayByCredit);
+app.get("/patient/paymentWallet/:id",requireAuth,PayByWallet);
+app.get("/patient/Wallet",requireAuth,ViewWallet);
+app.get("/success/:id",requireAuth,success);
+app.get("/fail",requireAuth,fail);
+app.get("/patient/doctors/:id/showSlots", requireAuth, showSlots);
+app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
+app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
+app.get("/patient/doctors/:id/familyMember/reserve", requireAuth, reserveSlotFam);
 

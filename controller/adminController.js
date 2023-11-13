@@ -10,7 +10,6 @@ const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
 const { doctor: doctorTable } = require("../model/doctor.js");
-const patientModel = require("../model/patient");
 const {
   healthPackage: healthPackageTable,
   validateHealthPackage,
@@ -41,7 +40,7 @@ const Login = async (req, res) => {
     username: req.body.username,
   });
 
-  let patient = await patientModel.findOne({
+  let patient = await patientsTable.findOne({
     username: req.body.username,
   });
 
@@ -70,6 +69,7 @@ const Login = async (req, res) => {
         username: patient.username,
         type: "patient",
       });
+
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       let discount = 1;
@@ -85,7 +85,7 @@ const Login = async (req, res) => {
         _id,
         name,
         speciality,
-        sessionPrice: rate * 1.1 * discount,
+        sessionPrice: Math.floor(rate * 1.1 * discount),
       }));
 
       return res.render("patient/home", { one: true, results });
@@ -100,7 +100,6 @@ const Login = async (req, res) => {
         type: "doctor",
       });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-
       const data = {
         name: doctor.username,
       };
@@ -151,34 +150,119 @@ const changePasswordAdmin = async (req, res) => {
   }
 };
 
-const forgetPassword = async (req, res) => {
+const goToNewPassword = (req, res) => {
+  res.render("forgetPassword/enterNewPassword", {
+    message: "",
+    username: req.query.username,
+  });
+};
+
+const sendOTP = async (req, res) => {
   let OTP = generateOTP();
   let email = "";
+  if(req.query.username == "") {
+    res.render("forgetPassword/enterUsername", {
+      message: "please enter your username",
+    });
+  }
+  let patient = await patientsTable.findOne({
+    username: req.body.username,
+  });
+  if (patient) email = patient.email;
 
-  if (req.user.type == "patient") {
-    let patient = await patientModel.findOne({
-      username: req.user.username,
+  let doctor = await doctorTable.findOne({
+    username: req.body.username,
+  });
+  if (doctor) email = doctor.email;
+
+  let admin = await adminsTable.findOne({
+    username: req.body.username,
+  });
+  if (admin) email = admin.email;
+
+  if (email != "") {
+    sendOTPByEmail(email, OTP);
+    res.render("forgetPassword/enterOTP", {
+      OTP: OTP,
+      message: "",
+      username: req.query.username,
     });
-    patient.OTP = OTP;
-    await patient.save();
-    email = patient.email;
-  } else if (req.user.type == "doctor") {
-    let doctor = await doctorTable.findOne({
-      username: req.user.username,
-    });
-    doctor.OTP = OTP;
-    await doctor.save();
-    email = doctor.email;
   } else {
-    let admin = await adminsTable.findOne({
-      username: req.user.username,
+    res.render("forgetPassword/enterUsername", {
+      message: "Username not found",
     });
-    admin.OTP = OTP;
-    await admin.save();
-    email = admin.email;
+  }
+};
+
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+async function sendOTPByEmail(email, OTP) {
+  const transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "784ac0344ac54c",
+      pass: "b21deaba2fab04",
+    },
+  });
+
+  const mailOptions = {
+    from: "ayebnmetnaka@inbox.mailtrap.io",
+    to: "yousseftyoh@gmail.com",
+    subject: "Password Reset OTP",
+    text: `Your OTP for password reset is: ${OTP}`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+const forgetPassword = async (req, res) => {
+  if (req.body.newPassword === "" || req.body.confirmationPassword === "") {
+    res.status(404).json({ message: "Fill the empty fields" });
+  }
+  let admin = await adminsTable.findOne({
+    username: req.query.username,
+  });
+
+  let patient = await patientsTable.findOne({
+    username: req.query.username,
+  });
+
+  let doctor = await adminsTable.findOne({
+    username: req.query.username,
+  });
+
+  if (req.body.newPassword != req.body.confirmationPassword) {
+    return res.status(404).json({ message: "Passwords dont not match" });
   }
 
-  sendOTPByEmail(email, OTP);
+  if (isStrongPassword(req.body.newPassword) === false) {
+    return res.status(404).json({ message: "Password is weak" });
+  }
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+  if (admin) {
+    admin = await adminsTable.findOneAndUpdate(
+      { username: req.query.username},
+      { password: hashedPassword }
+    );
+  }
+  if (patient) {
+    patient = await patientsTable.findOneAndUpdate(
+      { username: req.query.username },
+      { password: hashedPassword }
+    );
+  }
+  if (doctor) {
+    doctor = await doctorTable.findOneAndUpdate(
+      { username: req.query.username },
+      { password: hashedPassword }
+    );
+  }
+
+  res.render("home", { message: "Password changed" });
 };
 
 function generateOTP() {
@@ -215,13 +299,17 @@ function sendOTPByEmail(email, OTP) {
   connectionTimeout: 30000;
 }
 
-const adminLogout = (req, res) => {
-  res.clearCookie("jwt").send(200, "Logged out successfully");
-  res.render("/");
+const logout = (req, res) => {
+  res.clearCookie("jwt");
+  res.render("home", { message: "logged out" });
 };
 
 const createAdmin = async (req, res) => {
-  if (req.body.password === "" || req.body.username === "" || req.body.email === "") {
+  if (
+    req.body.password === "" ||
+    req.body.username === "" ||
+    req.body.email === ""
+  ) {
     //look for any missing fields
     return res.render("admin/register", { message: "Insert missing fields" });
   }
@@ -237,7 +325,7 @@ const createAdmin = async (req, res) => {
   if (emailAvailable != null) {
     //if it exists
     return res.render("admin/register", { message: "Email Unavailable" });
-  }   
+  }
 
   if (userAvailable != null) {
     //if it exists
@@ -254,6 +342,7 @@ const createAdmin = async (req, res) => {
     const adminUser = new adminsTable({
       username: req.body.username, //create the admin
       password: hashedPassword,
+      email: req.body.email,
       email: req.body.email,
     });
     const result = await adminUser.save(); //save into DB
@@ -449,7 +538,7 @@ const deleteUser = async (req, res) => {
       username: req.body.username,
     });
   } else {
-    deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
+    deletedUser = await doctorTable.deleteOne({ username: req.body.username });
   }
   if (deletedUser.deletedCount == 1)
     res.render("admin/deleteUser", { message: "User deleted successfully" });
@@ -513,10 +602,12 @@ module.exports = {
   callUpdateHealthPackage,
   callDeleteHealthPackage,
   isStrongPassword,
-  adminLogout,
+  logout,
   changePasswordAdmin,
   Login,
   acceptRequest,
   rejectRequest,
+  sendOTP,
   forgetPassword,
+  goToNewPassword,
 };
