@@ -95,7 +95,7 @@ mongoose
   .connect(
     MONGO_URI
   )
-  .then(() => console.log("connected to clinicDB"))
+  .then(() => console.log("connected to clinicDB at " + MONGO_URI))
   .catch((err) => console.log(err.message));
 
 const id = "1";
@@ -207,3 +207,21 @@ app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
 app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
 app.get("/patient/doctors/:id/familyMember/reserve", requireAuth, reserveSlotFam);
 
+
+// elgharieb S2
+const readSubscription = require("./controller/patientController").readSubscription;
+app.get("/patient/readSubscription",requireAuth, readSubscription)
+const readFamilyMembersSubscriptions = require("./controller/patientController").readFamilyMembersSubscriptions;
+app.get("/patient/readFamilyMembersSubscriptions",requireAuth, readFamilyMembersSubscriptions)
+const readHealthPackage = require("./controller/patientController").readHealthPackage;
+app.get("/patient/readHealthPackage/:healthPackage",requireAuth, readHealthPackage)
+const readHealthPackages = require("./controller/patientController").readHealthPackages;
+app.get("/patient/readHealthPackages/:nationalID",requireAuth, readHealthPackages)
+const subscribe = require("./controller/patientController").subscribe;
+app.post("/patient/subscribe/:healthPackage",requireAuth, subscribe)
+const subscribeFamilyMember  = require("./controller/patientController").subscribeFamilyMember;
+app.post("/patient/subscribeFamilyMember/:healthPackage",requireAuth, subscribeFamilyMember)
+const deleteSubscription = require("./controller/patientController").deleteSubscription;
+app.get("/patient/deleteSubscription",requireAuth, deleteSubscription)
+const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
+app.post("/patient/deleteFamilyMemberSubscription",requireAuth, deleteFamilyMemberSubscription)

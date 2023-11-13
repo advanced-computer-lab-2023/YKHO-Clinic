@@ -255,6 +255,207 @@ async function selectDoctor(req,res){
     }
 }
 
+const readHealthPackage = async (req,res) => {
+    let healthPackage = await healthPackageModel.findOne({packageName: req.params.healthPackage})
+    res.status(201).send(healthPackage);
+}
+
+const readHealthPackages = async (req, res) => {
+    try{
+        let healthPackages = await healthPackageModel.find();
+        //res.status(201).send(healthPackages);
+        res.status(201).render('patient/healthPackages', {healthPackages, nationalID: req.params.nationalID});
+    }
+    catch(error){
+        res.status(400).json({error:error.message})
+    }
+}
+
+const readSubscription = async (req,res) => {
+    try {
+        let patient = await patientModel.findById(req.user._id);
+        let subscription = patient.subscription;
+        res.status(201).render('patient/subscription', {subscription,one:true});
+        //res.status(201).send(subscription);
+    } catch (error){
+        res.status(401).send({ "err": error})
+    }
+}
+
+const readFamilyMembersSubscriptions = async (req,res) => {
+        let agent = await patientModel.findById(req.user._id).populate({
+            path:     'familyMembers',			
+            populate:  "patient" 
+        });
+        let familyMembers = agent.familyMembers;
+
+        let familyMembersSubscriptions = [];
+        for(let i = 0; i < familyMembers.length; i++){
+            if(familyMembers[i].patientID){
+                let patient = await patientModel.findById(familyMembers[i].patientID);
+                familyMembersSubscriptions.push({
+                    name: familyMembers[i].name,
+                    healthPackage: patient.subscription.healthPackage,
+                    state: patient.subscription.state,
+                    endDate: (patient.subscription.endDate? patient.subscription.endDate : ''),
+                    agent: patient.subscription.agent,
+                    nationalID: familyMembers[i].nationalID
+                })
+            }
+            else {
+                familyMembersSubscriptions.push({
+                    name: familyMembers[i].name,
+                    healthPackage: 'none',
+                    state: 'unsubscribed',
+                    endDate: '',
+                    agent: false,
+                    nationalID: familyMembers[i].nationalID
+                })
+            }
+        }
+    
+        //res.status(201).send(familyMembersSubscriptions);
+        res.status(201).render('patient/familyMembersSubscriptions', {familyMembersSubscriptions});
+}
+
+// req.username, req.body.healthPackage, req.body.paymentMethod
+const subscribe = async (req, res) => {
+    try {
+        let patient = await patientModel.findById( req.user._id )
+        
+        // total
+        let familyDiscount = 0;
+        if(patient.agentID){
+            let referal =  await patientModel.findById(patient.agentID)
+            if (referal.subscription.state == 'subscribed'){
+                let healthPackage = await healthPackageModel.findOne({packageName:referal.subscription.healthPackage})
+                familyDiscount = healthPackage.familyDiscount;
+            }
+        }
+
+        let healthPackage = await healthPackageModel.findOne({packageName: req.params.healthPackage});
+        let total = healthPackage.price* ((100-familyDiscount)/100);
+        
+        
+        if (req.body.paymentMethod == "wallet"){
+            if (patient.Wallet < total){
+                throw new Error("insuficient balance, try another payment method")
+            }
+            else {
+                // update wallet
+                patient.Wallet -= total;
+            }
+        }
+        else {
+            // pay using card
+        }
+
+        // end date
+        let date = new Date();
+        date.setSeconds(59)
+        date.setMinutes(59);
+        date.setHours(23);
+        date.setFullYear(date.getFullYear() + 1);
+        // update subscription
+        patient.subscription = {
+            healthPackage:req.params.healthPackage,
+            state: "subscribed",
+            endDate: date,
+        }
+
+        patient = await patient.save();
+        res.status(201).send(patient);
+
+    } catch (error) {
+        res.status(401).send(error.message)
+    }
+}
+
+const subscribeFamilyMember = async (req,res) => {
+    try {
+        let agent = await patientModel.findById(req.user._id);
+        let familyMember = agent.familyMembers.find(familyMember => familyMember.nationalID == req.body.nationalID);
+        
+        let patient = await patientModel.findById(familyMember.patientID)
+        
+
+        let familyDiscount = 0;
+        if (agent.subscription.state != 'unsubscribed'){
+            let healthPackage = await healthPackageModel.findOne({packageName:agent.subscription.healthPackage})
+            familyDiscount = healthPackage.familyDiscount;
+        }
+        
+        
+
+        let healthPackage = await healthPackageModel.findOne({packageName: req.params.healthPackage});
+        let total = healthPackage.price* ((100-familyDiscount)/100);
+
+        if (req.body.paymentMethod == "wallet"){
+            if (agent.Wallet < total){
+                throw new Error("insuficient balance, try another payment method")
+            }
+            else {
+                // update wallet
+                agent.Wallet -= total;
+            }
+        }
+        else {
+            // pay using card
+        }
+
+        // end date
+        let date = new Date();
+        date.setSeconds(59)
+        date.setMinutes(59);
+        date.setHours(23);
+        date.setFullYear(date.getFullYear() + 1);
+        // update subscription
+        patient.subscription = {
+            healthPackage:req.params.healthPackage,
+            state: "subscribed",
+            endDate: date,
+            agent: true,
+        }
+
+        agent = await agent.save()
+        patient = await patient.save();
+        res.status(201).send(patient);
+
+    } catch (error) {
+        res.status(401).send(error.message)
+    }
+}
+
+const deleteSubscription = async (req, res) => {
+    try {
+        let patient = await patientModel.findById(req.user._id)
+        patient.subscription.state = 'cancelled';
+
+        patient = await patient.save();
+        res.status(201).send(patient);
+
+    } catch (error) {
+        res.status(401).send(error.message)
+    }
+}
+
+// req.body.nationalID
+const deleteFamilyMemberSubscription = async (req,res) => {
+    try {
+        let agent = await patientModel.findById(req.user._id);
+        let familyMember = agent.familyMembers.find(familyMember => familyMember.nationalID == req.body.nationalID);
+        let patient = await patientModel.findById(familyMember.patientID)
+        
+        patient.subscription.state = 'cancelled';
+
+        patient = await patient.save();
+        res.status(201).send(patient);
+
+    } catch (error) {
+        res.status(401).send(error.message)
+    }
+}
+
 async function showSlots(req, res) {
     const doctorID = req.params.id;
     const id = req.user._id;
@@ -538,8 +739,8 @@ const LinkFamilyMemeber = async(req,res) =>{
     results[0].familyMembers[i].patientID=relate[0]._id;
     const updatedPatient = await patientModel.findByIdAndUpdate(patientid,{ $set: { familyMembers: results[0].familyMembers } },{ new: true});
     
-    res.redirect("/patient/home");
-    
+    //res.redirect("/patient/home");
+    res.status(201).render('patient/home', { results:[], one: true });
 }
 async function showFile(req, res) {
     const fileId = req.params.fileId;
@@ -620,3 +821,14 @@ const fail = async(req,res)=>{
 }
 module.exports = {showSlots,reserveSlot,showSlotsFam,reserveSlotFam,success,fail,ViewWallet,PayByCredit,PayByWallet, createPatient, createFamilyMember, readFamilyMembers, readDoctors, searchDoctors, filterDoctors,
     ViewPrescriptions,FilterPrescriptions,patientHome,selectPrescription,selectDoctor,viewHealthRecords,showMedicalHistory,addMedicalHistory,LinkF,LinkFamilyMemeber,showFile,deleteMedicalHistory};
+
+module.exports.readSubscription = readSubscription;
+module.exports.readFamilyMembersSubscriptions = readFamilyMembersSubscriptions;
+
+module.exports.readHealthPackage = readHealthPackage;
+module.exports.readHealthPackages = readHealthPackages;
+
+module.exports.subscribe = subscribe;
+module.exports.subscribeFamilyMember = subscribeFamilyMember;
+module.exports.deleteSubscription = deleteSubscription;
+module.exports.deleteFamilyMemberSubscription = deleteFamilyMemberSubscription;
