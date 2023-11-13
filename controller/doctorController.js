@@ -259,7 +259,7 @@ price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDisc
     return res.status(400).send("There is already an appointment at the specified time.");
   }
 
-  const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
+  const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price,paid:true})
   await newAppointment.save();
   res.redirect("/doctor/appointments")
 }
