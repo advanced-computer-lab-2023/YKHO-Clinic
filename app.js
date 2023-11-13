@@ -32,12 +32,12 @@ const {
   DocShowAppointments,
 } = require("./controller/appointmentController");
 const {
-  goToAdminLogin,
-  adminLogin,
   adminRegister,
   createAdmin,
   deleteUser,
   goToUploadedInfo,
+  getRequests,
+  showDoctorRecord,
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,
@@ -120,8 +120,10 @@ app.get("/doctor/patients/:id/:healthId", requireAuth, checkContract, showHealth
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
-app.get("/admin/acceptRequest", acceptRequest);
-app.get("/admin/rejectRequest", rejectRequest);
+app.get("/getRequests", requireAuth, getRequests);
+app.get("/admin/uploadedInfo/:id/:file", requireAuth, checkContract, showDoctorRecord);
+app.post("/admin/acceptRequest", acceptRequest);
+app.post("/admin/rejectRequest", rejectRequest);
 app.get("/admin/register", requireAuth, adminRegister);
 app.get("/admin/home",requireAuth,goToHome);
 app.post("/admin/register", requireAuth, createAdmin);

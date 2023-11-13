@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
+
+const fileSchema = new mongoose.Schema({
+    data: {
+      type: Buffer,
+      required: true,
+    },
+    contentType: {
+      type: String,
+      required: true,
+    },
+  });
+
 const doctorSchema = new mongoose.Schema({
     name:
     {
@@ -61,21 +73,14 @@ const doctorSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    id:{
-        type:Buffer
-    },
-    medicalLicense:{
-        type:Buffer
-    },
-    medicalDegree:{
-        type:Buffer
-    },
+    id:fileSchema,
+    medicalLicense:fileSchema,
+    medicalDegree:fileSchema,
     Wallet:
     {
         type:Number,
         required:true,
     },
-    OTP: { type:Number },
     });
 const doctor = mongoose.model('doctor', doctorSchema);
 

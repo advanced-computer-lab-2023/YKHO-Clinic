@@ -119,8 +119,6 @@ const patientSchema = new mongoose.Schema({
         type:Number,
         required:true,
     },
-
-    OTP: { type:Number },
 })
 
 

@@ -23,11 +23,11 @@
             <td><%= request.rate %></td>
             <td><%= request.affiliation %></td>
             <td><%= request.education %></td>
-            <form method="get" action="/admin/acceptRequest">
+            <form method="post" action="/admin/acceptRequest">
             <input type="hidden" name="email" value="<%= request.email %>">            
             <td><button>Accept</button></td>
             </form>
-            <form method="get" action="/admin/rejectRequest">    
+            <form method="post" action="/admin/rejectRequest">    
             <input type="hidden" name="email" value="<%= request.email %>">        
             <td><button name=<%= request.email %>>Reject</button></td>
             </form>

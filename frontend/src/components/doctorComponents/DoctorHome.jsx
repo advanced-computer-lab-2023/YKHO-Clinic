@@ -10,7 +10,7 @@ function DoctorHome() {
     useEffect(()=>{check()},[]);
     async function check(){
         
-        const res= await axios.get("http://localhost:3000/loggedIn",{
+        const res= await axios.get("http://localhost:3000/loggedIn",{ 
             withCredentials:true
         }).then((res)=>{
             

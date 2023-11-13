@@ -35,9 +35,9 @@ const createRequest = async (req, res) => {
   if (error) {
     res.status(400).send(error.message);
   } else {
-    const id = req.files[0].buffer;
-    const medicalLicense = req.files[1].buffer;
-    const medicalDegree = req.files[2].buffer;
+    const id = { data: req.files[0].buffer, contentType: req.files[0].mimetype};
+    const medicalLicense = { data: req.files[1].buffer, contentType: req.files[1].mimetype};
+    const medicalDegree = { data: req.files[2].buffer, contentType: req.files[2].mimetype};
 
     if(isStrongPassword(req.body.password) === false){
         console.log("WEAK PASSWORD");
