@@ -5,20 +5,9 @@ const bcrypt = require('bcrypt');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const { isStrongPassword } = require("./adminController.js");
-const schema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  password: Joi.string().required(),
-  name: Joi.string().required(),
-  DOB: Joi.date().iso().required(),
-  email: Joi.string().email().required(),
-  speciality: Joi.string().required(),
-  mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
-  rate: Joi.number().positive().required(),
-  affiliation: Joi.string().required(),
-  education: Joi.string().required(),
-});
 
-const createRequest = async (req, res) => {
+
+const createRequest = async (req, res) => { 
   const {
     username,
     password,
@@ -41,7 +30,7 @@ const createRequest = async (req, res) => {
 
     if(isStrongPassword(req.body.password) === false){
         console.log("WEAK PASSWORD");
-        return res.render("doctor/register", {message:"password is weak"});
+        return res.status(200).json({message:"password is weak"});
     }
 
     const salt = await bcrypt.genSalt();
@@ -65,8 +54,8 @@ const createRequest = async (req, res) => {
     });
 
     request = await request.save();
-    res.status(201).send(request);
+    res.status(201).json({ message: "request sent successfully" })
   }
-};
+;
 
 module.exports = { createRequest };

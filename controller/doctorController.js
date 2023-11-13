@@ -118,7 +118,7 @@ const schema = Joi.object({
         res.status(200).json({message:"updated successfully"})
   }
 }
-const checkContract=async (req,res,next)=>{
+const checkContract=async (req,res,)=>{
   id=req.user._id;
   if(req.query.accept=="accept"){
       await doctor.findByIdAndUpdate(id, {acceptedContract:true})
@@ -127,10 +127,10 @@ const checkContract=async (req,res,next)=>{
   else{
   const result=await doctor.findById(id)
   if(result.acceptedContract){
-      next(); 
+     res.status(200).json({contract:"acc"});
   }
   else{
-      res.render("doctor/doctorContract")
+      res.status(200).json({contract:"rej"});
   }
 }
 }
@@ -166,7 +166,7 @@ const uploadHealthRecord = async (req, res) => {
 async function createTimeSlot(req, res) {
   id=req.user._id;
   const day = req.body.day;
-
+console.log(day);
   const { from, to } = req.body;
 
   // Check if the new timeslot clashes with any previously added timeslots
@@ -181,61 +181,47 @@ async function createTimeSlot(req, res) {
   });
 
   if (existingTimeSlots.length > 0) {
-    return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"Timeslot clashes with an existing timeslot"})
+    return res.status(200).json({message:"Timeslot clashes with an existing timeslot"})
   }
   if(from>to){
-   return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"end time is less than starting time"})
+   return res.status(200).json({message:"end time is less than starting time"})
   }
-
   // Create the new timeslot
   const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
   await newTimeSlot.save();
-
-  res.redirect("/doctor/timeSlots");
+  const times=await timeSlot.find({doctorID:id})
+  res.status(200).json({message:"Timeslot created successfully.",times:times});
 }
 async function deleteTimeSlot(req, res) {
   const id = req.params.id;
-  const result = await timeSlot.findByIdAndDelete(id);
-  res.redirect("/doctor/timeSlots");
+  let result = await timeSlot.findByIdAndDelete(id);
+  result = await timeSlot.find({ doctorID: req.user._id });
+  res.status(200).json({result:result});
 }
 async function showTimeSlots(req,res){ 
    id=req.user._id;
-  const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  html="";
-  for(day in days){
-    
-    html+=`<tr><th >${days[day]}</th>`;
-    const results=await timeSlot.find({day:days[day],doctorID:id})
-    for(result in results){
-      html+=`<td  cursor:pointer" onClick="handleDelete(this)" id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
-    }
-    html+="</tr>"
-  }
-  res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
+    const result=await timeSlot.find({doctorID:id})
+  res.status(200).json({result:result})
 }
 async function showFollowUp(req, res) {
   const doctorID = req.user._id;
   const id = req.params.id;
-  if (req.query.date) {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const date = new Date(req.query.date);
-    const day = days[date.getDay()];
-    const result = await timeSlot.find({ doctorID: doctorID, day: day });
-    let html=""
-    for( resu in result){
-      html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
-    }
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: html ,date:req.query.date});
-  } else {
-    const result = await timeSlot.find({ doctorID: id });
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: "",date:"" });
-  }
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  console.log(req.params.date)
+  const date = new Date(req.params.date);
+  const day = days[date.getDay()];
+  const result = await timeSlot.find({ doctorID: doctorID, day: day });
+    // for( resu in result){
+    //   html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+    // }
+  res.status(200).json({ result: result });
 }
 async function createFollowUp(req,res){
   doctorID=req.user._id;
   const id=req.params.id;
-  const date=new Date(req.query.date);
-  const time=req.query.time;
+  const date=new Date(req.body.date);
+  const time=req.body.time;
+  console.log(date,time)
   const startTime=time.split(",")[0];
   const endTime=time.split(",")[1];
   const startH = parseInt(startTime.split(":")[0]);
@@ -256,12 +242,12 @@ duration= duration/60;
   // Check if there is an existing appointment at the specified time
   const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
   if (existingAppointment) {
-    return res.status(400).send("There is already an appointment at the specified time.");
+    return res.status(200).json({message:"There is already an appointment at the specified time."});
   }
 
   const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
   await newAppointment.save();
-  res.redirect("/doctor/appointments")
+  res.status(200).json({message:"Appointment created successfully."});
 }
 async function showHealthRecord(req,res){
 const patientId=req.params.id;
