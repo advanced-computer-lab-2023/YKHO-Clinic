@@ -9,7 +9,7 @@ const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 app.use(express.urlencoded({ extended: true }));
 const adminsTable = require("../model/admin.js");
-const { doctor: doctorTable } = require("../model/doctor.js");
+const { doctor: doctorsTable } = require("../model/doctor.js");
 const {
   healthPackage: healthPackageTable,
   validateHealthPackage,
@@ -44,7 +44,7 @@ const Login = async (req, res) => {
     username: req.body.username,
   });
 
-  let doctor = await doctorTable.findOne({
+  let doctor = await doctorsTable.findOne({
     username: req.body.username,
   });
 
@@ -73,14 +73,17 @@ const Login = async (req, res) => {
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       let discount = 1;
-      if (patient.subscription.healthPackage && patient.subscription.healthPackage != "none") {
+      if (
+        patient.subscription.healthPackage &&
+        patient.subscription.healthPackage != "none"
+      ) {
         let healthPackage = await healthPackageTable.findOne({
           packageName: patient.subscription.healthPackage,
         });
         discount = healthPackage.doctorDiscount;
         discount = (100 - discount) / 100;
       }
-      doctor = await doctorTable.find().sort({ name: 1 });
+      doctor = await doctorsTable.find().sort({ name: 1 });
       let results = doctor.map(({ _id, name, speciality, rate }) => ({
         _id,
         name,
@@ -103,7 +106,7 @@ const Login = async (req, res) => {
       const data = {
         name: doctor.username,
       };
-      
+
       return res.render("doctor/doctorHome", data);
     }
   }
@@ -158,25 +161,26 @@ const goToNewPassword = (req, res) => {
 };
 
 const sendOTP = async (req, res) => {
+  console.log(req.query.username);
   let OTP = generateOTP();
   let email = "";
-  if(req.query.username == "") {
+  if (req.query.username == "") {
     res.render("forgetPassword/enterUsername", {
       message: "please enter your username",
     });
   }
   let patient = await patientsTable.findOne({
-    username: req.body.username,
+    username: req.query.username,
   });
   if (patient) email = patient.email;
 
-  let doctor = await doctorTable.findOne({
-    username: req.body.username,
+  let doctor = await doctorsTable.findOne({
+    username: req.query.username,
   });
   if (doctor) email = doctor.email;
 
   let admin = await adminsTable.findOne({
-    username: req.body.username,
+    username: req.query.username,
   });
   if (admin) email = admin.email;
 
@@ -209,7 +213,7 @@ async function sendOTPByEmail(email, OTP) {
   });
 
   const mailOptions = {
-    from: "ayebnmetnaka@inbox.mailtrap.io",
+    from: "ACLTESTING@inbox.mailtrap.io",
     to: "yousseftyoh@gmail.com",
     subject: "Password Reset OTP",
     text: `Your OTP for password reset is: ${OTP}`,
@@ -245,7 +249,7 @@ const forgetPassword = async (req, res) => {
   const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
   if (admin) {
     admin = await adminsTable.findOneAndUpdate(
-      { username: req.query.username},
+      { username: req.query.username },
       { password: hashedPassword }
     );
   }
@@ -256,7 +260,7 @@ const forgetPassword = async (req, res) => {
     );
   }
   if (doctor) {
-    doctor = await doctorTable.findOneAndUpdate(
+    doctor = await doctorsTable.findOneAndUpdate(
       { username: req.query.username },
       { password: hashedPassword }
     );
@@ -305,6 +309,7 @@ const logout = (req, res) => {
 };
 
 const createAdmin = async (req, res) => {
+  const {username, password, email} = req.body;
   if (
     req.body.password === "" ||
     req.body.username === "" ||
@@ -314,22 +319,24 @@ const createAdmin = async (req, res) => {
     return res.render("admin/register", { message: "Insert missing fields" });
   }
 
-  const userAvailable = await adminsTable.findOne({
-    username: req.body.username, //check if the username exists
-  });
-
-  const emailAvailable = await adminsTable.findOne({
-    email: req.body.email, //check if the email exists
-  });
-
-  if (emailAvailable != null) {
-    //if it exists
-    return res.render("admin/register", { message: "Email Unavailable" });
+  if (
+    (await adminsTable.find({ username: username })).length > 0 ||
+    (await doctorsTable.find({ username: username })).length > 0 ||
+    (await patientsTable.find({ username: username })).length > 0 ||
+    (await requestsTable.find({ username: username })).length > 0
+  ) {
+    return res.render("admin/register", {
+      message: "username already exists",
+    });
   }
 
-  if (userAvailable != null) {
-    //if it exists
-    return res.render("admin/register", { message: "Username Unavailable" });
+  if (
+    (await adminsTable.find({ email: email })).length > 0 ||
+    (await doctorsTable.find({ email: email })).length > 0 ||
+    (await patientsTable.find({ email: email })).length > 0 ||
+    (await requestsTable.find({ email: email })).length > 0
+  ) {
+    return res.render("admin/register", { message: "email already exists" });
   }
 
   if (isStrongPassword(req.body.password) === false) {
@@ -338,15 +345,15 @@ const createAdmin = async (req, res) => {
 
   try {
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
     const adminUser = new adminsTable({
-      username: req.body.username, //create the admin
+      username: username, //create the admin
       password: hashedPassword,
-      email: req.body.email,
-      email: req.body.email,
+      email: email,
+      email: email,
     });
     const result = await adminUser.save(); //save into DB
-   
+
     res.render("admin/register", { message: "Admin created successfully" });
   } catch (ex) {
     res.render("admin/register", { message: ex.message });
@@ -408,7 +415,6 @@ const addHealthPackages = async (req, res) => {
         updateErrorMessage: "",
         deleteErrorMessage: "",
       });
-      
     } else {
       healthPackages = await healthPackageTable.find();
       res.render("admin/healthPackages", {
@@ -499,7 +505,7 @@ const deleteHealthPackages = async (req, res) => {
     const healthPackage = await healthPackageTable.deleteOne({
       packageName: req.body.packageName, //deletes
     });
-    
+
     const healthPackages = await healthPackageTable.find(); //re get the packages excluding el deleted one b2a to update the page
 
     if (healthPackage.deletedCount == 1)
@@ -538,12 +544,11 @@ const deleteUser = async (req, res) => {
       username: req.body.username,
     });
   } else {
-    deletedUser = await doctorTable.deleteOne({ username: req.body.username });
+    deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
   }
   if (deletedUser.deletedCount == 1)
     res.render("admin/deleteUser", { message: "User deleted successfully" });
   else res.render("admin/deleteUser", { message: "User not found" });
-
 };
 
 const goToUploadedInfo = async (req, res) => {
@@ -570,7 +575,31 @@ async function showDoctorRecord(req, res) {
       `attachment; filename="${idName}.${idType.split("/")[1]}"`
     );
   }
+
+  if (type == "medicalLicense") {
+    File = result[0].medicalLicense.data;
+    let licenseType = result[0].medicalLicense.contentType;
+    let licenseName = "medical License";
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${licenseName}.${licenseType.split("/")[1]}"`
+    );
+  }
+
+  if (type == "medicalDegree") {
+    File = result[0].medicalDegree.data;
+    let degreeType = result[0].medicalDegree.contentType;
+    let degreeName = "medical Degree";
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${degreeName}.${degreeType.split("/")[1]}"`
+    );
+  }
+
+  res.set("Content-Type", "application/octet-stream");
+  res.send(File);
 }
+
 const acceptRequest = async (req, res) => {
   const doctorToBeAccepted = await requestsTable.findOne({
     email: req.query.email,
@@ -579,19 +608,19 @@ const acceptRequest = async (req, res) => {
   let id = {
     data: doctorToBeAccepted.id.data,
     contentType: doctorToBeAccepted.id.contentType,
-  }
+  };
 
-  let medicalLicense ={
+  let medicalLicense = {
     data: doctorToBeAccepted.medicalLicense.data,
     contentType: doctorToBeAccepted.medicalLicense.contentType,
-  }
+  };
 
   let medicalDegree = {
     data: doctorToBeAccepted.medicalDegree.data,
     contentType: doctorToBeAccepted.medicalDegree.contentType,
-  }
-  
-  let doctor = new doctorTable({
+  };
+
+  let doctor = new doctorsTable({
     name: doctorToBeAccepted.name,
     username: doctorToBeAccepted.username,
     password: doctorToBeAccepted.password,

@@ -48,10 +48,10 @@ const createRequest = async (req, res) => {
     if( (await admin.find({username:username})).length>0 || (await doctor.find({username:username})).length>0  || (await Patient.find({username:username})).length>0  || (await requestModel.find({username:username})).length>0 ){
       return res.render("doctor/register", {message:"username already exists"});
     }
-    if( (await admin.find({mobile:mobile})).length>0 || (await doctorModel.find({mobile:mobile})).length>0  || (await patientModel.find({mobile:mobile})).length>0  || (await requestModel.find({mobile:mobile})).length>0 ){
+    if( (await admin.find({mobile:mobile})).length>0 || (await doctor.find({mobile:mobile})).length>0  || (await Patient.find({mobile:mobile})).length>0  || (await requestModel.find({mobile:mobile})).length>0 ){
       return res.render("doctor/register", {message:"mobile already exists"});
      }
-     if( (await admin.find({email:email})).length>0 || (await doctorModel.find({email:email})).length>0  || (await patientModel.find({email:email})).length>0  || (await requestModel.find({email:email})).length>0 ){
+     if( (await admin.find({email:email})).length>0 || (await doctor.find({email:email})).length>0  || (await Patient.find({email:email})).length>0  || (await requestModel.find({email:email})).length>0 ){
          return res.render("doctor/register", {message:"email already exists"});
       }
     const salt = await bcrypt.genSalt();
