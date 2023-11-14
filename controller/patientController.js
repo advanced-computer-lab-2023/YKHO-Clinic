@@ -554,8 +554,8 @@ async function showSlots(req, res) {
     console.log(patient)
     duration= duration/60;
     let price;
-    if(patient[0].healthPackage!="none"){
-        const healthPack = await healthPackage.find({packageName:patient[0].healthPackage});
+    if(patient[0].subscription.healthPackage!="none"){
+        const healthPack = await healthPackage.find({packageName:patient[0].subscription.healthPackage});
         price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
     }
     else{
@@ -623,8 +623,8 @@ async function showSlots(req, res) {
     
         duration= duration/60;
         let price;
-        if(familyPatient[0].healthPackage!="none"){
-            const healthPack = await healthPackage.find({packageName:familyPatient[0].healthPackage});
+        if(familyPatient[0].subscription.healthPackage!="none"){
+            const healthPack = await healthPackage.find({packageName:familyPatient[0].subscription.healthPackage});
             price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
         }
         else{

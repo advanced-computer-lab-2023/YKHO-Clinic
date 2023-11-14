@@ -240,8 +240,8 @@ async function createFollowUp(req,res){
   duration= duration/60;
   const pat= await patientModel.findById(id);
   let price;
-  if(pat.healthPackage!="none"){
-  const healthPack = await healthPackage.find({packageName:pat.healthPackage});
+  if(pat.subscription.healthPackage!="none"){
+  const healthPack = await healthPackage.find({packageName:pat.subscription.healthPackage});
 price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDiscount)/100;
   }
   else{
