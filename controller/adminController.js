@@ -73,9 +73,9 @@ const Login = async (req, res) => {
       res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
 
       let discount = 1;
-      if (patient.healthPackage && patient.healthPackage != "none") {
+      if (patient.subscription.healthPackage && patient.subscription.healthPackage != "none") {
         let healthPackage = await healthPackageTable.findOne({
-          packageName: patient.healthPackage,
+          packageName: patient.subscription.healthPackage,
         });
         discount = healthPackage.doctorDiscount;
         discount = (100 - discount) / 100;
@@ -85,7 +85,7 @@ const Login = async (req, res) => {
         _id,
         name,
         speciality,
-        sessionPrice: rate * 1.1 * discount,
+        sessionPrice: Math.floor(rate * 1.1 * discount),
       }));
 
       return res.render("patient/home", { one: true, results });

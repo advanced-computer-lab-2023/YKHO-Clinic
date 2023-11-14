@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>manage subscription</title>
+</head>
+
+<body>
+    <h2>health package</h2>
+    <% if (subscription.state == "unsubscribed") {%>
+        <p>you are not subscribed to any health package.</p>
+        <a href="/patient/readHealthPackages/-1">dicover health packages</a>
+    <%} else {%>
+        <a href="/patient/readHealthPackage/<%=subscription.healthPackage%>"><%=subscription.healthPackage%></a>
+        <h2>state</h2>
+        <%=subscription.state%>
+        <h2>end date</h2>
+        <%=subscription.endDate%>
+        <a href="/patient/deleteSubscription">cancel your health package</a>
+    <%}%>
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>manage family members' subscription</title>
+</head>
+
+<body>
+    <h1>family members subscriptions</h1>
+    <table>
+        <tr>
+            <th>familyMember</th>
+            <th>healthPackage</th>
+            <th>state</th>
+            <th>end date</th>
+            <th></th>
+        </tr>
+        <%familyMembersSubscriptions.forEach((subscription) => {%>
+            <tr>
+                <td><%=subscription.name%></td>
+                <td><a href="/patient/readHealthPackage/<%=subscription.healthPackage%>"><%=subscription.healthPackage%></a></td>
+                <td><%=subscription.state%></td>
+                <td><%=subscription.endDate%></td>
+                <% if (subscription.state == "unsubscribed") {%>
+                <td>
+                    <a href="/patient/readHealthPackages/<%=subscription.nationalID%>">dicover health packages</a>
+                </td>
+                <%} else {%>
+                <td>
+                    <form method="post" action="/patient/deleteFamilyMemberSubscription">
+                        <button type="submit">canecl subscription</button>
+                        <input type="hidden" name="nationalID" value="<%=subscription.nationalID%>">
+                    </form>
+                </td>
+                <%}%>
+            </tr>
+        <%})%>
+    </table>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>manage subscription</title>
+</head>
+
+<body>
+    
+    <table>
+        <tr>
+            <th>healthPackage</th>
+            <th>price</th>
+            <th>total</th>
+            <th>doctors' discount</th>
+            <th>pharmacy discount</th>
+            <th>family discount</th>
+            <th></th>
+        </tr>
+        <%healthPackages.forEach((healthPackage) => {%>
+            <tr>
+                <td><%=healthPackage.packageName%></td>
+                <td><%=healthPackage.price%></td>
+                <td><%=healthPackage.total%></td>
+                <td><%=healthPackage.doctorDiscount%></td>
+                <td><%=healthPackage.pharmacyDiscount%></td>
+                <td><%=healthPackage.familyDiscount%></td>
+                <td>
+                    <form method="post" action="/patient/subscribe<%if (nationalID != -1){%>FamilyMember<%}%>/<%=healthPackage.packageName%>">
+                        <button type="submit">subscribe using wallet</button>
+                        <input type="hidden" name="paymentMethod" value="wallet">
+                        <%if (nationalID != -1){%>
+                            <input type="hidden" name="nationalID" value="<%=nationalID%>">
+                        <%}%>
+                    </form> 
+                </td>
+                <td>
+                    <form method="post" action="/patient/subscribe<%if (nationalID != -1){%>FamilyMember<%}%>/<%=healthPackage.packageName%>">
+                        <button type="submit">subscribe using card</button>
+                        <input type="hidden" name="paymentMethod" value="card">
+                        <%if (nationalID != -1){%>
+                            <input type="hidden" name="nationalID" value="<%=nationalID%>">
+                        <%}%>
+                    </form>
+                </td>
+                
+            </tr>
+        <%})%>
+    </table>
+</body>
+
+</html>

@@ -10,6 +10,7 @@ const cookieParser = require("cookie-parser");
 const { requireAuth } = require("./Middleware/authMiddleware");
 const { home } = require("./controller/homePage");
 const {
+  docViewWallet,
   createDoctor,
   goToHome,
   updateMyInfo,
@@ -73,6 +74,8 @@ const {
   deleteMedicalHistory,
   LinkFamilyMemeber,
   LinkF,
+  ViewWallet,
+  fail,success,
   showSlots,
   reserveSlot,
   showSlotsFam,
@@ -91,13 +94,9 @@ app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 mongoose
   .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority");
-app.use("/public", express.static("public"));
-mongoose
-  .connect(
-    "mongodb+srv://fuji:Aaa12345@clinic.qyxz3je.mongodb.net/clinic?retryWrites=true&w=majority"
+    MONGO_URI
   )
-  .then(() => console.log("connected to clinicDB"))
+  .then(() => console.log("connected to clinicDB at " + MONGO_URI))
   .catch((err) => console.log(err.message));
 
 const id = "1";
@@ -129,6 +128,7 @@ app.post("/doctor/addTimeSlot", requireAuth, checkContract, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuth,checkContract,deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:id",requireAuth,checkContract,showFollowUp);
 app.get("/doctor/reserve/:id",requireAuth,checkContract,createFollowUp);
+app.get("/doctor/Wallet",requireAuth,docViewWallet);
 //Admin
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
@@ -174,21 +174,17 @@ app.get("/files/:fileId", requireAuth, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuth, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
-  res.render("patient/register");
+  res.render("patient/register"); 
 });
 app.get("/guest/doctor", function (req, res) { 
-  res.render("doctor/register")});
-app.get("/guest/doctor", function (req, res) { 
-  res.render("doctor/register");
-});
+  res.render("doctor/register", { message: "" })});
+
 app.post("/request/createRequest", upload.array("files"), createRequest);
-app.post("/request/createRequest", upload.array("files"), createRequest);
+
 // patient
 app.get("/patient/createFamilyMember", function (req, res) {
   res.render("patient/addFamily")});
-app.get("/patient/createFamilyMember", function (req, res) {
-  res.render("patient/addFamily");
-});
+
 
 app.post("/patient/createPatient", createPatient);
 app.post("/patient/createFamilyMember", requireAuth, createFamilyMember);
@@ -199,10 +195,31 @@ app.get("/patient/home", requireAuth, readDoctors);
 app.get("/patient/searchDoctors", requireAuth, searchDoctors);
 app.get("/patient/filterDoctors", requireAuth, filterDoctors);
 app.get("/patient/doctors/:id", requireAuth, selectDoctor);
-app.get("/patient/paymentcredit",requireAuth,PayByCredit);
-app.get("/patient/paymentWallet",requireAuth,PayByWallet);
+app.get("/patient/paymentcredit/:id",requireAuth,PayByCredit);
+app.get("/patient/paymentWallet/:id",requireAuth,PayByWallet);
+app.get("/patient/Wallet",requireAuth,ViewWallet);
+app.get("/success/:id",requireAuth,success);
+app.get("/fail",requireAuth,fail);
 app.get("/patient/doctors/:id/showSlots", requireAuth, showSlots);
 app.get("/patient/doctors/:id/reserve", requireAuth, reserveSlot);
 app.get("/patient/doctors/:id/showSlots/familyMember", requireAuth, showSlotsFam);
 app.get("/patient/doctors/:id/familyMember/reserve", requireAuth, reserveSlotFam);
 
+
+// elgharieb S2
+const readSubscription = require("./controller/patientController").readSubscription;
+app.get("/patient/readSubscription",requireAuth, readSubscription)
+const readFamilyMembersSubscriptions = require("./controller/patientController").readFamilyMembersSubscriptions;
+app.get("/patient/readFamilyMembersSubscriptions",requireAuth, readFamilyMembersSubscriptions)
+const readHealthPackage = require("./controller/patientController").readHealthPackage;
+app.get("/patient/readHealthPackage/:healthPackage",requireAuth, readHealthPackage)
+const readHealthPackages = require("./controller/patientController").readHealthPackages;
+app.get("/patient/readHealthPackages/:nationalID",requireAuth, readHealthPackages)
+const subscribe = require("./controller/patientController").subscribe;
+app.post("/patient/subscribe/:healthPackage",requireAuth, subscribe)
+const subscribeFamilyMember  = require("./controller/patientController").subscribeFamilyMember;
+app.post("/patient/subscribeFamilyMember/:healthPackage",requireAuth, subscribeFamilyMember)
+const deleteSubscription = require("./controller/patientController").deleteSubscription;
+app.get("/patient/deleteSubscription",requireAuth, deleteSubscription)
+const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
+app.post("/patient/deleteFamilyMemberSubscription",requireAuth, deleteFamilyMemberSubscription)

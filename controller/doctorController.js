@@ -9,6 +9,7 @@ const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const patientModel = require('../model/patient');
 const {appointment} = require('../model/appointments');
+const {healthPackage} = require('../model/healthPackage');
 const axios = require('axios');
 let id;
 let html;
@@ -235,10 +236,17 @@ async function createFollowUp(req,res){
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
 
-let duration = (endH - startH) * 60 + (endM - startM);
-
-duration= duration/60;
-  let price= duration*req.user.rate;
+  let duration = (endH - startH) * 60 + (endM - startM);
+  duration= duration/60;
+  const pat= await patientModel.findById(id);
+  let price;
+  if(pat.subscription.healthPackage!="none"){
+  const healthPack = await healthPackage.find({packageName:pat.subscription.healthPackage});
+price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDiscount)/100;
+  }
+  else{
+  price= duration*req.user.rate;
+  }
   // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
   const startHour=startTime.split(":")[0];
   const startMinute=startTime.split(":")[1];
@@ -251,9 +259,15 @@ duration= duration/60;
     return res.status(400).send("There is already an appointment at the specified time.");
   }
 
-  const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price})
+  const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price,paid:true})
   await newAppointment.save();
   res.redirect("/doctor/appointments")
 }
+const docViewWallet = async(req,res) =>{
+  doctorID=req.user._id;
+  let doctorr= await doctor.findOne({_id:doctorID});
+  Wallett=doctorr.Wallet;
+  res.render("doctor/Wallet",{Wallett: Wallett});
+}
 
-module.exports={createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};
+module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};

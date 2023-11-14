@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const { isStrongPassword } = require("./adminController.js");
+const admin = require("../model/admin.js");
+const {doctor}= require("../model/doctor.js");
+const Patient= require("../model/patient.js");
 const schema = Joi.object({
   username: Joi.string().alphanum().min(3).max(30).required(),
   password: Joi.string().required(),
@@ -42,7 +45,15 @@ const createRequest = async (req, res) => {
     if(isStrongPassword(req.body.password) === false){
         return res.render("doctor/register", {message:"password is weak"});
     }
-
+    if( (await admin.find({username:username})).length>0 || (await doctor.find({username:username})).length>0  || (await Patient.find({username:username})).length>0  || (await requestModel.find({username:username})).length>0 ){
+      return res.render("doctor/register", {message:"username already exists"});
+    }
+    if( (await admin.find({mobile:mobile})).length>0 || (await doctorModel.find({mobile:mobile})).length>0  || (await patientModel.find({mobile:mobile})).length>0  || (await requestModel.find({mobile:mobile})).length>0 ){
+      return res.render("doctor/register", {message:"mobile already exists"});
+     }
+     if( (await admin.find({email:email})).length>0 || (await doctorModel.find({email:email})).length>0  || (await patientModel.find({email:email})).length>0  || (await requestModel.find({email:email})).length>0 ){
+         return res.render("doctor/register", {message:"email already exists"});
+      }
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     let request = new requestModel({

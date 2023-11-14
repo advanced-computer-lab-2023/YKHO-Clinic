@@ -1,22 +1,22 @@
 const mongoose = require('mongoose');
 const { buffer } = require('stream/consumers');
-const medicalHistorySchema={
-    name:{
-        type:String,
+const medicalHistorySchema = {
+    name: {
+        type: String,
     },
-    document:{
-        type:buffer,
+    document: {
+        type: buffer,
     },
-    mimeType:{
-        type:String,
+    mimeType: {
+        type: String,
     }
 }
 
 const familyMemberSchema = {
-    patientID:{
-        type:mongoose.Schema.Types.ObjectId,
-        required:false,
-        ref:'Patient',
+    patientID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+        ref: 'Patient',
         unique: true,
     },
     name: {
@@ -41,7 +41,7 @@ const familyMemberSchema = {
     relation: {
         type: String,
         required: true,
-        enum: ['husband', 'wife', 'son','daughter'],
+        enum: ['husband', 'wife', 'son', 'daughter'],
         lowercase: true,
         trim: true,
     },
@@ -50,7 +50,7 @@ const healthRecordSchema = {
     data: {
         type: Buffer,
         required: true
-      },
+    },
     contentType: {
         type: String,
         required: true
@@ -98,22 +98,39 @@ const patientSchema = new mongoose.Schema({
         mobile: String
     },
     familyMembers: [familyMemberSchema],
-    healthPackage: {
-        type: String,
-        default: "none",
+    subscription: {
+        healthPackage: {
+            type: String,
+            default: "none",
+        },
+        state: {
+            type: String,
+            enum: ['subscribed', 'unsubscribed', 'cancelled'],
+            default: 'unsubscribed'
+        },
+        endDate: {
+            type: Date,
+            required: false,
+        },
+        agent: {
+            type: Boolean,
+            default: false
+        }
     },
     healthRecords: [healthRecordSchema],
     medicalHistory: [medicalHistorySchema],
     agentID:
     {
-        type:mongoose.Schema.Types.ObjectId,
-        required:false,
-        ref:'Patient',
+        type: mongoose.Schema.Types.ObjectId,
+        required: false,
+        ref: 'Patient',
     },
     Wallet:
     {
-        type:Number,
-        required:true,
+        type: Number,
+        default: 0,
+        required: true,
+        default: 0,
     },
 
 })
