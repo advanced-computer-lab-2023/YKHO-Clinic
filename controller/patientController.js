@@ -801,7 +801,7 @@ async function reserveSlotFam(req, res) {
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
-  if (req.query.famID == undefined) {
+  if (req.query.famID == "undefined") {
     res
       .status(400)
       .send(
@@ -1031,6 +1031,11 @@ const LinkFamilyMemeber = async (req, res) => {
   }
   if (req.query.filter1 == "MobileNumber") {
     relate = await patientModel.find({ mobile: req.query.searchvalue });
+  }
+  if(relate.length != 0){
+    if(relate[0]._id.equals(patientid)){
+      res.status(500).json("You cant link yourself");
+    }
   }
   if (relate.length != 0) {
     for (familymem in results[0].familyMembers) {

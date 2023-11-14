@@ -16,9 +16,9 @@ const {
 } = require("../model/healthPackage.js");
 const patientsTable = require("../model/patient.js");
 const requestsTable = require("../model/request.js");
-const prescriptionsTable = require("../model/prescription.js");
-const appointmentsTable = require("../model/appointments.js");
-const timeSlotsTable = require("../model/timeSlots.js");
+const prescriptionsTable = require("../model/prescription.js").prescription;
+const appointmentsTable = require("../model/appointments.js").appointment;
+const timeSlotsTable = require("../model/timeSlots.js").timeSlot;
 // create json web token
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (user) => {
@@ -536,14 +536,14 @@ const goToDeleteUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-  let deletedUser = null;
+  let deletedUser;
   if (req.body.username === "")
     res.render("admin/deleteUser", { message: "Insert username" });
   if (req.body.userType == "admin") {
     //check the user and delete using its username which is unique
     deletedUser = await adminsTable.deleteOne({ username: req.body.username });
   } else if (req.body.userType == "patient") {
-    deletedUser = await patientsTable.deleteOne({
+    deletedUser = await patientsTable.findOneAndDelete({
       username: req.body.username,
     });
 
@@ -553,16 +553,34 @@ const deleteUser = async (req, res) => {
     await prescriptionsTable.deleteMany({
       patientID: deletedUser._id,
     });
-    const patients = await patientsTable.find().select({ familyMembers });
-    for (let i = 0; i < patients.length; i++) {
-      for (let j = 0; j < patients[i].familyMembers.length; j++) {
-        if (patients[i].familyMembers[j].patientID == deletedUser._id) {
-          delete patients[i].familyMembers[j].patientID;
+    
+    const patients = await patientsTable.findById(deletedUser.agentID);
+    if(patients){
+      let famMembers = patients.familyMembers;
+      for (let j = 0; j < patients.familyMembers.length; j++) {
+        if (String(patients.familyMembers[j].patientID) == String(deletedUser._id)) {
+          
+          let member = famMembers.splice(j,1)[0];
+          member.patientID = undefined;
+          famMembers.push(member);
+          patients.markModified('familyMembers');
+          await patientsTable.findOneAndUpdate(
+            { _id: patients._id },
+            { familyMembers: famMembers }
+          );
         }
       }
+    } 
+    let fams = await patientsTable.find({agentID: deletedUser._id});
+    console.log(fams);
+    for(let i = 0; i < fams.length; i++){
+      console.log(fams[i]);
+      let patient = await patientsTable.findById(fams[i]._id);
+      patient.agentID = undefined;
+      patient.save();
     }
   } else {
-    deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
+    deletedUser = await doctorsTable.findOneAndDelete({ username: req.body.username });
     const removeTimeSlots = await timeSlotsTable.deleteMany({
       doctorID: deletedUser._id,
     });
@@ -573,7 +591,7 @@ const deleteUser = async (req, res) => {
       doctorID: deletedUser._id,
     });
   }
-  if (deletedUser.deletedCount == 1)
+  if (deletedUser)
     res.render("admin/deleteUser", { message: "User deleted successfully" });
   else res.render("admin/deleteUser", { message: "User not found" });
 };
