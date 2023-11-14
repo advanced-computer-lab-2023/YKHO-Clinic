@@ -166,7 +166,7 @@ async function helper(doctors, id) {
 
 const readDoctors = async (req, res) => {
     let doctors = await doctorModel.find().sort({ name: 1 });
-    let results = await helper(doctors,req);
+    let results = await helper(doctors,req.user._id);
     res.status(201).render('patient/home', { results, one: true });
 }
 
@@ -379,7 +379,7 @@ const subscribe = async (req, res) => {
                         },
                         quantity: 1,
                     }],
-                    success_url: `http://localhost:${process.env.PORT}/patient/home`,
+                    success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/-1`,
                     cancel_url: `http://localhost:${process.env.PORT}/fail` ,
                 })
                 res.redirect(session.url);
@@ -389,22 +389,23 @@ const subscribe = async (req, res) => {
                 res.status(500).send('Internal Server Error');
             }
         }
+        if (req.body.paymentMethod == "wallet"){
+            // end date
+            let date = new Date();
+            date.setSeconds(59)
+            date.setMinutes(59);
+            date.setHours(23);
+            date.setFullYear(date.getFullYear() + 1);
+            // update subscription
+            patient.subscription = {
+                healthPackage:req.params.healthPackage,
+                state: "subscribed",
+                endDate: date,
+            }
 
-        // end date
-        let date = new Date();
-        date.setSeconds(59)
-        date.setMinutes(59);
-        date.setHours(23);
-        date.setFullYear(date.getFullYear() + 1);
-        // update subscription
-        patient.subscription = {
-            healthPackage:req.params.healthPackage,
-            state: "subscribed",
-            endDate: date,
+            patient = await patient.save();
+            res.status(201).send(patient);
         }
-
-        patient = await patient.save();
-        res.status(201).send(patient);
 
     } catch (error) {
         res.status(401).send(error.message)
@@ -415,7 +416,7 @@ const subscribeFamilyMember = async (req,res) => {
     try {
         let agent = await patientModel.findById(req.user._id);
         let familyMember = agent.familyMembers.find(familyMember => familyMember.nationalID == req.body.nationalID);
-        
+        let i = agent.familyMembers.findIndex(familyMember => familyMember.nationalID == req.body.nationalID);
         let patient = await patientModel.findById(familyMember.patientID)
         
 
@@ -455,7 +456,7 @@ const subscribeFamilyMember = async (req,res) => {
                         },
                         quantity: 1,
                     }],
-                    success_url: `http://localhost:${process.env.PORT}/patient/home`,
+                    success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/${i}`,
                     cancel_url: `http://localhost:${process.env.PORT}/fail` ,
                 })
                 res.redirect(session.url);
@@ -466,24 +467,24 @@ const subscribeFamilyMember = async (req,res) => {
             }
         }
 
-        // end date
-        let date = new Date();
-        date.setSeconds(59)
-        date.setMinutes(59);
-        date.setHours(23);
-        date.setFullYear(date.getFullYear() + 1);
-        // update subscription
-        patient.subscription = {
-            healthPackage:req.params.healthPackage,
-            state: "subscribed",
-            endDate: date,
-            agent: true,
+        if (req.body.paymentMethod == "wallet"){
+            // end date
+            let date = new Date();
+            date.setSeconds(59)
+            date.setMinutes(59);
+            date.setHours(23);
+            date.setFullYear(date.getFullYear() + 1);
+            // update subscription
+            patient.subscription = {
+                healthPackage:req.params.healthPackage,
+                state: "subscribed",
+                endDate: date,
+                agent: true,
+            }
+            agent = await agent.save()
+            patient = await patient.save();
+            res.status(201).send(patient);
         }
-
-        agent = await agent.save()
-        patient = await patient.save();
-        res.status(201).send(patient);
-
     } catch (error) {
         res.status(401).send(error.message)
     }
@@ -500,6 +501,29 @@ const deleteSubscription = async (req, res) => {
     } catch (error) {
         res.status(401).send(error.message)
     }
+}
+
+const subscriptionSuccessful = async (req,res) => {
+    console.log(req.params)
+    let patient = await patientModel.findById(req.user._id);
+    if(req.params.i != - 1){
+        patient = await patientModel.findById(patient.familyMembers[req.params.i].patientID);
+    }
+    // end date
+    let date = new Date();
+    date.setSeconds(59)
+    date.setMinutes(59);
+    date.setHours(23);
+    date.setFullYear(date.getFullYear() + 1);
+    // update subscription
+    patient.subscription = {
+        healthPackage:req.params.healthPackage,
+        state: "subscribed",
+        endDate: date,
+        agent: true,
+    }
+    patient = await patient.save();
+    res.status(201).send(patient);
 }
 
 // req.body.nationalID
@@ -895,3 +919,4 @@ module.exports.subscribe = subscribe;
 module.exports.subscribeFamilyMember = subscribeFamilyMember;
 module.exports.deleteSubscription = deleteSubscription;
 module.exports.deleteFamilyMemberSubscription = deleteFamilyMemberSubscription;
+module.exports.subscriptionSuccessful = subscriptionSuccessful;
