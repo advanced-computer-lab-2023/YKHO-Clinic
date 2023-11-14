@@ -49,6 +49,7 @@ const {
   sendOTP,
   forgetPassword,
   goToNewPassword,
+  showDoctorRecord,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -133,6 +134,7 @@ app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
 app.put("/admin/changePassword", requireAuth, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuth, goToUploadedInfo);
+app.get("/admin/uploadedInfo/:id/:file", requireAuth, showDoctorRecord);
 app.get("/admin/acceptRequest", acceptRequest);
 app.get("/admin/rejectRequest", rejectRequest);
 app.get("/admin/register",  requireAuth, adminRegister);

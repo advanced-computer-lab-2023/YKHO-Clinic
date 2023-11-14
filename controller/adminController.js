@@ -553,11 +553,44 @@ const goToUploadedInfo = async (req, res) => {
   });
 };
 
+async function showDoctorRecord(req, res) {
+  const doctorId = req.params.id;
+  const type = req.params.file;
+  let result = await requestsTable
+    .find({ _id: doctorId })
+    .select(["id", "medicalLicense", "medicalDegree"]);
+  console.log(type);
+  let File;
+  if (type == "id") {
+    File = result[0].id.data;
+    let idType = result[0].id.contentType;
+    let idName = "id";
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${idName}.${idType.split("/")[1]}"`
+    );
+  }
+}
 const acceptRequest = async (req, res) => {
   const doctorToBeAccepted = await requestsTable.findOne({
     email: req.query.email,
   });
 
+  let id = {
+    data: doctorToBeAccepted.id.data,
+    contentType: doctorToBeAccepted.id.contentType,
+  }
+
+  let medicalLicense ={
+    data: doctorToBeAccepted.medicalLicense.data,
+    contentType: doctorToBeAccepted.medicalLicense.contentType,
+  }
+
+  let medicalDegree = {
+    data: doctorToBeAccepted.medicalDegree.data,
+    contentType: doctorToBeAccepted.medicalDegree.contentType,
+  }
+  
   let doctor = new doctorTable({
     name: doctorToBeAccepted.name,
     username: doctorToBeAccepted.username,
@@ -569,10 +602,11 @@ const acceptRequest = async (req, res) => {
     rate: doctorToBeAccepted.rate,
     affiliation: doctorToBeAccepted.affiliation,
     education: doctorToBeAccepted.education,
-    medicalDegree: doctorToBeAccepted.medicalDegree,
-    medicalLicense: doctorToBeAccepted.medicalLicense,
-    id: doctorToBeAccepted.id,
-    acceptedContract: true,
+    Wallet: 0,
+    id: id,
+    medicalDegree: medicalDegree,
+    medicalLicense: medicalLicense,
+    acceptedContract: false,
   });
   doctor = await doctor.save();
   await requestsTable.deleteOne({ email: req.query.email });
@@ -610,4 +644,5 @@ module.exports = {
   sendOTP,
   forgetPassword,
   goToNewPassword,
+  showDoctorRecord,
 };
