@@ -223,3 +223,6 @@ const deleteSubscription = require("./controller/patientController").deleteSubsc
 app.get("/patient/deleteSubscription",requireAuth, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuth, deleteFamilyMemberSubscription)
+
+const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
+app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuth, subscriptionSuccessful)
