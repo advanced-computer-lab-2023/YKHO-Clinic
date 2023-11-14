@@ -546,17 +546,18 @@ const deleteUser = async (req, res) => {
     deletedUser = await patientsTable.deleteOne({
       username: req.body.username,
     });
-    const removeAppointments = await appointmentsTable.deleteMany({
+
+    await appointmentsTable.deleteMany({
       patientID: deletedUser._id,
     });
-    const removePrescriptions = await prescriptionsTable.deleteMany({
+    await prescriptionsTable.deleteMany({
       patientID: deletedUser._id,
     });
     const patients = await patientsTable.find().select({ familyMembers });
     for (let i = 0; i < patients.length; i++) {
       for (let j = 0; j < patients[i].familyMembers.length; j++) {
         if (patients[i].familyMembers[j].patientID == deletedUser._id) {
-          patients[i].familyMembers.splice(j, 1);
+          delete patients[i].familyMembers[j].patientID;
         }
       }
     }
