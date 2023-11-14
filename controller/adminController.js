@@ -16,7 +16,9 @@ const {
 } = require("../model/healthPackage.js");
 const patientsTable = require("../model/patient.js");
 const requestsTable = require("../model/request.js");
-
+const prescriptionsTable = require("../model/prescription.js");
+const appointmentsTable = require("../model/appointments.js");
+const timeSlotsTable = require("../model/timeSlots.js");
 // create json web token
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (user) => {
@@ -83,6 +85,7 @@ const Login = async (req, res) => {
         discount = healthPackage.doctorDiscount;
         discount = (100 - discount) / 100;
       }
+
       doctor = await doctorsTable.find().sort({ name: 1 });
       let results = doctor.map(({ _id, name, speciality, rate }) => ({
         _id,
@@ -309,7 +312,7 @@ const logout = (req, res) => {
 };
 
 const createAdmin = async (req, res) => {
-  const {username, password, email} = req.body;
+  const { username, password, email } = req.body;
   if (
     req.body.password === "" ||
     req.body.username === "" ||
@@ -493,36 +496,36 @@ const callDeleteHealthPackage = async (req, res) => {
 };
 const deleteHealthPackages = async (req, res) => {
   if (req.body.packageName === "") {
-    const healthPackages = await healthPackageTable.find(); //check if input is given
     res.render("admin/healthPackages", {
       healthPackages,
       updateErrorMessage: "",
-      createErrorMessage: "", //mal72tsh a3ml7a beh JOI xD
+      createErrorMessage: "",
       deleteErrorMessage: `"packageName" is not allowed to be empty`,
     });
   }
-  try {
-    const healthPackage = await healthPackageTable.deleteOne({
-      packageName: req.body.packageName, //deletes
+  const healthPackages = await healthPackageTable.find({
+    packageName: req.body.packageName,
+  });
+  if (!healthPackages) {
+    return res.render("admin/healthPackages", {
+      healthPackages,
+      updateErrorMessage: "",
+      createErrorMessage: "",
+      deleteErrorMessage: "Health package not found",
     });
-
-    const healthPackages = await healthPackageTable.find(); //re get the packages excluding el deleted one b2a to update the page
-
-    if (healthPackage.deletedCount == 1)
-      //if deleted
-      res.render("admin/healthPackages", {
-        healthPackages,
-        updateErrorMessage: "",
-        createErrorMessage: "",
-        deleteErrorMessage: "Health package deleted",
-      });
-    else
-      res.render("admin/healthPackages", {
-        healthPackages,
-        updateErrorMessage: "",
-        createErrorMessage: "",
-        deleteErrorMessage: "Health package not found",
-      });
+  }
+  try {
+    let healthPackages = await healthPackageTable.findOneAndUpdate(
+      { packageName: req.body.packageName },
+      { deleted: true }
+    );
+    healthPackages = await healthPackageTable.find();
+    res.render("admin/healthPackages", {
+      healthPackages,
+      updateErrorMessage: "",
+      createErrorMessage: "",
+      deleteErrorMessage: "Health package deleted",
+    });
   } catch (err) {
     res.send(err.message);
   }
@@ -543,8 +546,31 @@ const deleteUser = async (req, res) => {
     deletedUser = await patientsTable.deleteOne({
       username: req.body.username,
     });
+    const removeAppointments = await appointmentsTable.deleteMany({
+      patientID: deletedUser._id,
+    });
+    const removePrescriptions = await prescriptionsTable.deleteMany({
+      patientID: deletedUser._id,
+    });
+    const patients = await patientsTable.find().select({ familyMembers });
+    for (let i = 0; i < patients.length; i++) {
+      for (let j = 0; j < patients[i].familyMembers.length; j++) {
+        if (patients[i].familyMembers[j].patientID == deletedUser._id) {
+          patients[i].familyMembers.splice(j, 1);
+        }
+      }
+    }
   } else {
     deletedUser = await doctorsTable.deleteOne({ username: req.body.username });
+    const removeTimeSlots = await timeSlotsTable.deleteMany({
+      doctorID: deletedUser._id,
+    });
+    const removeAppointments = await appointmentsTable.deleteMany({
+      doctorID: deletedUser._id,
+    });
+    const removePrescriptions = await prescriptionsTable.deleteMany({
+      doctorID: deletedUser._id,
+    });
   }
   if (deletedUser.deletedCount == 1)
     res.render("admin/deleteUser", { message: "User deleted successfully" });

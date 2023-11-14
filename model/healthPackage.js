@@ -9,6 +9,7 @@ const healthPackagesSchema = new mongoose.Schema({
   doctorDiscount: { type: Number, required: true, min: 1, max: 100 },
   pharmacyDiscount: { type: Number, required: true, min: 1, max: 100 },
   familyDiscount: { type: Number, required: true, min: 1, max: 100 },
+  deleted: { type: Boolean, default: false },
 });
 
 const healthPackage = mongoose.model("HealthPackages", healthPackagesSchema);

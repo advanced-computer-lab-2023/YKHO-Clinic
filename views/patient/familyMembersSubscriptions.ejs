@@ -28,10 +28,12 @@
                 </td>
                 <%} else {%>
                 <td>
-                    <form method="post" action="/patient/deleteFamilyMemberSubscription">
-                        <button type="submit">canecl subscription</button>
-                        <input type="hidden" name="nationalID" value="<%=subscription.nationalID%>">
-                    </form>
+                    <% if (subscription.state != "cancelled") {%>
+                        <form method="post" action="/patient/deleteFamilyMemberSubscription">
+                            <button type="submit">cancel subscription</button>
+                            <input type="hidden" name="nationalID" value="<%=subscription.nationalID%>">
+                        </form>
+                    <%}%>
                 </td>
                 <%}%>
             </tr>

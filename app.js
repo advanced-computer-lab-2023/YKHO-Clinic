@@ -154,13 +154,13 @@ app.get("/Patient/Appointments", requireAuth, PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", requireAuth, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuth, patientHome);
 app.get("/patient/HealthRecords", requireAuth, viewHealthRecords);
-app.get("/patient/medicalHistory", showMedicalHistory);
+app.get("/patient/medicalHistory",requireAuth, showMedicalHistory);
 app.post("/patient/addMedicalHistory", requireAuth, upload.single("files"), addMedicalHistory);
 app.get("/files/:fileId", requireAuth, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuth, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
-  res.render("patient/register")});
+  res.render("patient/register", {message:""})});
 app.get("/patient/Prescriptions", requireAuth, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuth, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuth, selectPrescription);

@@ -11,6 +11,7 @@
           <th>doctor discount</th>
           <th>pharmacy discount</th>
           <th>family discount</th>
+          <th>isDeleted</th>
         </tr>
         <% healthPackages.forEach(package => { %>
           <tr>
@@ -19,6 +20,7 @@
             <td><%= package.doctorDiscount %></td>
             <td><%= package.pharmacyDiscount %></td>
             <td><%= package.familyDiscount %></td>
+            <td><%= package.deleted %></td>
           </tr>
         <% }); %>
     </table>

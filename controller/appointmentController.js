@@ -26,6 +26,9 @@ async function createAppointment(req,res){
 async function showMyPatients(req,res){
     let result
     id=req.user._id;
+    console.log(id)
+    console.log("---------------------------------------------------------------------------------------------")
+
     if(req.query.name){
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
          result=result.filter((c)=>{
@@ -44,7 +47,8 @@ async function showMyPatients(req,res){
         
     }
      
-  
+    console.log(result)
+    console.log("---------------------------------------------------------------------------------------------")
     for(i in result){
         for(let j=0;j<result.length;j++){
             if(i!=j){

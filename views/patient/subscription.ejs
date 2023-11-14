@@ -16,7 +16,9 @@
         <%=subscription.state%>
         <h2>end date</h2>
         <%=subscription.endDate%>
+        <% if (subscription.state != "cancelled") {%>
         <a href="/patient/deleteSubscription">cancel your health package</a>
+        <%}%>
     <%}%>
 </body>
 
