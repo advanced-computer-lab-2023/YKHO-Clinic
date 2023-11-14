@@ -172,21 +172,17 @@ app.get("/files/:fileId", requireAuth, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuth, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
-  res.render("patient/register");
+  res.render("patient/register"); 
 });
 app.get("/guest/doctor", function (req, res) { 
-  res.render("doctor/register")});
-app.get("/guest/doctor", function (req, res) { 
-  res.render("doctor/register");
-});
+  res.render("doctor/register", { message: "" })});
+
 app.post("/request/createRequest", upload.array("files"), createRequest);
-app.post("/request/createRequest", upload.array("files"), createRequest);
+
 // patient
 app.get("/patient/createFamilyMember", function (req, res) {
   res.render("patient/addFamily")});
-app.get("/patient/createFamilyMember", function (req, res) {
-  res.render("patient/addFamily");
-});
+
 
 app.post("/patient/createPatient", createPatient);
 app.post("/patient/createFamilyMember", requireAuth, createFamilyMember);
