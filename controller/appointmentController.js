@@ -46,11 +46,12 @@ async function showMyPatients(req,res){
      
   
     for(i in result){
-        for(j in result){
+        for(let j=0;j<result.length;j++){
             if(i!=j){
                 if(result[i]&& result[j])
                 if(result[i].patientID._id==result[j].patientID._id){
                     result.splice(j,1)
+                    j--;
                 }
             }
         } 

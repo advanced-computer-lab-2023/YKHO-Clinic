@@ -7,7 +7,8 @@ const {healthPackage} = require('../model/healthPackage');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
-
+const admin = require("../model/admin.js");
+const requestModel = require("../model/request.js");
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY)
 require("dotenv").config();
 
@@ -55,7 +56,16 @@ const createPatient = async (req, res) => {
     });
     // joi validation
     const { username, password, name, DOB, gender, email, mobile, emergencyName, emergencyMobile } = req.body;
-
+    if( (await admin.find({username:username})).length>0 || (await doctorModel.find({username:username})).length>0  || (await patientModel.find({username:username})).length>0  || (await requestModel.find({username:username})).length>0 ){
+        return res.render("patient/register", {message:"username already exists"});
+      }
+    if( (await admin.find({mobile:mobile})).length>0 || (await doctorModel.find({mobile:mobile})).length>0  || (await patientModel.find({mobile:mobile})).length>0  || (await requestModel.find({mobile:mobile})).length>0 ){
+     return res.render("patient/register", {message:"mobile already exists"});
+    }
+    if( (await admin.find({email:email})).length>0 || (await doctorModel.find({email:email})).length>0  || (await patientModel.find({email:email})).length>0  || (await requestModel.find({email:email})).length>0 ){
+        return res.render("patient/register", {message:"email already exists"});
+     }
+    
     const { error, value } = schema.validate(req.body);
 
     if (error) { 
