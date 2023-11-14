@@ -80,7 +80,7 @@ async function showMyPatientInfo(req,res){
               ${result[0].patientID.mobile} </td> \
              <td style="text-align: center;"> ${result[0].patientID.emergency.name} </td>\
              <td style="text-align: center;"> ${result[0].patientID.emergency.mobile} \
-             </td> <td style="text-align: center;">${result[0].patientID.healthPackage}</td>`
+             </td> <td style="text-align: center;">${result[0].patientID.subscription.healthPackage}</td>`
             let uploadButton = `<form id="uploadForm" method="POST" action="/doctor/patients/${req.params.id}/upload-pdf" enctype="multipart/form-data"">
                 <input type="file" name="healthRecords">
                 <input type="submit" value="Upload">

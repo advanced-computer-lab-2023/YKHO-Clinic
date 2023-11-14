@@ -272,7 +272,24 @@ const readHealthPackage = async (req,res) => {
 
 const readHealthPackages = async (req, res) => {
     try{
+        let patient = await patientModel.findById( req.user._id )
+        
+        // total
+        let discount = 0;
+        if(patient.agentID){
+            let referal =  await patientModel.findById(patient.agentID)
+            if (referal.subscription.state != 'unsubscribed'){
+                let healthPackage = await healthPackageModel.findOne({packageName:referal.subscription.healthPackage})
+                discount = healthPackage.familyDiscount;
+            }
+        }
+        if(patient.subscription.endDate){
+            let healthPackage = await healthPackageModel.findOne({packageName:patient.subscription.healthPackage});
+            discount = healthPackage.familyDiscount;
+        }
+
         let healthPackages = await healthPackageModel.find();
+        healthPackages = healthPackages.map(({packageName,price,doctorDiscount, pharmacyDiscount, familyDiscount}) => ({packageName,price,doctorDiscount, pharmacyDiscount, familyDiscount,total:(price*((100-discount)/100))}))
         //res.status(201).send(healthPackages);
         res.status(201).render('patient/healthPackages', {healthPackages, nationalID: req.params.nationalID});
     }
@@ -358,6 +375,29 @@ const subscribe = async (req, res) => {
         }
         else {
             // pay using card
+            try{
+                const session= await stripe.checkout.sessions.create({
+                    payment_method_types:['card'],
+                    mode:'payment',
+                    line_items: [{
+                        price_data: {
+                            currency: 'usd',
+                            product_data: {
+                                name: req.params.healthPackage + "health Package",
+                            },
+                            unit_amount: total * 100,
+                        },
+                        quantity: 1,
+                    }],
+                    success_url: `http://localhost:${process.env.PORT}/patient/home`,
+                    cancel_url: `http://localhost:${process.env.PORT}/fail` ,
+                })
+                res.redirect(session.url);
+            
+            } catch (e){
+                console.error(e);
+                res.status(500).send('Internal Server Error');
+            }
         }
 
         // end date
@@ -411,6 +451,29 @@ const subscribeFamilyMember = async (req,res) => {
         }
         else {
             // pay using card
+            try{
+                const session= await stripe.checkout.sessions.create({
+                    payment_method_types:['card'],
+                    mode:'payment',
+                    line_items: [{
+                        price_data: {
+                            currency: 'usd',
+                            product_data: {
+                                name: req.params.healthPackage + "health Package",
+                            },
+                            unit_amount: total * 100,
+                        },
+                        quantity: 1,
+                    }],
+                    success_url: `http://localhost:${process.env.PORT}/patient/home`,
+                    cancel_url: `http://localhost:${process.env.PORT}/fail` ,
+                })
+                res.redirect(session.url);
+            
+            } catch (e){
+                console.error(e);
+                res.status(500).send('Internal Server Error');
+            }
         }
 
         // end date
@@ -501,8 +564,8 @@ async function showSlots(req, res) {
     console.log(patient)
     duration= duration/60;
     let price;
-    if(patient[0].healthPackage!="none"){
-        const healthPack = await healthPackage.find({packageName:patient[0].healthPackage});
+    if(patient[0].subscription.healthPackage!="none"){
+        const healthPack = await healthPackage.find({packageName:patient[0].subscription.healthPackage});
         price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
     }
     else{
@@ -570,8 +633,8 @@ async function showSlots(req, res) {
     
         duration= duration/60;
         let price;
-        if(familyPatient[0].healthPackage!="none"){
-            const healthPack = await healthPackage.find({packageName:familyPatient[0].healthPackage});
+        if(familyPatient[0].subscription.healthPackage!="none"){
+            const healthPack = await healthPackage.find({packageName:familyPatient[0].subscription.healthPackage});
             price= duration*doctor[0].rate - (duration*doctor[0].rate*healthPack[0].doctorDiscount)/100;
         }
         else{
