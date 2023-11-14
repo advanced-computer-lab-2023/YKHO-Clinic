@@ -111,7 +111,7 @@ app.post("/forgetPassword/done", forgetPassword);
 
 //Doctor
 app.post("/addDoctor", createDoctor); 
-app.post("/addAppointment", createAppointment);
+app.post("/addAppointment", requireAuthDoctor ,checkContract , createAppointment);
 app.get("/doctor/home", requireAuthDoctor, checkContract, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, checkContract, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, checkContract, showMyPatientInfo);
@@ -128,7 +128,7 @@ app.post("/doctor/addTimeSlot", requireAuthDoctor, checkContract, createTimeSlot
 app.get("/doctor/deleteTimeSlot/:id",requireAuthDoctor,checkContract,deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:id",requireAuthDoctor,checkContract,showFollowUp);
 app.get("/doctor/reserve/:id",requireAuthDoctor,checkContract,createFollowUp);
-app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
+app.get("/doctor/Wallet",requireAuthDoctor,checkContract,docViewWallet);
 //Admin
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
