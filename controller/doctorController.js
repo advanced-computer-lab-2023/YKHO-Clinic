@@ -51,6 +51,13 @@ async function createDoctor(req,res){
     } 
     
 }
+async function loggedIn(req,res){
+  if(req.user){
+    res.status(200).json({loggedIn:true,type:req.user.type})
+  }else{
+    res.status(200).json({loggedIn:false,type:""})
+  }
+}
 
 const doctorLogout = (req, res) => {
     res.clearCookie('jwt').send(200,"Logged out successfully");
@@ -90,7 +97,7 @@ const changePasswordDoctor = async (req, res) => {
 };
 
 async function goToHome(req,res){
-    res.render("doctor/doctorHome",{name:req.body.name});
+  res.status(200);
 }
 async function updateMyInfo(req,res){
     res.render("doctor/doctorUpdate",{errormessage:""})
@@ -105,11 +112,11 @@ const schema = Joi.object({
   }); 
   const result = schema.validate({ [updateTerm]: req.body.updateValue });
   if(result.error){
-   res.render("doctor/doctorUpdate",{errormessage:result.error.message})
+    res.status(200).json({message:result.error.message})
   }
   else{
         await doctor.findByIdAndUpdate(id, { [updateTerm]: req.body.updateValue })
-        res.render("doctor/doctorUpdate",{errormessage:"Updated"})
+        res.status(200).json({message:"updated successfully"})
   }
 
 }
@@ -122,10 +129,10 @@ const checkContract=async (req,res,next)=>{
   else{
   const result=await doctor.findById(id)
   if(result.acceptedContract){
-      next(); 
+    res.status(200).json({contract:"acc"});
   }
   else{
-      res.render("doctor/doctorContract")
+    res.status(200).json({contract:"rej"});
   }
 }
 }
@@ -148,7 +155,7 @@ const uploadHealthRecord = async (req, res) => {
 
   await patient.save()
 .then(() => {
-  res.redirect(`/doctor/patients/${patientId}`);
+  res.status(200).json({result:result});
 })
 .catch((err) => {
   console.error(err);
@@ -174,61 +181,78 @@ async function createTimeSlot(req, res) {
   });
 
   if (existingTimeSlots.length > 0) {
-    return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"Timeslot clashes with an existing timeslot"})
-  }
+    res.status(200).json({message:"Timeslot clashes with an existing timeslot"})
+   }
   if(from>to){
-   return res.render("doctor/doctorTimeSlots",{timeSlot:html, message:"end time is less than starting time"})
+    return res.status(200).json({message:"end time is less than starting time"})
   }
 
   // Create the new timeslot
   const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
   await newTimeSlot.save();
-
-  res.redirect("/doctor/timeSlots");
+  const times=await timeSlot.find({doctorID:id})
+  res.status(200).json({message:"Timeslot created successfully.",times:times});
 }
 async function deleteTimeSlot(req, res) {
   const id = req.params.id;
   const result = await timeSlot.findByIdAndDelete(id);
-  res.redirect("/doctor/timeSlots");
+  result = await timeSlot.find({ doctorID: req.user._id });
+  res.status(200).json({result:result});
 }
 async function showTimeSlots(req,res){ 
    id=req.user._id;
-  const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  html="";
-  for(day in days){
+  // const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  // html="";
+  // for(day in days){
     
-    html+=`<tr><th >${days[day]}</th>`;
-    const results=await timeSlot.find({day:days[day],doctorID:id})
-    for(result in results){
-      html+=`<td  cursor:pointer" onClick="handleDelete(this)" id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
-    }
-    html+="</tr>"
-  }
-  res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
+  //   html+=`<tr><th >${days[day]}</th>`;
+  //   const results=await timeSlot.find({day:days[day],doctorID:id})
+  //   for(result in results){
+  //     html+=`<td  cursor:pointer" onClick="handleDelete(this)" id=${results[result]._id}>${results[result].from},${results[result].to}</td>`
+  //   }
+  //   html+="</tr>"
+  // }
+  // res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
+  const result=await timeSlot.find({doctorID:id})
+  res.status(200).json({result:result})
 }
+// async function showFollowUp(req, res) {
+//   const doctorID = req.user._id;
+//   const id = req.params.id;
+//   //if (req.query.date) {
+//     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+//     const date = new Date(req.query.date);
+//     const day = days[date.getDay()];
+//     const result = await timeSlot.find({ doctorID: doctorID, day: day });
+//     // let html=""
+//     // for( resu in result){
+//     //   html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+//     // }
+//     //res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: html ,date:req.query.date});
+//     res.status(200).json({ result: result });
+//   // } else {
+//   //   const result = await timeSlot.find({ doctorID: id });
+//   //   res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: "",date:"" });
+//   // }
+// }
 async function showFollowUp(req, res) {
   const doctorID = req.user._id;
   const id = req.params.id;
-  if (req.query.date) {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const date = new Date(req.query.date);
-    const day = days[date.getDay()];
-    const result = await timeSlot.find({ doctorID: doctorID, day: day });
-    let html=""
-    for( resu in result){
-      html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
-    }
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: html ,date:req.query.date});
-  } else {
-    const result = await timeSlot.find({ doctorID: id });
-    res.render("doctor/doctorFollowUp", { id: req.params.id, buttons: "",date:"" });
-  }
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  console.log(req.params.date)
+  const date = new Date(req.params.date);
+  const day = days[date.getDay()];
+  const result = await timeSlot.find({ doctorID: doctorID, day: day });
+    // for( resu in result){
+    //   html+=`<button onClick="reserveTHIS(this)">${result[resu].from},${result[resu].to}</button>`
+    // }
+  res.status(200).json({ result: result });
 }
 async function createFollowUp(req,res){
   doctorID=req.user._id;
   const id=req.params.id;
-  const date=new Date(req.query.date);
-  const time=req.query.time;
+  const date=new Date(req.body.date);
+  const time=req.body.time;
   const startTime=time.split(",")[0];
   const endTime=time.split(",")[1];
   const startH = parseInt(startTime.split(":")[0]);
@@ -256,12 +280,12 @@ price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDisc
   // Check if there is an existing appointment at the specified time
   const existingAppointment = await appointment.findOne({ doctorID: doctorID, date: date });
   if (existingAppointment) {
-    return res.status(400).send("There is already an appointment at the specified time.");
+    return res.status(200).json({message:"There is already an appointment at the specified time."});
   }
 
   const newAppointment=new appointment({doctorID:doctorID,patientID:id,date:date,status:"upcoming",duration:duration,price:price,paid:true})
   await newAppointment.save();
-  res.redirect("/doctor/appointments")
+  res.status(200).json({message:"Appointment created successfully."});
 }
 const docViewWallet = async(req,res) =>{
   doctorID=req.user._id;
@@ -269,5 +293,16 @@ const docViewWallet = async(req,res) =>{
   Wallett=doctorr.Wallet;
   res.render("doctor/Wallet",{Wallett: Wallett});
 }
+async function showHealthRecord(req,res){
+  const patientId=req.params.id;
+  const healthId=req.params.healthId;
+  let result = await patientModel.find({_id:patientId}).select(["healthRecords"]);
+  let file = result[0].healthRecords[healthId].data;
+  let type = result[0].healthRecords[healthId].contentType;
+  let name = result[0].healthRecords[healthId].name;
+  res.set('Content-Type', 'application/octet-stream');
+  res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
+  res.send(file);
+  }
 
-module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp};
+module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord};

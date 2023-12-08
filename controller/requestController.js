@@ -73,7 +73,8 @@ const createRequest = async (req, res) => {
     });
 
     request = await request.save();
-    res.render("home", {message:"Request sent successfully"});
+    // res.render("home", {message:"Request sent successfully"});
+    res.status(201).json({ message: "request sent successfully" });
   }
 };
 

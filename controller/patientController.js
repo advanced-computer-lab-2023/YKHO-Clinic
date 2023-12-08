@@ -861,18 +861,19 @@ const ViewPrescriptions = async (req, res) => {
   let result = await prescription
     .find({ patientID: patient._id })
     .select(["prescriptionName", "doctorName"]);
-  let prescriptionrows = "<tr><th>name</th></tr>";
+  // let prescriptionrows = "<tr><th>name</th></tr>";
 
-  for (prescriptions in result) {
-    prescriptionrows =
-      prescriptionrows +
-      `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
-        </tr>`;
-  }
-  res.render("patient/Prescriptions", {
-    prescriptionrows: prescriptionrows,
-    onepatient: true,
-  });
+  // for (prescriptions in result) {
+  //   prescriptionrows =
+  //     prescriptionrows +
+  //     `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
+  //       </tr>`;
+  // }
+  // res.render("patient/Prescriptions", {
+  //   prescriptionrows: prescriptionrows,
+  //   onepatient: true,
+  // });
+  res.status(200).json({result,onePatient:true});
 };
 async function selectPrescription(req, res) {
   patient = await patientModel.findOne({ _id: req.user._id });

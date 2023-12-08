@@ -32,92 +32,98 @@ const goToAdminLogin = async (req, res) => {
 };
 
 const Login = async (req, res) => {
-  if (req.body.username === "" || req.body.password === "") {
-    return res.render("home", { message: "Fill the empty fields" });
-  }
-
-  let found = false;
-
-  let admin = await adminsTable.findOne({
-    username: req.body.username,
-  });
-
-  let patient = await patientsTable.findOne({
-    username: req.body.username,
-  });
-
-  let doctor = await doctorsTable.findOne({
-    username: req.body.username,
-  });
-
-  if (admin) {
-    found = await bcrypt.compare(req.body.password, admin.password);
-    if (found) {
-      const token = createToken({ admin, type: "admin" });
-      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
-
-      const data = {
-        username: admin.username,
-      };
-      //return res.status(200).json({ message: "Logged in successfully" });
-      return res.render("admin/home", data);
+  try{
+    if (req.body.username === "" || req.body.password === "") {
+      return res.status(200).json({ message: "Fill the empty fields" });
     }
-  } else if (patient) {
-    found = await bcrypt.compare(req.body.password, patient.password);
 
-    if (found) {
-      const token = createToken({
-        _id: patient._id,
-        username: patient.username,
-        type: "patient",
-      });
+    let found = false;
 
-      res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
-
-      let discount = 1;
-      if (
-        patient.subscription.healthPackage &&
-        patient.subscription.healthPackage != "none"
-      ) {
-        let healthPackage = await healthPackageTable.findOne({
-          packageName: patient.subscription.healthPackage,
-        });
-        discount = healthPackage.doctorDiscount;
-        discount = (100 - discount) / 100;
-      }
-
-      doctor = await doctorsTable.find().sort({ name: 1 });
-      let results = doctor.map(({ _id, name, speciality, rate }) => ({
-        _id,
-        name,
-        speciality,
-        sessionPrice: Math.floor(rate * 1.1 * discount),
-      }));
-
-      return res.render("patient/home", { one: true, results });
-    }
-  } else if (doctor) {
-    found = await bcrypt.compare(req.body.password, doctor.password);
-    if (found) {
-      const token = createToken({
-        _id: doctor._id,
-        username: doctor.username,
-        rate: doctor.rate,
-        type: "doctor",
-      });
-      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-      const data = {
-        name: doctor.username,
-      };
-
-      return res.render("doctor/doctorHome", data);
-    }
-  }
-
-  if (!found)
-    return res.render("home", {
-      message: "Username or password is wrong",
+    let admin = await adminsTable.findOne({
+      username: req.body.username,
     });
+
+    let patient = await patientsTable.findOne({
+      username: req.body.username,
+    });
+
+    let doctor = await doctorsTable.findOne({
+      username: req.body.username,
+    });
+
+    if (admin) {
+      found = await bcrypt.compare(req.body.password, admin.password);
+      if (found) {
+        const token = createToken({ admin, type: "admin" });
+        res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
+
+        const data = {
+          username: admin.username,
+        };
+        //return res.status(200).json({ message: "Logged in successfully" });
+        return res.status(200).json({ token: token, type: "admin" });
+
+      }
+    } else if (patient) {
+      found = await bcrypt.compare(req.body.password, patient.password);
+
+      if (found) {
+        const token = createToken({
+          _id: patient._id,
+          username: patient.username,
+          type: "patient",
+        });
+
+        res.cookie("jwt", token, { expires: new Date(Date.now() + maxAge) });
+
+        let discount = 1;
+        if (
+          patient.subscription.healthPackage &&
+          patient.subscription.healthPackage != "none"
+        ) {
+          let healthPackage = await healthPackageTable.findOne({
+            packageName: patient.subscription.healthPackage,
+          });
+          discount = healthPackage.doctorDiscount;
+          discount = (100 - discount) / 100;
+        }
+
+        doctor = await doctorsTable.find().sort({ name: 1 });
+        let results = doctor.map(({ _id, name, speciality, rate }) => ({
+          _id,
+          name,
+          speciality,
+          sessionPrice: Math.floor(rate * 1.1 * discount),
+        }));
+
+        return res.status(200).json({ token: token, type: "patient" });
+      }
+    } else if (doctor) {
+      found = await bcrypt.compare(req.body.password, doctor.password);
+      if (found) {
+        const token = createToken({
+          _id: doctor._id,
+          username: doctor.username,
+          rate: doctor.rate,
+          type: "doctor",
+        });
+        res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+        const data = {
+          name: doctor.username,
+        };
+
+        return res.status(200).json({ token: token, type: "doctor" });
+      }
+    }
+
+    if (!found)
+      return res
+      .status(200)
+      .json({ message: "Username or password incorrect" });
+  }catch(err){
+    console.log(err);
+    return res.status(404).json({ message: err.message });
+  }
 };
 
 const changePasswordAdmin = async (req, res) => {
@@ -319,7 +325,7 @@ const createAdmin = async (req, res) => {
     req.body.email === ""
   ) {
     //look for any missing fields
-    return res.render("admin/register", { message: "Insert missing fields" });
+    return res.status(200).json({ message: "Insert missing fields" });
   }
 
   if (
@@ -328,9 +334,7 @@ const createAdmin = async (req, res) => {
     (await patientsTable.find({ username: username })).length > 0 ||
     (await requestsTable.find({ username: username })).length > 0
   ) {
-    return res.render("admin/register", {
-      message: "username already exists",
-    });
+    return  res.status(200).json({ message: "username Unavailable" });
   }
 
   if (
@@ -339,11 +343,11 @@ const createAdmin = async (req, res) => {
     (await patientsTable.find({ email: email })).length > 0 ||
     (await requestsTable.find({ email: email })).length > 0
   ) {
-    return res.render("admin/register", { message: "email already exists" });
+    return res.status(200).json({ message: "Email Unavailable" });
   }
 
   if (isStrongPassword(req.body.password) === false) {
-    return res.render("admin/register", { message: "password is weak" });
+    return res.status(200).json({ message: "password is weak" });
   }
 
   try {
@@ -357,11 +361,12 @@ const createAdmin = async (req, res) => {
     });
     const result = await adminUser.save(); //save into DB
 
-    res.render("admin/register", { message: "Admin created successfully" });
+    return res.status(200).json({ message: "Admin Created" });
   } catch (ex) {
-    res.render("admin/register", { message: ex.message });
+    return res.status(200).json({ message: ex.message });
   }
 };
+
 
 function isStrongPassword(password) {
   if (password.length < 8) {
@@ -538,7 +543,7 @@ const goToDeleteUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   let deletedUser;
   if (req.body.username === "")
-    res.render("admin/deleteUser", { message: "Insert username" });
+    return res.status(200).json({ message: "Fill the empty fields" });
   if (req.body.userType == "admin") {
     //check the user and delete using its username which is unique
     deletedUser = await adminsTable.deleteOne({ username: req.body.username });
@@ -592,15 +597,18 @@ const deleteUser = async (req, res) => {
     });
   }
   if (deletedUser)
-    res.render("admin/deleteUser", { message: "User deleted successfully" });
-  else res.render("admin/deleteUser", { message: "User not found" });
+    return res.status(200).json({ message: "User deleted successfully" });
+  else return res.status(200).json({ message: "User Not found" });
 };
 
 const goToUploadedInfo = async (req, res) => {
   const requests = await requestsTable.find();
-  res.render("admin/uploadedInfo", {
-    requests,
-  });
+  return res.status(200).json({ requests: requests });
+};
+
+const getRequests = async (req, res) => {
+  const requests = await requestsTable.find();
+  return res.status(200).json({ requests: requests });
 };
 
 async function showDoctorRecord(req, res) {
@@ -647,7 +655,7 @@ async function showDoctorRecord(req, res) {
 
 const acceptRequest = async (req, res) => {
   const doctorToBeAccepted = await requestsTable.findOne({
-    email: req.query.email,
+    email: req.body.email,
   });
 
   let id = {
@@ -685,17 +693,13 @@ const acceptRequest = async (req, res) => {
   doctor = await doctor.save();
   await requestsTable.deleteOne({ email: req.query.email });
   const requests = await requestsTable.find();
-  res.render("admin/uploadedInfo", {
-    requests,
-  });
+  res.status(200).json({ requests: requests, message: "Doctor accepted" });
 };
 
 const rejectRequest = async (req, res) => {
-  await requestsTable.deleteOne({ email: req.query.email });
+  await requestsTable.deleteOne({ email: req.body.email });
   const requests = await requestsTable.find();
-  res.render("admin/uploadedInfo", {
-    requests,
-  });
+  res.status(200).json({ requests: requests, message: "Doctor Rejected" });
 };
 
 module.exports = {
@@ -704,6 +708,7 @@ module.exports = {
   createAdmin,
   deleteUser,
   goToUploadedInfo,
+  getRequests,
   goToDeleteUser,
   goToHealthPackages,
   addHealthPackages,

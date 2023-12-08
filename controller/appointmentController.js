@@ -26,29 +26,19 @@ async function createAppointment(req,res){
 async function showMyPatients(req,res){
     let result
     id=req.user._id;
-    console.log(id)
-    console.log("---------------------------------------------------------------------------------------------")
-
     if(req.query.name){
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
          result=result.filter((c)=>{
             
             return c.patientID.name.substring(0,req.query.name.length)==req.query.name
          }
-         
-         
          )
-       
-         
     }
     else{
         
          result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
         
     }
-     
-    console.log(result)
-    console.log("---------------------------------------------------------------------------------------------")
     for(i in result){
         for(let j=0;j<result.length;j++){
             if(i!=j){
@@ -59,44 +49,27 @@ async function showMyPatients(req,res){
                 }
             }
         } 
-    } 
-    let patientRows ='<tr><th>name</th></tr>';
-    for(patients in result){
-        patientRows=patientRows + `<tr><td id="${result[patients].patientID._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[patients].patientID.name} </td></tr>`
-
     }
-    res.render("doctor/doctorPatients",{patientRows:patientRows,onepatient:true})
+
+
+    res.status(200).json({result:result});
 }
+// async function showMyPatientInfo(req,res){
+//     id=req.user._id;
+//     try{
+//         const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","name DOB gender mobile emergency healthPackage healthRecords.name").select(["patientID","-_id"])
+//         res.status(200).json({result:result});
+//     }
+//     catch(error){
+//         res.send("Patient doesnt exist")
+//     }
+    
+// }
 async function showMyPatientInfo(req,res){
     id=req.user._id;
     try{
-        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","-_id").select(["patientID","-_id"])
-        let patientRows ='<tr><th>name</th> <th>Date of birth</th> <th>Gender</th>\
-         <th>Mobile number</th> <th>Emergency contact name</th> <th>Emergency contact number</th>\
-           <th>Health package</th> </tr>';
-            var date=result[0].patientID.DOB;
-            if(date){
-                date=date.toISOString().split('T')[0]
-            }
-            patientRows=patientRows + `<tr><td style="text-align: center;"> ${result[0].patientID.name} </td><td style="text-align: center;\
-            "> ${date} </td>\
-             <td style="text-align: center;"> ${result[0].patientID.gender} </td> <td style="text-align: center;">\
-              ${result[0].patientID.mobile} </td> \
-             <td style="text-align: center;"> ${result[0].patientID.emergency.name} </td>\
-             <td style="text-align: center;"> ${result[0].patientID.emergency.mobile} \
-             </td> <td style="text-align: center;">${result[0].patientID.subscription.healthPackage}</td>`
-            let uploadButton = `<form id="uploadForm" method="POST" action="/doctor/patients/${req.params.id}/upload-pdf" enctype="multipart/form-data"">
-                <input type="file" name="healthRecords">
-                <input type="submit" value="Upload">
-                </form>`;
-            let healthRecords = [];
-            if (result[0].patientID.healthRecords && result[0].patientID.healthRecords.length > 0) {
-                healthRecords = result[0].patientID.healthRecords.map((record) => ({
-                    data: record.data,
-                    contentType: record.contentType,
-                }));
-            }
-            res.render("doctor/doctorPatients",{patientRows:patientRows, healthRecords: healthRecords, uploadButton: uploadButton, onepatient:false})
+        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","name DOB gender mobile emergency healthPackage healthRecords.name").select(["patientID","-_id"])
+        res.status(200).json({result:result[0]})
     }
     catch(error){
         res.send("Patient doesnt exist")
@@ -137,14 +110,15 @@ async function showUpcomingAppointments(req,res){
 async function DocShowAppointments(req,res){
     id=req.user._id;
     const result = await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
-    let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
+    // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
     
-    for(appointmentl in result){
-        appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td><td> <button id=${result[appointmentl].patientID._id} onClick="schedFollow(this)">Schedule follow up</button></td> </tr>`
-    }
-    res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
+    // for(appointmentl in result){
+    //     appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td><td> <button id=${result[appointmentl].patientID._id} onClick="schedFollow(this)">Schedule follow up</button></td> </tr>`
+    // }
+    // res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
+    res.status(200).json({result:result});
 }
 async function PatientFilterAppointments(req,res){
     id=req.user._id;
@@ -206,48 +180,49 @@ async function PatientFilterAppointments(req,res){
 async function DocFilterAppointments(req,res){
     id=req.user._id;
     try{
-    let result 
-    if(req.query.filter=="Status" && req.query.searchvalue!=""){
-        result =  await appointment.find({doctorID:id,status:req.query.searchvalue}).populate("patientID").select(["patientID","date","status"]);
-    }
-    else if(req.query.filter=="Status"){
-        result =  await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
-    }
-    if(req.query.filter=="Date"){
-        
-        let date =new Date(req.query.searchvalue);
-        result= await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
-        if(req.query.searchvalue!=""){
-        result = result.filter((x) => {
-            if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
-                return true;
-            return false;
-        })
-    }
+        let result 
+        if(req.query.filter=="Status" && req.query.searchvalue!=""){
+            result =  await appointment.find({doctorID:id,status:req.query.searchvalue}).populate("patientID").select(["patientID","date","status"]);
+        }
+        else if(req.query.filter=="Status"){
+            result =  await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
+        }
+        if(req.query.filter=="Date"){
+            
+            let date =new Date(req.query.searchvalue);
+            result= await appointment.find({doctorID:id}).populate("patientID").select(["patientID","date","status"]);
+            if(req.query.searchvalue!=""){
+            result = result.filter((x) => {
+                if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
+                    return true;
+                return false;
+            })
+        }
 
-    }
-    if(req.query.filters=="upcoming"){ 
-        result= result.filter((c)=>{
-            return c.date > new Date();
-        })
-    }
-    else if(req.query.filters=="past"){
-        result= result.filter((c)=>{
-            return c.date < new Date();
-        })
-    }
-    let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
-    
-    for(appointmentl in result){
-        appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td> </tr>`
+        }
+        if(req.query.filters=="upcoming"){ 
+            result= result.filter((c)=>{
+                return c.date > new Date();
+            })
+        }
+        else if(req.query.filters=="past"){
+            result= result.filter((c)=>{
+                return c.date < new Date();
+            })
+        }
+        // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th></tr>';
         
+        // for(appointmentl in result){
+        //     appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].patientID.name} </td>\
+        //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
+        //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td> </tr>`
+            
 
+        // }
+        // res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});
+        res.status(200).json({result:result});
     }
-    res.render("doctor/Appointments",{appointmentrows:appointmentrows,onepatient:true});}
     catch(error){
-        console.log(req.query.filter);
         console.log(error);
     }
 }
