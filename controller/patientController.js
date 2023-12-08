@@ -882,24 +882,25 @@ async function selectPrescription(req, res) {
       patientID: patient._id,
       _id: req.params.id,
     });
-    let prescriptionrows =
-      "<tr><th>Name</th> <th>Date</th> \
-         <th>Doctor Name</th> <th>Filled</th> </tr>";
-    var date = result[0].date;
-    if (date) {
-      date = date.toISOString().split("T")[0];
-    }
-    prescriptionrows =
-      prescriptionrows +
-      `<tr><td style="text-align: center;"> ${result[0].prescriptionName} </td><td style="text-align: center;\
-            "> ${date} </td>\
-             <td style="text-align: center;"> ${result[0].doctorName} </td> <td style="text-align: center;">\
-              ${result[0].filled} </td>`;
+    // let prescriptionrows =
+    //   "<tr><th>Name</th> <th>Date</th> \
+    //      <th>Doctor Name</th> <th>Filled</th> </tr>";
+    // var date = result[0].date;
+    // if (date) {
+    //   date = date.toISOString().split("T")[0];
+    // }
+    // prescriptionrows =
+    //   prescriptionrows +
+    //   `<tr><td style="text-align: center;"> ${result[0].prescriptionName} </td><td style="text-align: center;\
+    //         "> ${date} </td>\
+    //          <td style="text-align: center;"> ${result[0].doctorName} </td> <td style="text-align: center;">\
+    //           ${result[0].filled} </td>`;
 
-    res.render("patient/Prescriptions", {
-      prescriptionrows: prescriptionrows,
-      onepatient: false,
-    });
+    // res.render("patient/Prescriptions", {
+    //   prescriptionrows: prescriptionrows,
+    //   onepatient: false,
+    // });
+    res.status(200).json({result: result,onePatient: false});
   } catch (error) {
     res.send("Patient doesnt exist");
   }
@@ -928,16 +929,17 @@ const FilterPrescriptions = async (req, res) => {
       res.status(500).json("Please enter true or false");
     }
   }
-  let prescriptionrows = "<tr><th>Name</th></tr>";
-  for (prescriptions in result) {
-    prescriptionrows =
-      prescriptionrows +
-      `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td> </tr>`;
-  }
-  res.render("patient/Prescriptions", {
-    prescriptionrows: prescriptionrows,
-    onepatient: false,
-  });
+  // let prescriptionrows = "<tr><th>Name</th></tr>";
+  // for (prescriptions in result) {
+  //   prescriptionrows =
+  //     prescriptionrows +
+  //     `<tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td> </tr>`;
+  // }
+  // res.render("patient/Prescriptions", {
+  //   prescriptionrows: prescriptionrows,
+  //   onepatient: false,
+  // });
+  res.status(200).json({result: result,onePatient:false});
 };
 async function patientHome(req, res) {
   res.render("patient/patientHome");
