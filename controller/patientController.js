@@ -223,6 +223,17 @@ const readDoctors = async (req, res) => {
   res.status(201).render("patient/home", { results, one: true });
 };
 
+const readUserData = async (req, res) => {
+  try {
+    const patient = await patientModel.findById(req.user._id, "name");
+    res.status(201).json({result:patient});
+  } catch (error) {
+    res.status(401).send(error.message);
+    consolw.log(error);
+  }
+}
+
+
 // helper
 function isEmpty(input) {
   return !/[a-z]/i.test(input);
@@ -1144,10 +1155,11 @@ const PayByWallet = async (req, res) => {
 };
 const ViewWallet = async (req, res) => {
   patientID = req.user._id;
-  patient = await patientModel.findOne({ _id: patientID });
-  Wallett = patient.Wallet;
-  console.log(Wallett);
-  res.render("patient/Wallet", { Wallett: Wallett });
+  patient = await patientModel.findById(req.user._id, "Wallet");
+  const Wallet = patient.Wallet;
+  // console.log(Wallett);
+  // res.render("patient/Wallet", { Wallett: Wallett });
+  res.status(201).json({result: Wallet});
 };
 const success = async (req, res) => {
   const appoitmentid = req.params.id;
@@ -1170,6 +1182,28 @@ const success = async (req, res) => {
 const fail = async (req, res) => {
   res.render("fail");
 };
+const getPatientPlan = async (req, res) => {
+  const patient = await patientModel.findById(req.user._id,"subscription");
+  res.status(201).json({result:patient.subscription.healthPackage});
+}
+const getFamilyMembersPlan = async (req, res) => {
+  const familyMembers = await patientModel.findById(req.user._id,"familyMembers");
+  var familyPlan = [];
+  for (let i = 0; i < familyMembers.familyMembers.length; i++) {
+    const member = await patientModel.findById(familyMembers.familyMembers[i].patientID,"subscription");
+    if(member !== null)
+      familyPlan.push({name:familyMembers.familyMembers[i].name,relation:familyMembers.familyMembers[i].relation,healthPackage:member.subscription.healthPackage});
+    else
+      familyPlan.push({name:familyMembers.familyMembers[i].name,relation:familyMembers.familyMembers[i].relation,healthPackage:"none"});
+  }
+  res.status(201).json({result:familyPlan});
+};
+
+const getMyAppointments = async (req, res) => {
+    const Appointment = await appointment.find({patientID:req.user._id,date:{$gt:Date.now()}}).populate("doctorID","name").select(["doctorID","date"]);
+    res.status(201).json({result:Appointment});
+}
+
 module.exports = {
   showSlots,
   reserveSlot,
@@ -1198,6 +1232,10 @@ module.exports = {
   LinkFamilyMemeber,
   showFile,
   deleteMedicalHistory,
+  readUserData,
+  getPatientPlan,
+  getFamilyMembersPlan,
+  getMyAppointments,
 };
 
 module.exports.readSubscription = readSubscription;
