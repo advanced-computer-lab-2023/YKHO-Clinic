@@ -1,4 +1,14 @@
 
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    overflow-y: auto;
+    height:100vh;
+}
+
 .tableRow:hover{
     background-color: #cf5656;
     transition:all 0.6s ease-in-out;

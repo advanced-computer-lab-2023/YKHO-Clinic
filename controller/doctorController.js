@@ -291,7 +291,7 @@ const docViewWallet = async(req,res) =>{
   doctorID=req.user._id;
   let doctorr= await doctor.findOne({_id:doctorID});
   Wallett=doctorr.Wallet;
-  res.render("doctor/Wallet",{Wallett: Wallett});
+  res.status(200).json({Wallett:Wallett});
 }
 async function showHealthRecord(req,res){
   const patientId=req.params.id;
@@ -304,5 +304,6 @@ async function showHealthRecord(req,res){
   res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
   res.send(file);
   }
+
 
 module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord};
