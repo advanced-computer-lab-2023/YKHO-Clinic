@@ -295,7 +295,7 @@ function sendOTPByEmail(email, OTP) {
   // Extend the connection timeout to 30 seconds (in milliseconds)
 
   const mailOptions = {
-    from: "ayebnmetnaka@inbox.mailtrap.io",
+    from: "@inbox.mailtrap.io",
     to: email,
     subject: "Password Reset OTP",
     text: `Your OTP for password reset is: ${OTP}`,
