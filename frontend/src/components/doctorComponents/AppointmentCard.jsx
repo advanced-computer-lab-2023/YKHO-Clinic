@@ -5,7 +5,10 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { IconButton } from '@mui/material';
+import EditCalendarIcon from '@mui/icons-material/EditCalendar';
+import CardActions from '@mui/material/CardActions';
+import Button from '@mui/material/Button';
 function AppointmentCard(props) {
   return (
     <motion.div
@@ -13,7 +16,8 @@ function AppointmentCard(props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card sx={{ display: 'flex', alignItems: 'center',justifyContent:"center",width: 270, height: 140 }}>
+      <Card sx={{width: 270, height: 140 }}>
+        <div style={{display: 'flex', alignItems: 'center',justifyContent:"center",width: 270, height: 140}}>
         <CardContent sx={{ display: 'flex', alignItems: 'center',justifyContent:"center" }}>
           <TodayIcon sx={{ fontSize: 71, marginRight: 3 }} />
           <div>
@@ -25,7 +29,15 @@ function AppointmentCard(props) {
             </Typography>
           
           </div>
+          {props.isFull&&<IconButton sx={{marginTop:"-80px"}} id={props.ids} onClick={()=>props.whenClicked(props.ids)}>
+            <EditCalendarIcon sx={{ fontSize: 24 }} />
+          </IconButton>}
+        
         </CardContent>
+        </div>
+        {props.isFull &&<CardActions sx={{marginTop:-6}}>
+              <Button size='small' variant="text" id={props.ids}>schedule follow up</Button>
+          </CardActions>}
       </Card>
     </motion.div>
   );

@@ -132,7 +132,7 @@ function DoctorHome(props) {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.5, delay: index * 0.2 }} // Adjust the delay for staggered effect
                                                 >
-                                                <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]}  />
+                                                <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} isFull={false} />
                                                 </motion.div>
                                             </Grid>
                                             ))}
