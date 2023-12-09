@@ -2,6 +2,10 @@ import {React,useState} from 'react';
 import axios from 'axios';
 import Joi from 'joi';
 import { set } from 'mongoose';
+import Button from '@mui/material/Button';
+import { Typography } from '@mui/material';
+import TextField from '@mui/material/TextField';
+
 const DoctorRegister = () => {
 const [message, setMessage] = useState("");
 function validateEmail(email) {
@@ -91,42 +95,59 @@ function validateEmail(email) {
         }
     }
             return (
-                <div>
-                    <label htmlFor="username">username</label><br />
-                    <input type="text" id="username" name="username" /><br />
-                    <label htmlFor="password">password</label><br />
-                    <input type="password" id="password" name="password" /><br />
-                    <label htmlFor="name">name</label><br />
-                    <input type="text" id="name" name="name" /><br />
-                    <label htmlFor="DOB">DOB</label><br />
-                    <input type="date" id="DOB" name="DOB" /><br />
-                    <label htmlFor="email">email</label><br />
-                    <input type="email" id="email" name="email" /><br /><br />
-                    <label htmlFor="speciality">Choose a Specialty:</label>
-                    <select id="speciality" name="speciality">
-                        <option value="dermatology">dermatology</option>
-                        <option value="pediatrics">pediatrics</option>
-                        <option value="orthopedics">orthopedics</option>
-                    </select><br /><br />
-                    <label htmlFor="mobile">mobile</label><br />
-                    <input type="number" id="mobile" name="mobile" /><br />
-                    <label htmlFor="rate">rate</label><br />
-                    <input type="number" id="rate" name="rate" /><br />
-                    <label htmlFor="affiliation">affiliation</label><br />
-                    <input type="text" id="affiliation" name="affiliation" /><br />
-                    <label htmlFor="education">education</label><br />
-                    <input type="text" id="education" name="education" /><br /><br />
-                    <label htmlFor="id">Your Id:</label>
-                    <input type="file" id="id" name="files" required /><br />
-                    <label htmlFor="license">Your Medical License:</label>
-                    <input type="file" id="license" name="files" required /><br />
-                    <label htmlFor="degree">Your Medical degree:</label> 
-                    <input type="file" id="degree" name="files" required /><br /><br />
-                    <input type="submit" onClick={register} value="register" />
+                <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'200px'}}>
+                    <Typography style={{marginBottom:'15px'}} variant='h5'>Register Doctor</Typography>
+                    <div style={{display:'flex'}}>
+                        <div style={{display:'flex', flexDirection:'column', marginRight:'150px'}}>
+                            <TextField variant='standard' id="username" name="username" label="username" />
+                            <TextField variant='standard' type="password" id="password" name="password" label='password' />
+                            <TextField variant='standard' type="text" id="name" name="name" label='name' />
+                            <TextField variant='standard' type="date" id="DOB" name="DOB" label='DOB' />
+                            <TextField variant='standard' type="email" id="email" name="email" label='email' />
+                        </div>
+                        <div style={{display:'flex', flexDirection:'column', marginBottom:'15px'}}>
+                            <div>
+                                <label htmlFor="speciality">Specialty:</label>
+                                <select style={{...styles.input, width:'186px'}} id="speciality" name="speciality">
+                                    <option value="dermatology">dermatology</option>
+                                    <option value="pediatrics">pediatrics</option>
+                                    <option value="orthopedics">orthopedics</option>
+                                </select>
+                            </div>
+                            <input style={styles.input} type="number" id="mobile" name="mobile" placeholder='mobile' />
+                            <input style={styles.input} type="number" id="rate" name="rate" placeholder='rate' />
+                            <input style={styles.input} type="text" id="affiliation" name="affiliation" placeholder='affiliation' />
+                            <input style={styles.input} type="text" id="education" name="education" placeholder='education' />
+                        </div>
+                    </div>
+                    <div style={{display:'flex', marginBottom:'15px', paddingLeft:'80px'}}>
+                        <label style={{fontSize: "1.1em"}} htmlFor="id">Your Id:</label>
+                        <input type="file" id="id" name="files" required />
+                        <label style={{fontSize: "1.1em"}} htmlFor="license">Your Medical License:</label>
+                        <input type="file" id="license" name="files" required />
+                    </div>
+                    <div style={{ marginBottom:'15px'}}>
+                    <label style={{fontSize: "1.1em"}} htmlFor="degree">Your Medical degree:</label> 
+                    <input type="file" id="degree" name="files" required />
+                    </div>
+                    <Button type="submit" variant='contained' onClick={register} value="register"> Register </Button>
                     <p>{message}</p>
                 </div>
             );
         };
 
-
+const styles={
+    input : {
+        fontSize: "1.1em",
+        width: "250px",
+        height: "20px",
+        padding: "0px 5px",
+        margin: "8px 0",
+        display: "inline-block",
+        border: "1px solid black",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    }
+}
+        
 export default DoctorRegister;

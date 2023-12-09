@@ -72,11 +72,11 @@ function Login(){
     return(
         <div>
             {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
-                <Typography style ={{justifyContent:'center'}} variant='h4'>Login</Typography>
+                <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>LOGIN</Typography>
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />
                 <div style={{display:'flex', justifyContent:'space-around'}}>
-                    <Button variant='contained'>forget Password</Button>
+                    <Button variant='contained' style={{marginRight: '190px'}}>forget Password</Button>
                     <Button variant='contained'  onClick={handleLogin}>Login</Button>
                 </div>
                 <br/>
@@ -85,7 +85,6 @@ function Login(){
                 {error && <p>{error}</p>}
             </div>}
         </div>
-
     )
 }
 
