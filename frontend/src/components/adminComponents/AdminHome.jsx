@@ -122,8 +122,9 @@ export default function AdminHome() {
     )}
   </AnimatePresence>
 </Box>
-<div>
-  <TableContainer component={Paper}>
+{/* <div>
+  <div>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
@@ -136,7 +137,7 @@ export default function AdminHome() {
             <TableCell>education</TableCell>
             </TableRow>
             </TableHead>
-            <TableBody>
+          <TableBody>
             {requests.map((requestsTable) => (
               <TableRow
               key={row.name}
@@ -177,9 +178,9 @@ export default function AdminHome() {
           
           </TableBody>
         </Table>
-        </TableContainer>
+      </TableContainer>
         <p>{error}</p>
-      </div>
+    </div> */}
       <Button variant='contained' style={{marginRight: '190px'}} id="createAdminButton" onClick={createAdminButton}>Create A New Admin</Button>
       <Button variant='contained' style={{marginRight: '190px'}} id="deleteUserButton" onClick={deleteUserButton}>Delete A Doctor/Patient/Admin</Button>
       <button onClick={uploadedInfoButton} id="uploadedInfoButton">View doctors uploaded info</button>
