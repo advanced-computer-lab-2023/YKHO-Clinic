@@ -91,42 +91,64 @@ function validateEmail(email) {
         }
     }
             return (
-                <div>
-                    <label htmlFor="username">username</label><br />
-                    <input type="text" id="username" name="username" /><br />
-                    <label htmlFor="password">password</label><br />
-                    <input type="password" id="password" name="password" /><br />
-                    <label htmlFor="name">name</label><br />
-                    <input type="text" id="name" name="name" /><br />
-                    <label htmlFor="DOB">DOB</label><br />
-                    <input type="date" id="DOB" name="DOB" /><br />
-                    <label htmlFor="email">email</label><br />
-                    <input type="email" id="email" name="email" /><br /><br />
-                    <label htmlFor="speciality">Choose a Specialty:</label>
-                    <select id="speciality" name="speciality">
-                        <option value="dermatology">dermatology</option>
-                        <option value="pediatrics">pediatrics</option>
-                        <option value="orthopedics">orthopedics</option>
-                    </select><br /><br />
-                    <label htmlFor="mobile">mobile</label><br />
-                    <input type="number" id="mobile" name="mobile" /><br />
-                    <label htmlFor="rate">rate</label><br />
-                    <input type="number" id="rate" name="rate" /><br />
-                    <label htmlFor="affiliation">affiliation</label><br />
-                    <input type="text" id="affiliation" name="affiliation" /><br />
-                    <label htmlFor="education">education</label><br />
-                    <input type="text" id="education" name="education" /><br /><br />
-                    <label htmlFor="id">Your Id:</label>
-                    <input type="file" id="id" name="files" required /><br />
-                    <label htmlFor="license">Your Medical License:</label>
-                    <input type="file" id="license" name="files" required /><br />
-                    <label htmlFor="degree">Your Medical degree:</label> 
-                    <input type="file" id="degree" name="files" required /><br /><br />
+                <div style={{display:'flex', flexDirection:'column'}}>
+                    <div style={{display:'flex'}}>
+                        <div>
+                            <label htmlFor="username">username</label><br />
+                            <input type="text" id="username" name="username" /><br />
+                            <label htmlFor="password">password</label><br />
+                            <input type="password" id="password" name="password" /><br />
+                            <label htmlFor="name">name</label><br />
+                            <input type="text" id="name" name="name" /><br />
+                            <label htmlFor="DOB">DOB</label><br />
+                            <input type="date" id="DOB" name="DOB" /><br />
+                            <label htmlFor="email">email</label><br />
+                            <input type="email" id="email" name="email" /><br /><br />
+                        </div>
+                        <div>
+
+                            <label htmlFor="speciality">Choose a Specialty:</label>
+                            <select id="speciality" name="speciality">
+                                <option value="dermatology">dermatology</option>
+                                <option value="pediatrics">pediatrics</option>
+                                <option value="orthopedics">orthopedics</option>
+                            </select><br /><br />
+                            <label htmlFor="mobile">mobile</label><br />
+                            <input type="number" id="mobile" name="mobile" /><br />
+                            <label htmlFor="rate">rate</label><br />
+                            <input type="number" id="rate" name="rate" /><br />
+                            <label htmlFor="affiliation">affiliation</label><br />
+                            <input type="text" id="affiliation" name="affiliation" /><br />
+                            <label htmlFor="education">education</label><br />
+                            <input type="text" id="education" name="education" /><br /><br />
+                        </div>
+                    </div>
+                    <div style={{display:'flex'}}>
+                        <label htmlFor="id">Your Id:</label>
+                        <input type="file" id="id" name="files" required /><br />
+                        <label htmlFor="license">Your Medical License:</label>
+                        <input type="file" id="license" name="files" required /><br />
+                        <label htmlFor="degree">Your Medical degree:</label> 
+                        <input type="file" id="degree" name="files" required /><br /><br />
+                    </div>
+
                     <input type="submit" onClick={register} value="register" />
                     <p>{message}</p>
                 </div>
             );
         };
 
-
+const styles={
+    input : {
+        width: "450px",
+        height: "40px",
+        padding: "0px 10px",
+        margin: "8px 0",
+        display: "inline-block",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    }
+}
+        
 export default DoctorRegister;
