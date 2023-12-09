@@ -21,6 +21,7 @@ const {
   showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,
   showHealthRecord,
   loggedIn,
+  getName
 } = require("./controller/doctorController");
 const {
   createAppointment,
@@ -141,6 +142,7 @@ app.post("/doctor/reserve/:id",requireAuthDoctor, createFollowUp);
 app.get("/doctor/patients/:id/:healthId", requireAuthDoctor, showHealthRecord);
 app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
 app.get("/loggedIn",requireAuth,loggedIn);
+app.get("/doctor/name",requireAuthDoctor,getName);
 //Admin
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);

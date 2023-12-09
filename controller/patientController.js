@@ -1,10 +1,14 @@
 const patientModel = require("../model/patient");
 const doctorModel = require("../model/doctor").doctor;
+const appointmentModel = require("../model/appointments").appointment;
+const notificationModel = require("../model/notification");
 const timeSlot = require("../model/timeSlots").timeSlot;
 const timeSlotModel = timeSlot;
 const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const admin = require("../model/admin.js");
@@ -15,8 +19,8 @@ require("dotenv").config();
 const { isStrongPassword } = require("./adminController.js");
 const healthPackageModel = require("../model/healthPackage").healthPackage;
 //const { date } = require('joi');
-const appointmentModel = require("../model/appointments").appointment;
 const { prescription } = require("../model/prescription");
+const { send } = require("express/lib/response.js");
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = (name) => {
   return jwt.sign({ name }, process.env.SECRET, {
@@ -713,9 +717,9 @@ async function reserveSlot(req, res) {
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
   const doctor = await doctorModel.find({ _id: doctorID });
-  const patient = await patientModel.find({ _id: id }).select(["subscription"]);
+  const patient = await patientModel.find({ _id: id }).select(["subscription", "email","name"]);
   let duration = (endH - startH) * 60 + (endM - startM);
-  console.log(patient);
+  //console.log(patient);
   duration = duration / 60;
   let price;
   if (patient[0].subscription.healthPackage != "none") {
@@ -744,7 +748,7 @@ async function reserveSlot(req, res) {
       .status(400)
       .send("There is already an appointment at the specified time.");
   }
-
+  console.log("succ");
   const newAppointment = new appointment({
     doctorID: doctorID,
     patientID: id,
@@ -754,7 +758,125 @@ async function reserveSlot(req, res) {
     price: price,
   });
   await newAppointment.save();
+
+  let newNotification = new notificationModel({
+    patientID: id,
+    text: "You have a new appointment",
+    date: Date.now(),
+  });
+  await newNotification.save();
+  let newNotification2 = new notificationModel({
+    doctorID: doctorID,
+    text: `You have a new appointment with ${patient[0].name}`,
+    date: Date.now(),
+  });
+  await newNotification2.save();
+
   res.redirect(`/patient/doctors/${doctorID}`);
+
+  await sendEmail(patient[0].email, `your appointment is confirmed on ${date}`);
+  await sendEmail(doctor[0].email, `your appointment with ${patient[0].name} is confirmed on ${date}`);
+
+}
+
+async function sendEmail(email, message ) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_ADDRESS,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  let mailOptions = {
+    from: "yousseftyoh@gmail.com",
+    to: "aclclinictest@gmail.com",
+    subject: "appointment confirmation",
+    text: message,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+}
+
+//TODO: check if the dates' format in the new appointment are valid
+async function cancelAppointment(req, res) {
+  const appointmentID = req.params.appointmentId;
+  const deletedAppointment = await appointmentModel.findByIdAndDelete(appointmentID).exec();
+  const patient = await patientModel.findById(deletedAppointment.patientID);
+
+  if(deleteAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
+    let wallet = patient[0].wallet + deletedAppointment.price;
+    const patientUpdate = await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
+    if(deletedAppointment.patientID != req.user._id){
+      message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
+    }
+    message = "Your appointment has been cancelled and the amount has been refunded to your wallet";
+  }else{//usability: if appointment is cancelled more than 24 hours before
+    if(deletedAppointment.patientID != req.user._id){
+      message = "Your family member appointment has been cancelled";
+    }
+    message = "Your appointment has been cancelled";
+  }
+  let newNotification = new notificationModel({
+    patientID: patient[0]._id,
+    text: message,
+    date: Date.now(),
+  });
+  await newNotification.save();
+
+  let newNotification2 = new notificationModel({
+    doctorID: deletedAppointment.doctorID,
+    text: `Your appointment with ${patient[0].name} is cancelled`,
+    date: Date.now(),
+  });
+  await newNotification2.save();
+
+  await sendEmail(patient[0].email, message);
+  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} on ${deleteAppointment.date} is cancelled`);
+
+  res.redirect(`patient/Appointments`);
+}
+
+
+async function rescheduleAppointment(req, res) {
+  const appointmentID = req.params.appointmentId;
+  const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
+  const existingAppointment = await appointment.findOne({
+    doctorID: req.body.doctorID,
+    date: req.body.date,
+  });
+  if (existingAppointment) {
+    return res
+      .status(400)
+      .send("There is already an appointment at the specified time.");
+  }
+  const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
+  const patient = await patientModel.findById(rescheduledAppointment.patientID);
+  let newNotification = new notificationModel({
+    patientID: rescheduledAppointment.patientID,
+    text: `Appointment rescheduled to ${req.body.date}`,
+    date: Date.now(),
+  });
+  await newNotification.save();
+
+  let newNotification2 = new notificationModel({
+    doctorID: deletedAppointment.doctorID,
+    text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
+    date: Date.now(),
+  });
+  await newNotification2.save();
+
+
+  await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
+  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
+
+  res.redirect(`patient/Appointments`);
 }
 
 async function showSlotsFam(req, res) {

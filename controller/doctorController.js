@@ -8,6 +8,7 @@ const {timeSlot} = require('../model/timeSlots');
 const { promisify } = require("util");
 const {doctor,validateDoctor} = require('../model/doctor.js');
 const patientModel = require('../model/patient');
+const notificationModel = require("../model/notification").notification;
 const {appointment} = require('../model/appointments');
 const {healthPackage} = require('../model/healthPackage');
 const axios = require('axios');
@@ -199,6 +200,33 @@ async function deleteTimeSlot(req, res) {
   result = await timeSlot.find({ doctorID: req.user._id });
   res.status(200).json({result:result});
 }
+
+async function cancelAppointment(req, res) {
+  const id = req.params.id;
+  const deletedAppointment = await appointment.findByIdAndDelete(id).exec();
+  const wallet = deletedAppointment.price;
+  const patient = await patientModel.findById(deletedAppointment.patientID);
+  const updatedPatient = await patientModel.findByIdAndUpdate(patientID,  { Wallet: patient[0].wallet + wallet });
+
+  let newNotification = new notificationModel({
+    patientID: patient[0]._id,
+    text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
+    date: Date.now(),
+  });
+  await newNotification.save();
+
+  let newNotification2 = new notificationModel({
+    doctorID: deletedAppointment.doctorID,
+    text: `Your appointment with ${patient[0].name} is cancelled`,
+    date: Date.now(),
+  });
+  await newNotification2.save();
+
+
+  await sendEmail(patient[0].email, "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet");
+  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is cancelled`);
+}
+
 async function showTimeSlots(req,res){ 
    id=req.user._id;
   // const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -239,7 +267,7 @@ async function showFollowUp(req, res) {
   const doctorID = req.user._id;
   const id = req.params.id;
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  console.log(req.params.date)
+
   const date = new Date(req.params.date);
   const day = days[date.getDay()];
   const result = await timeSlot.find({ doctorID: doctorID, day: day });
@@ -289,7 +317,7 @@ price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDisc
 }
 const docViewWallet = async(req,res) =>{
   doctorID=req.user._id;
-  let doctorr= await doctor.findOne({_id:doctorID});
+  let doctorr= await doctor.findOne({_id:doctorID},"Wallet");
   Wallett=doctorr.Wallet;
   res.status(200).json({Wallett:Wallett});
 }
@@ -304,6 +332,10 @@ async function showHealthRecord(req,res){
   res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
   res.send(file);
   }
+async function getName(req,res){  
+  const id=req.user._id;
+  const result=await doctor.findById(id,"name")
+  res.status(200).json({name:result.name})
+}
 
-
-module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord};
+module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName};

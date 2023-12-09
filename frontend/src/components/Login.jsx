@@ -2,6 +2,9 @@
 import React from 'react'
 import axios from 'axios'
 import { useState ,useEffect} from 'react'
+import Button from '@mui/material/Button';
+import { Typography } from '@mui/material';
+
 function Login(){
     const [error,setError]= useState("")
     const [result,setResult]=useState(false);
@@ -35,7 +38,7 @@ function Login(){
         //get username and password from input fields
         //send a post request to backend with username and password
         //if backend returns a token, store it in local storage
-        //redirect to doctor home page
+        //redirect to user type home page
         //else show an error message
 
         const username=document.getElementsByName("username")[0].value
@@ -68,20 +71,34 @@ function Login(){
     }
     return(
         <div>
-            {result&&<div>
-            
-                <input name="username" type="text" placeholder="username" />
-                <input name="password" type="password" placeholder="password" />
-                <button onClick={handleLogin}>Login</button>
+            {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
+                <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>LOGIN</Typography>
+                <input style={styles.input} name="username" type="text" placeholder="username" />
+                <input style={styles.input} name="password" type="password" placeholder="password" />
+                <div style={{display:'flex', justifyContent:'space-around'}}>
+                    <Button variant='contained' style={{marginRight: '190px'}}>forget Password</Button>
+                    <Button variant='contained'  onClick={handleLogin}>Login</Button>
+                </div>
                 <br/>
-                <button onClick={handleDoctor}>register doctor</button>
-                <br/>
-                <button>register patient</button>
+                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
+                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained'>register patient</Button>
                 {error && <p>{error}</p>}
             </div>}
         </div>
-
     )
+}
+
+const styles={
+    input : {
+        width: "450px",
+        height: "40px",
+        padding: "0px 10px",
+        margin: "8px 0",
+        display: "inline-block",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    }
 }
 
 export default Login
