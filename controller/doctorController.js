@@ -239,7 +239,7 @@ async function showFollowUp(req, res) {
   const doctorID = req.user._id;
   const id = req.params.id;
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  console.log(req.params.date)
+
   const date = new Date(req.params.date);
   const day = days[date.getDay()];
   const result = await timeSlot.find({ doctorID: doctorID, day: day });
@@ -289,7 +289,7 @@ price= duration*req.user.rate - (duration*req.user.rate*healthPack[0].doctorDisc
 }
 const docViewWallet = async(req,res) =>{
   doctorID=req.user._id;
-  let doctorr= await doctor.findOne({_id:doctorID});
+  let doctorr= await doctor.findOne({_id:doctorID},"Wallet");
   Wallett=doctorr.Wallet;
   res.status(200).json({Wallett:Wallett});
 }
@@ -304,6 +304,10 @@ async function showHealthRecord(req,res){
   res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
   res.send(file);
   }
+async function getName(req,res){  
+  const id=req.user._id;
+  const result=await doctor.findById(id,"name")
+  res.status(200).json({name:result.name})
+}
 
-
-module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord};
+module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName};

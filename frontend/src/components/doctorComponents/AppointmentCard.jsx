@@ -13,7 +13,7 @@ function AppointmentCard(props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card sx={{ display: 'flex', alignItems: 'center',justifyContent:"center",width: 275, height: 130 }}>
+      <Card sx={{ display: 'flex', alignItems: 'center',justifyContent:"center",width: 270, height: 140 }}>
         <CardContent sx={{ display: 'flex', alignItems: 'center',justifyContent:"center" }}>
           <TodayIcon sx={{ fontSize: 71, marginRight: 3 }} />
           <div>
