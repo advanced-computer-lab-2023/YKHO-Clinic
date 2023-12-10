@@ -23,10 +23,36 @@ import LoadingComponent from '../LoadingComponent';
 import PlaceHolder from '../PlaceHolder';
 import Navbar from './Navbar';
 import AppointmentCard from './AppointmentCard';
+import CardActions from '@mui/material/CardActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Slide from '@mui/material/Slide';
 let status = '';
 let date = undefined;
 let searchvalue = '';
-
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+async function reschedule(e) {
+  await axios
+    .post(
+      'http://localhost:3000/doctor/reschedule',
+      {
+        id: e.target.id,
+      },
+      { withCredentials: true }
+    )
+    .then((res) => {
+      window.location.href = '/doctor/appointments';
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
 function DoctorAppointments() {
   const [result, setResult] = useState(false);
   useEffect(() => {
@@ -138,11 +164,52 @@ function DoctorAppointments() {
       </Grid>
     );
   }
+    const [open, setOpen] = React.useState(false);
+  
+    const handleClickOpen = (e) => {
+      console.log(e);
+      setOpen(true);
+    };
+  
+    const handleClose = () => {
+      setOpen(false);
+    };
+  
 
   return (
     <div>
       {result && (
         <div>
+         
+      <Dialog
+        open={open}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>{"Reshedule this appointment?"}</DialogTitle>
+        <DialogContent>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker id="searchDate" />
+        </LocalizationProvider>
+        <Box sx={{ minWidth: 120 }}>
+      <FormControl fullWidth>
+        <InputLabel id="demo-simple-select-label">Age</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          label="Age"
+          value=""
+        >
+        </Select>
+      </FormControl>
+        </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose}>Agree</Button>
+        </DialogActions>
+      </Dialog>
           <Navbar />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '3%' }}>
             <Card sx={{ display: 'flex', width: '80vw', height: '80vh' }}>
@@ -225,7 +292,7 @@ function DoctorAppointments() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: index * 0.2 }}
                           >
-                            <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} />
+                            <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} isFull={true} ids={app._id} whenClicked={handleClickOpen} />
                           </motion.div>
                         </Grid>
                       ))}
@@ -234,10 +301,14 @@ function DoctorAppointments() {
                   {appLoading && loadingComponents}
                 </Grid>
               </CardContent>
+              
             </Card>
+            
           </div>
+          
         </div>
       )}
+       
     </div>
   );
 }
