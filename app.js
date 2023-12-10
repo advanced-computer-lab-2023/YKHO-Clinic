@@ -86,6 +86,10 @@ const {
   reserveSlot,
   showSlotsFam,
   reserveSlotFam,
+  readUserData,
+  getPatientPlan,
+  getFamilyMembersPlan,
+  getMyAppointments,
   PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
 } = require("./controller/patientController.js");
 const cors=require('cors')
@@ -207,7 +211,8 @@ app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
 app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
-app.get("/patient/home", requireAuthPatient, readDoctors);
+//app.get("/patient/home", requireAuthPatient, readDoctors);
+app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
 app.get("/patient/doctors/:id", requireAuthPatient, selectDoctor);
@@ -220,8 +225,9 @@ app.get("/patient/doctors/:id/showSlots", requireAuthPatient, showSlots);
 app.get("/patient/doctors/:id/reserve", requireAuthPatient, reserveSlot);
 app.get("/patient/doctors/:id/showSlots/familyMember", requireAuthPatient, showSlotsFam);
 app.get("/patient/doctors/:id/familyMember/reserve", requireAuthPatient, reserveSlotFam);
-
-
+app.get("/patient/plan", requireAuthPatient, getPatientPlan);
+app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan);
+app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
 // elgharieb S2
 const readSubscription = require("./controller/patientController").readSubscription;
 app.get("/patient/readSubscription",requireAuthPatient, readSubscription)

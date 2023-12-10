@@ -5,6 +5,24 @@ import { set } from 'mongoose';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+  });
 
 const DoctorRegister = () => {
 const [message, setMessage] = useState("");
@@ -26,6 +44,7 @@ function validateEmail(email) {
         const id = document.getElementById("id").files[0];
         const license = document.getElementById("license").files[0];
         const degree = document.getElementById("degree").files[0];
+        console.log("was")
         const formData = new FormData();
         formData.append("username", username);
         formData.append("password", password);
@@ -55,7 +74,11 @@ function validateEmail(email) {
             license: Joi.required(),
             degree: Joi.required(),
         });
-        
+        const [speciality1, setSpeciality1] = React.useState('');
+
+        const handleChange = (event) => {
+            setSpeciality1(event.target.value);
+        };
         const { error, value } = requestSchema.validate({
             username,
             password,
@@ -101,9 +124,9 @@ function validateEmail(email) {
                         <div style={{display:'flex', flexDirection:'column', marginRight:'150px'}}>
                             <TextField variant='standard' id="username" name="username" label="username" />
                             <TextField variant='standard' type="password" id="password" name="password" label='password' />
-                            <TextField variant='standard' type="text" id="name" name="name" label='name' />
-                            <TextField variant='standard' type="date" id="DOB" name="DOB" label='DOB' />
-                            <TextField variant='standard' type="email" id="email" name="email" label='email' />
+                            <TextField variant='standard' id="name" name="name" label='name' />
+                            <TextField variant='standard' type="email" id="email" name="email" label='email'/>
+                            <input style={styles.input} type="date" id="DOB" name="DOB" placeholder='DOB' />
                         </div>
                         <div style={{display:'flex', flexDirection:'column', marginBottom:'15px'}}>
                             <div>
@@ -113,25 +136,33 @@ function validateEmail(email) {
                                     <option value="pediatrics">pediatrics</option>
                                     <option value="orthopedics">orthopedics</option>
                                 </select>
+                                {/* <FormControl fullWidth>
+                                    <InputLabel id="select">Speciality</InputLabel>
+                                    <Select variant='standard' labelId="select" id="Speciality" value="dermatology" label="Speciality" name="speciality">
+                                        <MenuItem value={"dermatology"}>dermatology</MenuItem>
+                                        <MenuItem value={"pediatrics"}>pediatrics</MenuItem>
+                                        <MenuItem value={"orthopedics"}>orthopedics</MenuItem>
+                                    </Select>
+                                </FormControl> */}
                             </div>
-                            <input style={styles.input} type="number" id="mobile" name="mobile" placeholder='mobile' />
-                            <input style={styles.input} type="number" id="rate" name="rate" placeholder='rate' />
-                            <input style={styles.input} type="text" id="affiliation" name="affiliation" placeholder='affiliation' />
-                            <input style={styles.input} type="text" id="education" name="education" placeholder='education' />
+                            <TextField variant='standard' type="number" id="mobile" name="mobile" label='mobile' />
+                            <TextField variant='standard' type="number" id="rate" name="rate" label='rate' />
+                            <TextField variant='standard' type="text" id="affiliation" name="affiliation" label='affiliation' />
+                            <TextField variant='standard' type="text" id="education" name="education" label='education' />
                         </div>
                     </div>
                     <div style={{display:'flex', marginBottom:'15px', paddingLeft:'80px'}}>
-                        <label style={{fontSize: "1.1em"}} htmlFor="id">Your Id:</label>
-                        <input type="file" id="id" name="files" required />
-                        <label style={{fontSize: "1.1em"}} htmlFor="license">Your Medical License:</label>
-                        <input type="file" id="license" name="files" required />
+                        <label style={{fontSize: "1.1em", paddingTop:'7px', paddingRight:'3px'}} htmlFor="id">Your Id:</label>
+                        <Button style={{marginRight: "100px"}} component="label" variant="contained" startIcon={<CloudUploadIcon />} id="id" name="files"> Upload File <VisuallyHiddenInput type="file" />  </Button>
+                        <label style={{fontSize: "1.1em", paddingTop:'7px', paddingRight:'3px'}} htmlFor="license">Your Medical License:</label>
+                        <Button style={{marginRight: "75px"}} component="label" variant="contained" startIcon={<CloudUploadIcon />} id="license" name="files"> Upload File <VisuallyHiddenInput type="file" />  </Button>
                     </div>
-                    <div style={{ marginBottom:'15px'}}>
-                    <label style={{fontSize: "1.1em"}} htmlFor="degree">Your Medical degree:</label> 
-                    <input type="file" id="degree" name="files" required />
+                    <div style={{ marginBottom:'30px'}}>
+                    <label style={{fontSize: "1.1em", paddingRight:'3px'}} htmlFor="degree">Your Medical degree:</label> 
+                    <Button component="label" variant="contained" startIcon={<CloudUploadIcon />} id="degree" name="files"> Upload File <VisuallyHiddenInput type="file" />  </Button>
                     </div>
                     <Button type="submit" variant='contained' onClick={register} value="register"> Register </Button>
-                    <p>{message}</p>
+                    <Typography> {message} </Typography>
                 </div>
             );
         };
