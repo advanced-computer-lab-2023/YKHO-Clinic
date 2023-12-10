@@ -175,6 +175,10 @@ function DoctorAppointments() {
       setOpen(false);
     };
   
+    const setDate = (e) => {
+      
+
+    }
 
   return (
     <div>
@@ -189,16 +193,17 @@ function DoctorAppointments() {
       >
         <DialogTitle>{"Reshedule this appointment?"}</DialogTitle>
         <DialogContent>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker id="searchDate" />
+        <LocalizationProvider dateAdapter={AdapterDayjs} sx={{marginTop:5}}>
+                    <DatePicker id="searchDate" onChange={setDate} />
         </LocalizationProvider>
         <Box sx={{ minWidth: 120 }}>
-      <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Age</InputLabel>
+        
+      <FormControl sx={{width:313,marginTop:5}} >
+        <InputLabel id="TimeSelector">Please select a date</InputLabel>
         <Select
-          labelId="demo-simple-select-label"
+          labelId="TimeSelector"
           id="demo-simple-select"
-          label="Age"
+          label="Time"
           value=""
         >
         </Select>
@@ -206,8 +211,7 @@ function DoctorAppointments() {
         </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose}>Agree</Button>
+          <Button onClick={handleClose}>Reschedule</Button>
         </DialogActions>
       </Dialog>
           <Navbar />

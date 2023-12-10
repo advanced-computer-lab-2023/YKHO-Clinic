@@ -1292,6 +1292,72 @@ const success = async (req, res) => {
 const fail = async (req, res) => {
   res.render("fail");
 };
+const PayByCreditPresc = async (req, res) => {
+  const prescriptionid = req.params.id;
+  const prescription = await prescriptionModel
+    .findOne({ _id: prescriptionid })
+    .populate("doctorID");
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Prescription From Dr." + prescription.doctorID.name,
+            },
+            unit_amount: prescription.price * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: `http://localhost:${process.env.PORT}/successPresc/${prescriptionid}`,
+      cancel_url: `http://localhost:${process.env.PORT}/failPresc`,
+    });
+    res.redirect(session.url);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Internal Server Error");
+  }
+};
+const PayByWalletPresc = async (req, res) => {
+  const prescriptionid = req.params.id;
+  const prescription = await prescriptionModel.findOne({ _id: prescriptionid });
+  const prescriptionCost = prescription.price;
+  const patient = await patientModel.findOne({ _id: prescription.patientID });
+  const Walletp = patient.Wallet - prescriptionCost;
+  if (patient.Wallet >= appoitmentCost) {
+    const updatedPatient2 = await patientModel.findByIdAndUpdate(
+      prescription.patientID,
+      { $set: { Wallet: Walletp } },
+      { new: true }
+    );
+    const prescriptionupdated = await prescriptionModel.findByIdAndUpdate(
+      prescriptionid,
+      { $set: { paid: true } },
+      { new: true }
+    );
+    res.redirect("/patient/home");
+  } else {
+    res.status(500).send("Insufficient funds");
+  }
+};
+const successPresc = async (req, res) => {
+  const prescriptionid = req.params.id;
+  const prescription = await prescriptionModel.findOne({ _id: prescriptionid });
+  const presc = await prescriptionModel.findByIdAndUpdate(
+    prescriptionid,
+    { $set: { paid: true } },
+    { new: true }
+  );
+  res.render("success");
+};
+const failPresc = async (req, res) => {
+  res.render("fail");
+};
 module.exports = {
   showSlots,
   reserveSlot,
@@ -1320,6 +1386,10 @@ module.exports = {
   LinkFamilyMemeber,
   showFile,
   deleteMedicalHistory,
+  PayByCreditPresc,
+  PayByWalletPresc,
+  successPresc,
+  failPresc,
 };
 
 module.exports.readSubscription = readSubscription;
@@ -1333,3 +1403,4 @@ module.exports.subscribeFamilyMember = subscribeFamilyMember;
 module.exports.deleteSubscription = deleteSubscription;
 module.exports.deleteFamilyMemberSubscription = deleteFamilyMemberSubscription;
 module.exports.subscriptionSuccessful = subscriptionSuccessful;
+

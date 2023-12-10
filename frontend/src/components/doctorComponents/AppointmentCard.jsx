@@ -32,7 +32,7 @@ function AppointmentCard(props) {
           {props.isFull&&<IconButton sx={{marginTop:"-80px"}} id={props.ids} onClick={()=>props.whenClicked(props.ids)}>
             <EditCalendarIcon sx={{ fontSize: 24 }} />
           </IconButton>}
-        
+          
         </CardContent>
         </div>
         {props.isFull &&<CardActions sx={{marginTop:-6}}>

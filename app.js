@@ -21,7 +21,9 @@ const {
   showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,
   showHealthRecord,
   loggedIn,
-  getName
+  getName,
+  ViewPrescriptionsDoc,
+
 } = require("./controller/doctorController");
 const {
   createAppointment,
@@ -84,6 +86,7 @@ const {
   reserveSlot,
   showSlotsFam,
   reserveSlotFam,
+  PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -137,6 +140,7 @@ app.get("/doctor/schedFollowUp/:id/:date",requireAuthDoctor,showFollowUp);
 app.post("/doctor/reserve/:id",requireAuthDoctor, createFollowUp);
 app.get("/doctor/patients/:id/:healthId", requireAuthDoctor, showHealthRecord);
 app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
+app.get("/doctor/Prescriptions", requireAuthDoctor, ViewPrescriptionsDoc);
 app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 //Admin
@@ -235,6 +239,11 @@ const deleteSubscription = require("./controller/patientController").deleteSubsc
 app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
+
+app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayByCreditPresc);
+app.get("/patient/paymentWalletpresc/:id",requireAuthPatient,PayByWalletPresc);
+app.get("/successPresc/:id",requireAuth,successPresc);
+app.get("/failPresc",requireAuth,failPresc);
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)

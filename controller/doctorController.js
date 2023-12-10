@@ -337,5 +337,25 @@ async function getName(req,res){
   const result=await doctor.findById(id,"name")
   res.status(200).json({name:result.name})
 }
+const ViewPrescriptionsDoc = async (req, res) => {
+  doctorp = await doctor.findOne({ _id: req.user._id });
+  let result = await prescription
+    .find({ doctorID: doctorp._id }).populate("patientID")
+    .select(["prescriptionName","filled", "patientID"]);
+  // let prescriptionrows = "<tr><th>name</th></tr>";
 
-module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName};
+  // for (prescriptions in result) {
+  //   prescriptionrows =
+  //     prescriptionrows +
+  //     <tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
+  //       </tr>;
+  // }
+  // res.render("patient/Prescriptions", {
+  //   prescriptionrows: prescriptionrows,
+  //   onepatient: true,
+  // });
+  res.status(200).json(result);
+};
+
+
+module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc};

@@ -160,7 +160,7 @@ function DoctorHome(props) {
                                 </CardContent>
                             </Card>
                         </div>
-                        <div  >
+                        <div >
                             <Card >
                                 <CardContent>
                                 <Typography sx={{ fontSize: 20 }}  gutterBottom>

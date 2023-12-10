@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 const Joi = require('joi-oid');
 const {doctor}= require("./doctor");
 const patient= require("./patient");
+const MedicineScheme= new mongoose.Schema({
+    name:{
+        type:String,
+        required:true,
+        minlength:5,
+        maxlength:50,
+    }
+})
 const prescriptionSchema = new mongoose.Schema({
     prescriptionName:
     {
@@ -40,6 +48,18 @@ const prescriptionSchema = new mongoose.Schema({
         type:Boolean,
         required:true,
         default:false,
+    },
+    price:
+    {
+        type:Number,
+        required:true,
+    },
+    MedicineNames: [MedicineScheme],
+    paid:
+    {
+        type:Boolean,
+        required:true,
+        default:false,
     }
     });
     function validatePrescription(newPrescription){
@@ -50,6 +70,7 @@ const prescriptionSchema = new mongoose.Schema({
             doctorName: Joi.string().required().min(5).max(20),
             date: Joi.date().required(),
             filled:Joi.boolean().required(),
+            price:Joi.Number().required(),
           }); 
         return schema.validate(newPrescription);
     }
