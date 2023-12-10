@@ -12,6 +12,7 @@ const { home } = require("./controller/homePage");
 const {
   docViewWallet,
   createDoctor,
+  createPrescription,
   goToHome,
   updateMyInfo,
   updateThis,
@@ -23,9 +24,13 @@ const {
   loggedIn,
   getName,
   ViewPrescriptionsDoc,
+  createMedicine,
+  deleteMedicine,
+  updateMedicine,
 
 } = require("./controller/doctorController");
 const {
+
   createAppointment,
   showMyPatients,
   showMyPatientInfo,
@@ -127,6 +132,10 @@ app.post("/forgetPassword/done", forgetPassword);
 //Doctor
 app.post("/addDoctor", createDoctor); 
 app.post("/addAppointment", requireAuthDoctor , createAppointment);
+app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
+app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
+app.post("/doctor/deleteMedicine/:id",requireAuthDoctor,deleteMedicine);
+app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine)
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -229,6 +238,7 @@ app.get("/patient/plan", requireAuthPatient, getPatientPlan);
 app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan);
 app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
 // elgharieb S2
+
 const readSubscription = require("./controller/patientController").readSubscription;
 app.get("/patient/readSubscription",requireAuthPatient, readSubscription)
 const readFamilyMembersSubscriptions = require("./controller/patientController").readFamilyMembersSubscriptions;
