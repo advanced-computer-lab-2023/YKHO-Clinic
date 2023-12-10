@@ -57,6 +57,7 @@ const {
   goToNewPassword,
   showDoctorRecord,
   getRequests,
+  getHealthPackages,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -151,6 +152,7 @@ app.get("/doctor/name",requireAuthDoctor,getName);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
+app.get("/getHealthPackages", requireAuthAdmin, getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);

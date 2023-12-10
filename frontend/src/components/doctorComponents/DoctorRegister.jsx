@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Joi from 'joi';
-import { set } from 'mongoose';
 import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
 import MuiAlert  from '@mui/material/Alert';
 import { Typography } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -62,7 +60,8 @@ const DoctorRegister = () => {
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
         const name = document.getElementById("name").value;
-        const DOB = selectedDate;
+        console.log(selectedDate)
+        let DOB = selectedDate;
         const email = document.getElementById("email").value;
         const specialityChoice = speciality;
         const mobile = document.getElementById("mobile").value;
@@ -90,7 +89,6 @@ const DoctorRegister = () => {
             username: Joi.string().required().min(3).max(30),
             password: Joi.string().required().min(8).max(30),
             name: Joi.string().required().min(3).max(30),
-            DOB: Joi.date().required(),
             email: Joi.string().required(),
             speciality: Joi.string().required(),
             mobile: Joi.number().required(),
@@ -110,7 +108,6 @@ const DoctorRegister = () => {
             username,
             password,
             name,
-            DOB,
             email,
             speciality,
             mobile,
@@ -156,7 +153,7 @@ const DoctorRegister = () => {
                             {/* <input style={styles.input} type="date" id="DOB" name="DOB" placeholder='DOB' /> */}
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DemoContainer sx={{ marginBottom:'15px' }} components={['DatePicker']}>
-                                    <DatePicker format="mm/dd/yyyy" id="DOB" name="DOB" value={selectedDate} onChange={handleDateChange} label="Date of Birth" />
+                                    <DatePicker id="DOB" name="DOB" value={selectedDate} onChange={handleDateChange} label="Date of Birth" />
                                 </DemoContainer>
                             </LocalizationProvider>
                         </div>
