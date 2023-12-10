@@ -69,6 +69,9 @@ function Login(){
     function handleDoctor(){
         window.location.href="/register/doctor"
     }
+    function handlePatient(){
+        window.location.href="/register/patient"
+    }
     return(
         <div>
             {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -81,7 +84,7 @@ function Login(){
                 </div>
                 <br/>
                 <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
-                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained'>register patient</Button>
+                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handlePatient}>register patient</Button>
                 {error && <p>{error}</p>}
             </div>}
         </div>
