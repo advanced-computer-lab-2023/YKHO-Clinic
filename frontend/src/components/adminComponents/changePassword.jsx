@@ -18,7 +18,7 @@ import { styled } from '@mui/material/styles';
 import { Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
 
-export default function AdminDeleteUser() {
+export default function ChangePassword() {
   const [error, setError] = useState("");
   const [healthPackages, setHealthPackages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -107,42 +107,27 @@ export default function AdminDeleteUser() {
      <div style={{display:'flex', marginLeft:50}}>
       <div style={{marginTop: '50px',marginRight:100 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
             {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'400px', width:'650px', border:'2px solid black'}}>
-                <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Remove User</Typography>
+                <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Change Password</Typography>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', width: '300px' }}>
              <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
-                  <Typography style={{ marginRight: '10px', width: '100px' }}>Username:</Typography>
-                   <TextField id="packageName" name="packageName" label="Enter Username" />
+                  <Typography style={{ marginRight: '10px', width: '100px' }}>Old Password:</Typography>
+                   <TextField id="packageName" name="packageName" label="Enter Old Password" />
              </div>
-                
+             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
+                  <Typography style={{ marginRight: '10px', width: '100px' }}>New Password:</Typography>
+                   <TextField id="packageName" name="packageName" label="Enter New Password" />
+             </div>
+             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
+                  <Typography style={{ marginRight: '10px', width: '100px' }}>Confirm Password:</Typography>
+                   <TextField id="packageName" name="packageName" label="Enter Confirm Password" />
+             </div>
                 </div>
 
-                <Button style={{marginTop:'157px', marginBottom:'20px'}} variant="contained" >Delete</Button>
+                <Button style={{marginTop:'30px', marginBottom:'20px'}} variant="contained" >Change</Button>
                 
             </div>}
        </div>
-       <div style={{marginTop: '50px',marginRight:0 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
-            {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'400px', width:'650px', border:'2px solid black'}}>
-                <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Create Admin</Typography>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', width: '300px' }}>
-             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px' }}>
-                  <Typography style={{ marginRight: '10px', width: '100px' }}>Username:</Typography>
-                   <TextField id="packageName" name="packageName" label="Enter Username" />
-             </div>
-            <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px' }}>
-                   <Typography style={{ marginRight: '10px', width: '100px' }}>Password:</Typography>
-                  <TextField id="price" name="price" label="Enter Password" />
-              </div>
-             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px' }}>
-                  <Typography style={{ marginRight: '10px', width: '100px' }}>Email:</Typography>
-                  <TextField id="doctorDiscount" name="doctorDiscount" label="Enter Email" />
-                 </div>
-                 
-                </div>
-
-                <Button style={{marginTop:'30px', marginBottom:'20px'}} variant="contained" >Create</Button>
-                
-            </div>}
-       </div>
+       
        </div>
         </div>
         </div>
