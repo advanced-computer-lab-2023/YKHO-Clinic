@@ -8,7 +8,7 @@ const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const admin = require("../model/admin.js");
@@ -46,18 +46,6 @@ const test = {
 let decodedCookie;
 
 const createPatient = async (req, res) => {
-  const schema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    password: Joi.string().required(),
-    name: Joi.string().required(),
-    DOB: Joi.date().iso().required(),
-    gender: Joi.string().valid("male", "female", "other").required(),
-    email: Joi.string().email().required(),
-    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
-    emergencyName: Joi.string().required(),
-    emergencyMobile: Joi.string().required(),
-  });
-  // joi validation
   const {
     username,
     password,
@@ -69,15 +57,34 @@ const createPatient = async (req, res) => {
     emergencyName,
     emergencyMobile,
   } = req.body;
+  const schema = Joi.object({
+    username: Joi.string().max(30).required(),
+    password: Joi.string().required(),
+    name: Joi.string().required(),
+    DOB: Joi.date().iso().required(),
+    gender: Joi.string().valid("male", "female", "other").required(),
+    email: Joi.string().email().required(),
+    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+    emergencyName: Joi.string().required(),
+    emergencyMobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+  });
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    // If validation fails, send a response with the validation error
+    return res.status(201).json({ message: error.details[0].message });
+  }
+  if (isStrongPassword(req.body.password) === false) {
+    return res.status(201).json({ message: "Password is weak" });
+  }
   if (
     (await admin.find({ username: username })).length > 0 ||
     (await doctorModel.find({ username: username })).length > 0 ||
     (await patientModel.find({ username: username })).length > 0 ||
     (await requestModel.find({ username: username })).length > 0
   ) {
-    return res.render("patient/register", {
-      message: "username already exists",
-    });
+    console.log(username);
+    return res.status(201).json({ message: "username already exists" });
   }
   if (
     (await admin.find({ mobile: mobile })).length > 0 ||
@@ -85,7 +92,7 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ mobile: mobile })).length > 0 ||
     (await requestModel.find({ mobile: mobile })).length > 0
   ) {
-    return res.render("patient/register", { message: "mobile already exists" });
+    return res.status(201).json({ message: "mobile already exists" });
   }
   if (
     (await admin.find({ email: email })).length > 0 ||
@@ -93,20 +100,9 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ email: email })).length > 0 ||
     (await requestModel.find({ email: email })).length > 0
   ) {
-    return res.render("patient/register", { message: "email already exists" });
+    return res.status(201).json({ message: "email already exists" });
   }
 
-  const { error, value } = schema.validate(req.body);
-
-  if (error) {
-    // If validation fails, send a response with the validation error
-    return res.status(400).json({ error: error.details[0].message });
-  }
-
-  if (isStrongPassword(req.body.password) === false) {
-    console.log("WEAK PASSWORD");
-    return res.render("patient/register", { message: "password is weak" });
-  }
   const emergency = {
     name: emergencyName,
     mobile: emergencyMobile,
@@ -128,7 +124,7 @@ const createPatient = async (req, res) => {
 
   entry = await entry.save();
 
-  res.status(201).render("home", { message: "sign up succ" });
+  res.status(201).json({ message: "request sent successfully" });
 };
 
 const patientLogout = (req, res) => {
@@ -727,10 +723,10 @@ async function reserveSlot(req, res) {
       packageName: patient[0].subscription.healthPackage,
     });
     price =
-      duration * doctor[0].rate -
-      (duration * doctor[0].rate * healthPack[0].doctorDiscount) / 100;
+       doctor[0].rate*1.1 -
+      ( doctor[0].rate *1.1* healthPack[0].doctorDiscount) / 100;
   } else {
-    price = duration * doctor[0].rate;
+    price = 1.1 * doctor[0].rate;
   }
   // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
   const startHour = startTime.split(":")[0];
@@ -844,40 +840,41 @@ async function cancelAppointment(req, res) {
 }
 
 
-async function rescheduleAppointment(req, res) {
-  const appointmentID = req.params.appointmentId;
-  const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
-  const existingAppointment = await appointment.findOne({
-    doctorID: req.body.doctorID,
-    date: req.body.date,
-  });
-  if (existingAppointment) {
-    return res
-      .status(400)
-      .send("There is already an appointment at the specified time.");
-  }
-  const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
-  const patient = await patientModel.findById(rescheduledAppointment.patientID);
-  let newNotification = new notificationModel({
-    patientID: rescheduledAppointment.patientID,
-    text: `Appointment rescheduled to ${req.body.date}`,
-    date: Date.now(),
-  });
-  await newNotification.save();
+// async function rescheduleAppointment(req, res) {
+//   const appointmentID = req.params.appointmentId;
+//   const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
+//   const existingAppointment = await appointment.findOne({
+//     doctorID: req.body.doctorID,
+//     date: req.body.date,
+//   });
+//   if (existingAppointment) {
+//     return res
+//       .status(400)
+//       .send("There is already an appointment at the specified time.");
+//   }
+//   //TODO: calculate the new price of the appointment
+//   const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
+//   const patient = await patientModel.findById(rescheduledAppointment.patientID);
+//   let newNotification = new notificationModel({
+//     patientID: rescheduledAppointment.patientID,
+//     text: `Appointment rescheduled to ${req.body.date}`,
+//     date: Date.now(),
+//   });
+//   await newNotification.save();
 
-  let newNotification2 = new notificationModel({
-    doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
-    date: Date.now(),
-  });
-  await newNotification2.save();
+//   let newNotification2 = new notificationModel({
+//     doctorID: deletedAppointment.doctorID,
+//     text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
+//     date: Date.now(),
+//   });
+//   await newNotification2.save();
 
 
-  await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
-  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
+//   await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
+//   await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
 
-  res.redirect(`patient/Appointments`);
-}
+//   res.redirect(`patient/Appointments`);
+// }
 
 async function showSlotsFam(req, res) {
   const doctorID = req.params.id;
@@ -954,10 +951,10 @@ async function reserveSlotFam(req, res) {
         packageName: familyPatient[0].subscription.healthPackage,
       });
       price =
-        duration * doctor[0].rate -
-        (duration * doctor[0].rate * healthPack[0].doctorDiscount) / 100;
+        doctor[0].rate *1.1 -
+        ( doctor[0].rate*1.1 * healthPack[0].doctorDiscount) / 100;
     } else {
-      price = duration * doctor[0].rate;
+      price =  doctor[0].rate *1.1;
     }
     // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
     const startHour = startTime.split(":")[0];

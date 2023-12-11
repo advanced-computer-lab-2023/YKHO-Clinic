@@ -203,7 +203,7 @@ async function DocFilterAppointments(req,res){
         }
         if(req.query.searchvalue!=""){
             result = result.filter((x) => {
-                if (x.patientID.name.substring(0,req.query.searchvalue.length) == req.query.searchvalue)
+                if (x.status==req.query.searchvalue)
                     return true;
                 return false;
             })

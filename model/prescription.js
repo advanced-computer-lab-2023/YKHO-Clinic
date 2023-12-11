@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Joi = require('joi-oid');
 const {doctor}= require("./doctor");
 const patient= require("./patient");
+const { medicine } = require('./medicine');
 const medicineSchema = new mongoose.Schema({
     name: {
       type: String,
@@ -13,9 +14,14 @@ const medicineSchema = new mongoose.Schema({
       required: true,
     },
     price: {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
     },
+    medicineID:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true,
+        ref:medicine,
+    }
     //TODO: medicineID
   });
 const prescriptionSchema = new mongoose.Schema({
@@ -61,6 +67,7 @@ const prescriptionSchema = new mongoose.Schema({
     {
         type:Number,
         required:true,
+        default:0,
     },
     MedicineNames: [medicineSchema],
     paid:

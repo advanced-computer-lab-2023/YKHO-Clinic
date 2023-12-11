@@ -12,6 +12,7 @@ const { home } = require("./controller/homePage");
 const {
   docViewWallet,
   createDoctor,
+  createPrescription,
   goToHome,
   updateMyInfo,
   updateThis,
@@ -23,9 +24,14 @@ const {
   loggedIn,
   getName,
   ViewPrescriptionsDoc,
+  rescheduleAppointment,
+  cancelAppointment,  createMedicine,
+  deleteMedicine,
+  updateMedicine,
 
 } = require("./controller/doctorController");
 const {
+
   createAppointment,
   showMyPatients,
   showMyPatientInfo,
@@ -57,6 +63,7 @@ const {
   goToNewPassword,
   showDoctorRecord,
   getRequests,
+  getHealthPackages,
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -128,6 +135,10 @@ app.post("/forgetPassword/done", forgetPassword);
 //Doctor
 app.post("/addDoctor", createDoctor); 
 app.post("/addAppointment", requireAuthDoctor , createAppointment);
+app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
+app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
+app.post("/doctor/deleteMedicine/:id",requireAuthDoctor,deleteMedicine);
+app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine)
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -141,17 +152,20 @@ app.post("/doctor/patients/:id/upload-pdf", requireAuthDoctor, upload.single("he
 app.get("/doctor/timeSlots", requireAuthDoctor, showTimeSlots);
 app.post("/doctor/addTimeSlot", requireAuthDoctor, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuthDoctor, deleteTimeSlot);
-app.get("/doctor/schedFollowUp/:id/:date",requireAuthDoctor,showFollowUp);
-app.post("/doctor/reserve/:id",requireAuthDoctor, createFollowUp);
+app.get("/doctor/schedFollowUp/:date",requireAuthDoctor,showFollowUp);
+app.post("/doctor/reserve",requireAuthDoctor, createFollowUp);
 app.get("/doctor/patients/:id/:healthId", requireAuthDoctor, showHealthRecord);
 app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
 app.get("/doctor/Prescriptions", requireAuthDoctor, ViewPrescriptionsDoc);
+app.post("/doctor/cancelAppointment",requireAuthDoctor, cancelAppointment);
 app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
+app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 //Admin
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
+app.get("/getHealthPackages", requireAuthAdmin, getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
@@ -206,8 +220,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
 
-
-app.post("/patient/createPatient", createPatient);
+app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
@@ -231,6 +244,7 @@ app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan)
 app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
 app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescriptions);
 // elgharieb S2
+
 const readSubscription = require("./controller/patientController").readSubscription;
 app.get("/patient/readSubscription",requireAuthPatient, readSubscription)
 const readFamilyMembersSubscriptions = require("./controller/patientController").readFamilyMembersSubscriptions;
