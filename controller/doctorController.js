@@ -11,6 +11,8 @@ const patientModel = require('../model/patient');
 const notificationModel = require("../model/notification").notification;
 const {appointment} = require('../model/appointments');
 const {healthPackage} = require('../model/healthPackage');
+const { prescription,validatePrescription } = require("../model/prescription");
+const{medicine,validateMedicine}= require("../model/medicine.js");
 const axios = require('axios');
 let id;
 let html;
@@ -52,6 +54,80 @@ async function createDoctor(req,res){
     } 
     
 }
+async function createPrescription(req,res){
+    const result=validatePrescription(req.body);
+    if(result.error){
+      return res.send(result.error.message)
+    }
+    else{
+      let newPrescription= new prescription({
+          prescriptionName:req.body.prescription,
+          patientID:req.body.patientID,
+          doctorID:req.body.doctorID,
+          doctorName:req.body.doctorName,
+          date:req.body.date,
+          filled:req.body.filled,
+          price:0,
+          paid:req.body.paid
+      })
+        try{
+          newPrescription= await newPrescription.save();
+          res.status(200).send(newPrescription);
+        }
+        catch(err){
+          res.status(400).send(err.message);
+        }
+    }
+}
+
+
+
+
+async function createMedicine(req, res){
+  id=req.body._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
+  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed}
+  let medicinesup=prescription1.MedicineNames;
+  medicinesup.push(medicinetobe);
+  let pricenew = prescription1.price+req.body.price;
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
+};
+
+async function deleteMedicine(req,res){
+  id=req.body._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
+  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed};
+  let medicinesup=prescription1.MedicineNames; 
+  medicinesup= medicinesup.filter(item =>item.medicineID != medicinetobe.medicineID);
+  let pricenew = prescription1.price-req.body.price;
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
+
+}
+async function updateMedicine(req,res){
+  id=req.body._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
+  let medicineup;
+  let temp;
+  for(let i=0;i<prescription1.MedicineNames;i++){
+    if(prescription1.MedicineNames[i].name==req.body.name){
+      temp=prescription1.MedicineNames[i]
+      temp.dosage=req.body.dosage;
+      medicineup.push(temp);
+    }
+    else{
+    medicineup.push(prescription1.MedicineNames[i]);}
+  }
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+
+}
+
+
+
+
 async function loggedIn(req,res){
   if(req.user){
     res.status(200).json({loggedIn:true,type:req.user.type})
@@ -358,4 +434,4 @@ const ViewPrescriptionsDoc = async (req, res) => {
 };
 
 
-module.exports={docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc};
+module.exports={updateMedicine,deleteMedicine,createMedicine,createPrescription,docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc};
