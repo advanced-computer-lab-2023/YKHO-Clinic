@@ -33,10 +33,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
 let status = '';
 let date = undefined;
-let searchvalue = '';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import dayjs from 'dayjs';
+import CircularProgress from '@mui/material/CircularProgress';
+
 async function reschedule(e) {
   await axios
     .post(
@@ -54,15 +56,31 @@ async function reschedule(e) {
     });
 }
 function DoctorAppointments() {
+  const [searchvalue, setSearchValue] = useState('upcoming');
   const [result, setResult] = useState(false);
   useEffect(() => {
     check();
-    loadAppointments();
+    searchAppointments();
   }, []);
 
   const [appointments, setAppointments] = useState([]);
   const [appLoading, setAppLoading] = useState(true);
-
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [times, setTimes] = useState([]);
+  const [time, setTime] = useState('');
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+  const [isScheduleFollowUp, setIsScheduleFollowUp] = useState(false);
+  const [isOpen2, setIsOpen2] = useState(false);
+  const [appointmentId2, setAppointmentId2] = useState('');
+  useEffect(() => {
+    // Trigger the searchAppointments function when searchValue changes
+    searchAppointments();
+  }, [searchvalue]);
+  const changeTimeValue = (event) => {
+    setTime(event.target.value);
+    setIsButtonDisabled(false);
+  };
   async function check() {
     await axios
       .get('http://localhost:3000/doctor/contract', {
@@ -100,6 +118,22 @@ function DoctorAppointments() {
         }
       });
   }
+  async function cancel(e) {
+    setIsOpen2(true);
+    console.log(e);
+    setAppointmentId2(e);
+  }
+  async function cancelAppointment() {
+    setRescheduleLoading(true);
+    await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then((res) => {
+      window.location.href = '/doctor/appointments';
+    }).catch((err) => {
+      console.log(err);
+    }).finally(() => {
+      setRescheduleLoading(false);
+      setIsOpen2(false);
+    });
+  }
 
   async function loadAppointments() {
     await axios
@@ -125,14 +159,15 @@ function DoctorAppointments() {
     searchAppointments();
   }
 
-  function changeSearchValue(event) {
-    searchvalue = event.target.value;
-    setAppLoading(true);
-    searchAppointments();
+   function changeSearchValue(event) {
+
+    setSearchValue(event.target.value);
+      setAppLoading(true);
+
   }
 
   async function searchAppointments(event) {
-    console.log(status, date, searchvalue);
+
     await axios
       .get(`http://localhost:3000/doctor/AppointmentsFilter/?date=${date}&searchvalue=${searchvalue}&filters=${status}`, {
         withCredentials: true,
@@ -147,11 +182,14 @@ function DoctorAppointments() {
   }
 
   async function SchedFollow(e) {
-    window.location.href = `/doctor/followup/${e.target.id}`;
+    setIsScheduleFollowUp(true);
+    setAppointmentId(e);
+    setOpen(true);
   }
 
   const [isOpen, setIsOpen] = useState(false);
-
+  const [appointmentId, setAppointmentId] = useState('');
+ 
   const toggleFilter = () => {
     setIsOpen(!isOpen);
   };
@@ -167,16 +205,64 @@ function DoctorAppointments() {
     const [open, setOpen] = React.useState(false);
   
     const handleClickOpen = (e) => {
-      console.log(e);
+      setAppointmentId(e);
+      setIsScheduleFollowUp(false);
       setOpen(true);
     };
   
     const handleClose = () => {
-      setOpen(false);
+      if(!rescheduleLoading){
+        setTime('');
+        setTimes([]);
+        setRescheduleDate(null);
+        setOpen(false);
+        setIsButtonDisabled(true);
+        setIsOpen2(false);
+      }
     };
-  
-    const setDate = (e) => {
+    const reschedule = async (e) => {
+      setIsButtonDisabled(true);
+      setRescheduleLoading(true);
+      if(isScheduleFollowUp){
+        await axios.post('http://localhost:3000/doctor/reserve', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then((res) => {
+          window.location.href = '/doctor/appointments';
+        }).catch((err) => {
+          console.log(err);
+        }).finally(() => {
+          setRescheduleDate(null);
+          setTime('');
+          setTimes([]);
+          setOpen(false);
+          setRescheduleLoading(false);
+        });
+      }
+      else{
+        await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then((res) => {
+          window.location.href = '/doctor/appointments';
+        }).catch((err) => {
+          console.log(err);
+        }).finally(() => {
+          setRescheduleDate(null);
+          setTime('');
+          setTimes([]);
+          setOpen(false);
+          setRescheduleLoading(false);
+        });
+      }
+    }
+    const today = dayjs();
+    const nextDate = today.add(1, 'day');
+    const setDate = async (e) => {
       
+      setRescheduleDate(e);
+      await axios.get(`http://localhost:3000/doctor/schedFollowUp/${e}`, { withCredentials: true }).then((res) => {
+        setTimes([]);
+        for (let i = 0; i < res.data.result.length; i++) {
+          setTimes((prev) => [...prev, res.data.result[i].from + '-' + res.data.result[i].to]);
+        }
+
+      });
+
 
     }
 
@@ -191,27 +277,57 @@ function DoctorAppointments() {
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
       >
-        <DialogTitle>{"Reshedule this appointment?"}</DialogTitle>
+        <DialogTitle>{!isScheduleFollowUp&&"Reshedule this appointment?"}{isScheduleFollowUp &&"Schedule a followup?"}</DialogTitle>
         <DialogContent>
         <LocalizationProvider dateAdapter={AdapterDayjs} sx={{marginTop:5}}>
-                    <DatePicker id="searchDate" onChange={setDate} />
+                    <DatePicker id="searchDate"  minDate={nextDate}  value={rescheduleDate} onChange={setDate}  />
         </LocalizationProvider>
         <Box sx={{ minWidth: 120 }}>
         
       <FormControl sx={{width:313,marginTop:5}} >
-        <InputLabel id="TimeSelector">Please select a date</InputLabel>
+        <InputLabel id="TimeSelector">{times.length==0&&"no appointment with this date"}{times.length>0&&"Select a time"}</InputLabel>
         <Select
           labelId="TimeSelector"
           id="demo-simple-select"
           label="Time"
-          value=""
+          value={time}
+          onChange={changeTimeValue}
+          disabled={times.length==0}
         >
+          {
+          times.map((time,index)=>{return <MenuItem value={time}>{time}</MenuItem>}
+          )
+        }
         </Select>
+        
       </FormControl>
         </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Reschedule</Button>
+        {rescheduleLoading&&<Box sx={{ display: 'flex' }}>
+      <CircularProgress />
+    </Box>}
+          <Button onClick={reschedule} disabled={isButtonDisabled}>{isScheduleFollowUp&&"Schedule follow up"}{!isScheduleFollowUp&&"reschedule"}</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={isOpen2}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>Are you sure you want to cancel this appointment?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+        {rescheduleLoading&&<Box sx={{ display: 'flex' }}>
+      <CircularProgress />
+    </Box>}
+          <Button onClick={handleClose} >No</Button>
+          <Button onClick={cancelAppointment} color="error">Yes</Button>
         </DialogActions>
       </Dialog>
           <Navbar />
@@ -266,18 +382,25 @@ function DoctorAppointments() {
                 </div>
                 <div style={{ display: 'flex', width: '100%', position: 'sticky', backgroundColor:"white",top: -16, zIndex: 1 }}>
                 
-                  <Box sx={{ display: 'flex', alignItems: 'flex-end', marginRight: 'auto' }}>
-                    <SearchIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                    <TextField
-                      onChange={changeSearchValue}
-                      id="searchText"
-                      label="Search appointments by name"
-                      variant="standard"
-                      sx={{ width: 300 }}
-                    />
-                  </Box>
+                <FormControl sx={{width:"300px",marginRight:"auto"}} >
+                    <InputLabel id="StateSelector">State of appointment</InputLabel>
+                    <Select
+                    labelId="StateSelector"
+                    id="demo-simple-select"
+                    label="Time"
+                    value={searchvalue}
+                    onChange={changeSearchValue}
+                  >
+                <MenuItem value="upcoming">upcoming</MenuItem>
+                <MenuItem value="completed">completed</MenuItem>
+                <MenuItem value="cancelled">cancelled</MenuItem>
+                <MenuItem value="rescheduled">rescheduled</MenuItem>
+                   
+                  </Select>
+                  
+                </FormControl>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker id="searchDate" onChange={changeDateValue} />
+                    <DatePicker id="searchDate" onChange={changeDateValue} slotProps={{field: { clearable: true }}} />
                   </LocalizationProvider>
                 </div>
 
@@ -294,9 +417,10 @@ function DoctorAppointments() {
                           <motion.div
                             initial={{ opacity: 0, y: -50 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.2 }}
+                            transition={{ duration: 0.5, delay: index * 0.15 }}
                           >
-                            <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} isFull={true} ids={app._id} whenClicked={handleClickOpen} />
+                            
+                            <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} time={(app.date.split('T')[1]).split('.')[0]} status={app.status} isFull={true} ids={app._id} whenClicked={handleClickOpen} schedFollowup={SchedFollow} cancel={cancel} />
                           </motion.div>
                         </Grid>
                       ))}

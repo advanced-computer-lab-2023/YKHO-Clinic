@@ -8,7 +8,7 @@ const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const admin = require("../model/admin.js");
@@ -727,10 +727,10 @@ async function reserveSlot(req, res) {
       packageName: patient[0].subscription.healthPackage,
     });
     price =
-      duration * doctor[0].rate -
-      (duration * doctor[0].rate * healthPack[0].doctorDiscount) / 100;
+       doctor[0].rate*1.1 -
+      ( doctor[0].rate *1.1* healthPack[0].doctorDiscount) / 100;
   } else {
-    price = duration * doctor[0].rate;
+    price = 1.1 * doctor[0].rate;
   }
   // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
   const startHour = startTime.split(":")[0];
@@ -844,40 +844,41 @@ async function cancelAppointment(req, res) {
 }
 
 
-async function rescheduleAppointment(req, res) {
-  const appointmentID = req.params.appointmentId;
-  const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
-  const existingAppointment = await appointment.findOne({
-    doctorID: req.body.doctorID,
-    date: req.body.date,
-  });
-  if (existingAppointment) {
-    return res
-      .status(400)
-      .send("There is already an appointment at the specified time.");
-  }
-  const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
-  const patient = await patientModel.findById(rescheduledAppointment.patientID);
-  let newNotification = new notificationModel({
-    patientID: rescheduledAppointment.patientID,
-    text: `Appointment rescheduled to ${req.body.date}`,
-    date: Date.now(),
-  });
-  await newNotification.save();
+// async function rescheduleAppointment(req, res) {
+//   const appointmentID = req.params.appointmentId;
+//   const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
+//   const existingAppointment = await appointment.findOne({
+//     doctorID: req.body.doctorID,
+//     date: req.body.date,
+//   });
+//   if (existingAppointment) {
+//     return res
+//       .status(400)
+//       .send("There is already an appointment at the specified time.");
+//   }
+//   //TODO: calculate the new price of the appointment
+//   const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
+//   const patient = await patientModel.findById(rescheduledAppointment.patientID);
+//   let newNotification = new notificationModel({
+//     patientID: rescheduledAppointment.patientID,
+//     text: `Appointment rescheduled to ${req.body.date}`,
+//     date: Date.now(),
+//   });
+//   await newNotification.save();
 
-  let newNotification2 = new notificationModel({
-    doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
-    date: Date.now(),
-  });
-  await newNotification2.save();
+//   let newNotification2 = new notificationModel({
+//     doctorID: deletedAppointment.doctorID,
+//     text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
+//     date: Date.now(),
+//   });
+//   await newNotification2.save();
 
 
-  await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
-  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
+//   await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
+//   await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
 
-  res.redirect(`patient/Appointments`);
-}
+//   res.redirect(`patient/Appointments`);
+// }
 
 async function showSlotsFam(req, res) {
   const doctorID = req.params.id;
@@ -954,10 +955,10 @@ async function reserveSlotFam(req, res) {
         packageName: familyPatient[0].subscription.healthPackage,
       });
       price =
-        duration * doctor[0].rate -
-        (duration * doctor[0].rate * healthPack[0].doctorDiscount) / 100;
+        doctor[0].rate *1.1 -
+        ( doctor[0].rate*1.1 * healthPack[0].doctorDiscount) / 100;
     } else {
-      price = duration * doctor[0].rate;
+      price =  doctor[0].rate *1.1;
     }
     // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
     const startHour = startTime.split(":")[0];
