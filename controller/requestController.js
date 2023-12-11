@@ -34,25 +34,29 @@ const createRequest = async (req, res) => {
     affiliation,
     education,
   } = req.body;
+  console.log(req.body);
   DOB = new Date(DOB);
   const id = { data: req.files[0].buffer, contentType: req.files[0].mimetype};
   const medicalLicense = { data: req.files[1].buffer, contentType: req.files[1].mimetype};
   const medicalDegree = { data: req.files[2].buffer, contentType: req.files[2].mimetype};
 
   if(isStrongPassword(req.body.password) === false){
-      return res.render("doctor/register", {message:"password is weak"});
+    return res.status(201).json({message:"password is weak"});
   }
+  
   if( (await admin.find({username:username})).length>0 || (await doctor.find({username:username})).length>0  || (await Patient.find({username:username})).length>0  || (await requestModel.find({username:username})).length>0 ){
-    return res.render("doctor/register", {message:"username already exists"});
+    return res.status(201).json({message:"username already exists"});
   }
   if( (await admin.find({mobile:mobile})).length>0 || (await doctor.find({mobile:mobile})).length>0  || (await Patient.find({mobile:mobile})).length>0  || (await requestModel.find({mobile:mobile})).length>0 ){
-    return res.render("doctor/register", {message:"mobile already exists"});
-    }
+    return res.status(201).json({message:"mobile already exists"});
+  }
     if( (await admin.find({email:email})).length>0 || (await doctor.find({email:email})).length>0  || (await Patient.find({email:email})).length>0  || (await requestModel.find({email:email})).length>0 ){
-        return res.render("doctor/register", {message:"email already exists"});
+      return res.status(201).json({message:"email already exists"});
     }
+    
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
+  
   let request = new requestModel({
     username,
     password: hashedPassword,
@@ -68,10 +72,10 @@ const createRequest = async (req, res) => {
     medicalLicense,
     medicalDegree,
   });
-  console.log("wadsda")
+  
   request = await request.save();
   // res.render("home", {message:"Request sent successfully"});
-  res.status(201).json({ message: "request sent successfully" });
+  return res.status(201).json({ message: "request sent successfully" });
   
 };
 

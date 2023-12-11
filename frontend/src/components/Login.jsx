@@ -72,6 +72,9 @@ function Login(){
     function handlePatient(){
         window.location.href="/register/patient"
     }
+    function goToForgetPassword(){
+        window.location.href="/forgetPassword/enterUsername"  
+    }
     return(
         <div>
             {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -79,7 +82,7 @@ function Login(){
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />
                 <div style={{display:'flex', justifyContent:'space-around'}}>
-                    <Button variant='contained' style={{marginRight: '190px'}}>forget Password</Button>
+                    <Button variant='contained' style={{marginRight: '190px'}} onClick={goToForgetPassword}>forget Password</Button>
                     <Button variant='contained'  onClick={handleLogin}>Login</Button>
                 </div>
                 <br/>
