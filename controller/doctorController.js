@@ -11,6 +11,7 @@ const patientModel = require('../model/patient');
 const notificationModel = require("../model/notification").notification;
 const {appointment} = require('../model/appointments');
 const {healthPackage} = require('../model/healthPackage');
+const { prescription } = require("../model/prescription");
 const axios = require('axios');
 let id;
 let html;

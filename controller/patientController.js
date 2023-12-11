@@ -1041,27 +1041,47 @@ async function selectPrescription(req, res) {
 
 const FilterPrescriptions = async (req, res) => {
   let result;
-  patient = await patientModel.findOne({ _id: req.user._id });
-  if (req.query.filter == "DoctorName") {
+  patient = await patientModel.findOne({ _id: req.user._id }).select(["subscription"]);
+  if(req.query.doctor != "null" && req.query.doctor != ""){
+     const regex = new RegExp(req.query.doctor, 'i');
     result = await prescription.find({
-      doctorName: req.query.searchvalue,
-      patientID: patient._id,
+      doctorName: regex,
+      patientID: req.user._id,
+    });
+  }else{
+    result = await prescription.find({
+      patientID: req.user._id,
     });
   }
-  if (req.query.filter == "Date") {
-    let temp = new Date(req.query.searchvalue + "T22:00:00.000+00:00");
-    result = await prescription.find({ date: temp, patientID: patient._id });
+  if(req.query.date != "null"){
+    let temp = new Date(req.query.date);
+    temp.setDate(temp.getDate() + 1);
+    result = result.filter((result) => result.date.toISOString().split("T")[0] == temp.toISOString().split("T")[0]);
   }
-  if (req.query.filter == "Filled") {
-    if (req.query.searchvalue == "true" || req.query.searchvalue == "false") {
-      result = await prescription.find({
-        filled: req.query.searchvalue,
-        patientID: patient._id,
-      });
-    } else {
-      res.status(500).json("Please enter true or false");
-    }
+  if(req.query.filled != "null" && req.query.filled != ""){
+    result = result.filter((prescription) => prescription.filled == (req.query.filled == "true" ? true : false));
   }
+
+  // if (req.query.filter == "DoctorName") {
+  //   result = await prescription.find({
+  //     doctorName: req.query.searchvalue,
+  //     patientID: patient._id,
+  //   });
+  // }
+  // if (req.query.filter == "Date") {
+  //   let temp = new Date(req.query.searchvalue + "T22:00:00.000+00:00");
+  //   result = await prescription.find({ date: temp, patientID: patient._id });
+  // }
+  // if (req.query.filter == "Filled") {
+  //   if (req.query.searchvalue == "true" || req.query.searchvalue == "false") {
+  //     result = await prescription.find({
+  //       filled: req.query.searchvalue,
+  //       patientID: patient._id,
+  //     });
+  //   } else {
+  //     res.status(500).json("Please enter true or false");
+  //   }
+  // }
   // let prescriptionrows = "<tr><th>Name</th></tr>";
   // for (prescriptions in result) {
   //   prescriptionrows =
@@ -1072,7 +1092,18 @@ const FilterPrescriptions = async (req, res) => {
   //   prescriptionrows: prescriptionrows,
   //   onepatient: false,
   // });
-  res.status(200).json({result: result,onePatient:false});
+  if(patient.subscription.healthPackage != "none"){
+    var totalPrice = [];
+    const healthpackage = await healthPackage.findOne({packageName:patient.subscription.healthPackage});
+    const discount = healthpackage.pharmacyDiscount;
+    result.map((prescription) => {totalPrice.push(prescription.price - (discount*prescription.price/100));});
+    res.status(200).json({result: result, totalPrice: totalPrice, hasHealthPackage: (patient.subscription.healthPackage!="none")});
+  }
+  else{
+    var totalPrice = [];
+    result.map((prescription) => {totalPrice.push(prescription.price);});
+    res.status(200).json({result: result, totalPrice: totalPrice , hasHealthPackage: (patient.subscription.healthPackage!="none")});
+  }  
 };
 async function patientHome(req, res) {
   res.render("patient/patientHome");
@@ -1306,10 +1337,19 @@ const fail = async (req, res) => {
 };
 const PayByCreditPresc = async (req, res) => {
   const prescriptionid = req.params.id;
-  const prescription = await prescriptionModel
+  const prescriptions = await prescription
     .findOne({ _id: prescriptionid })
     .populate("doctorID");
-
+    const patient = await patientModel.findOne({ _id: prescriptions.patientID }).select(["subscription"]);
+    let totalPrice;
+    if(patient.subscription.healthPackage != "none"){
+      const healthpackage = await healthPackage.findOne({packageName:patient.subscription.healthPackage});
+      const discount = healthpackage.pharmacyDiscount;
+      totalPrice = (prescriptions.price - (discount*prescriptions.price/100));
+    }
+    else{
+      totalPrice = prescriptions.price;
+    }
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -1319,17 +1359,18 @@ const PayByCreditPresc = async (req, res) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Prescription From Dr." + prescription.doctorID.name,
+              name: "Prescription From Dr." + prescriptions.doctorID.name,
             },
-            unit_amount: prescription.price * 100,
+            unit_amount: totalPrice * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: `http://localhost:${process.env.PORT}/successPresc/${prescriptionid}`,
-      cancel_url: `http://localhost:${process.env.PORT}/failPresc`,
+      success_url: `http://localhost:3000/successPresc/${prescriptionid}`,
+      cancel_url: `http://localhost:3000/failPresc`,
     });
-    res.redirect(session.url);
+    // res.redirect(session.url);
+    res.status(201).json({result: session.url});
   } catch (e) {
     console.error(e);
     res.status(500).send("Internal Server Error");
@@ -1337,38 +1378,46 @@ const PayByCreditPresc = async (req, res) => {
 };
 const PayByWalletPresc = async (req, res) => {
   const prescriptionid = req.params.id;
-  const prescription = await prescriptionModel.findOne({ _id: prescriptionid });
-  const prescriptionCost = prescription.price;
-  const patient = await patientModel.findOne({ _id: prescription.patientID });
-  const Walletp = patient.Wallet - prescriptionCost;
-  if (patient.Wallet >= appoitmentCost) {
+  const prescriptions = await prescription.findOne({ _id: prescriptionid });
+  const prescriptionCost = prescriptions.price;
+  const patient = await patientModel.findOne({ _id: req.user._id }).select(["Wallet","subscription"]);
+  console.log(patient);
+  var Walletp;
+  if(patient.subscription.healthPackage != "none"){
+    const healthpackage = await healthPackage.findOne({packageName:patient.subscription.healthPackage});
+    const discount = healthpackage.pharmacyDiscount;
+    Walletp = patient.Wallet - (prescriptionCost - (discount*prescriptionCost/100));
+  }else{
+    Walletp = patient.Wallet - prescriptionCost;
+  }
+  console.log(Walletp);
+  if (Walletp>=0) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
-      prescription.patientID,
+      prescriptions.patientID,
       { $set: { Wallet: Walletp } },
       { new: true }
     );
-    const prescriptionupdated = await prescriptionModel.findByIdAndUpdate(
+    const prescriptionupdated = await prescription.findByIdAndUpdate(
       prescriptionid,
       { $set: { paid: true } },
       { new: true }
     );
-    res.redirect("/patient/home");
   } else {
     res.status(500).send("Insufficient funds");
   }
 };
 const successPresc = async (req, res) => {
   const prescriptionid = req.params.id;
-  const prescription = await prescriptionModel.findOne({ _id: prescriptionid });
-  const presc = await prescriptionModel.findByIdAndUpdate(
+  const prescriptions = await prescription.findOne({ _id: prescriptionid });
+  const presc = await prescription.findByIdAndUpdate(
     prescriptionid,
     { $set: { paid: true } },
     { new: true }
   );
-  res.render("success");
+  res.redirect("http://localhost:5173/patient/Prescriptions");
 };
 const failPresc = async (req, res) => {
-  res.render("fail");
+  res.redirect("http://localhost:5173/patient/Prescriptions");
 };
 const getPatientPlan = async (req, res) => {
   const patient = await patientModel.findById(req.user._id,"subscription");
@@ -1390,6 +1439,25 @@ const getFamilyMembersPlan = async (req, res) => {
 const getMyAppointments = async (req, res) => {
     const Appointment = await appointment.find({patientID:req.user._id,date:{$gt:Date.now()}}).populate("doctorID","name").select(["doctorID","date"]);
     res.status(201).json({result:Appointment});
+}
+const viewAllDataOfPrescriptions = async (req, res) => {
+  patient = await patientModel.findOne({ _id: req.user._id }).select(["subscription"]);
+  let result = await prescription
+    .find({ patientID: req.user._id })
+    .select(["prescriptionName", "doctorName", "date", "filled", "MedicineNames", "paid", "price", "_id"]);
+    
+    if(patient.subscription.healthPackage != "none"){
+      var totalPrice = [];
+      const healthpackage = await healthPackage.findOne({packageName:patient.subscription.healthPackage});
+      const discount = healthpackage.pharmacyDiscount;
+      result.map((prescription) => {totalPrice.push(prescription.price - (discount*prescription.price/100));});
+      res.status(200).json({result: result, totalPrice: totalPrice, hasHealthPackage: (patient.subscription.healthPackage!="none")});
+    }
+    else{
+      var totalPrice = [];
+      result.map((prescription) => {totalPrice.push(prescription.price);});
+      res.status(200).json({result: result, totalPrice: totalPrice , hasHealthPackage: (patient.subscription.healthPackage!="none")});
+    }
 }
 
 module.exports = {
@@ -1428,6 +1496,7 @@ module.exports = {
   getPatientPlan,
   getFamilyMembersPlan,
   getMyAppointments,
+  viewAllDataOfPrescriptions,
 };
 
 module.exports.readSubscription = readSubscription;
