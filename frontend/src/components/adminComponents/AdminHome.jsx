@@ -22,7 +22,31 @@ export default function AdminHome() {
   const [requests, setRequests] = useState([]);
   const [healthPackages, setHealthPackages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  //useEffect(()=>{check()},[]);
 
+  // async function check(){
+  //   const res= await axios.get("http://localhost:3000/loggedIn",{
+  //     withCredentials:true
+  // }).then((res)=>{
+  //         if(res.data.type == "admin" ){
+  //           window.location.href="/admin/home"
+  //         }
+  //         else if(res.data.type=="patient"){
+  //             window.location.href="/patient/home"
+  //         }
+  //         else if(res.data.type=="doctor"){
+  //             window.location.href="/doctor/home"
+  //         }
+  //         else{
+  //          window.location.href="/"
+  //         }
+  //      }
+  //  ).catch((err)=>{
+  //     if(err.response.status==401){
+  //         window.location.href="/"
+  //     }
+  //  })
+  // }
 
 
   useEffect(() => {
@@ -62,7 +86,7 @@ export default function AdminHome() {
     window.location.href = "/admin/register";
   }
 
-  function deleteUserButton() {
+  function editUserButton() {
     window.location.href = "/admin/deleteUser";
   }
 
@@ -77,9 +101,18 @@ export default function AdminHome() {
     window.location.href='/admin/changePassword';
   }
 
-  function LogoutButton() {
-    window.location.href = "/";
-  }
+  async function LogoutButton() {
+    try {
+        const res = await axios.get("http://localhost:3000/logout", {
+            withCredentials: true
+        });
+        window.location.href = "/";
+        
+    } catch (err) {
+        setError(err.message);
+    }
+
+}
 
   function toggleFilter() {
     setIsOpen(!isOpen);
@@ -127,7 +160,7 @@ async function RejectButton(e) {
         >
           <Button variant ='contained' style={{marginBottom:3,width:280}} onClick={goHome}>Home</Button>
           
-          <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={deleteUserButton}>
+          <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={editUserButton}>
             Edit A User
           </Button>
           <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={uploadedInfoButton}>
