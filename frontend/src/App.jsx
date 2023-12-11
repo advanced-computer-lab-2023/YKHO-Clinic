@@ -22,6 +22,7 @@ import PatientHealthRecords from './components/patientComponents/PatientHealthRe
 import PatinetHistory from './components/patientComponents/PatientHistory'
 import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
+import ForgetPassword from './components/ForgetPassword'
 
 import DoctorTimeSlots from './components/doctorComponents/DoctorTimeSlots'
 import DoctorContract from './components/doctorComponents/DoctorContract'
@@ -52,6 +53,7 @@ function App() {
         <Route path="/patient/readFamilyMembers" element={<PatientManageFamily/>} />
         <Route path="/register/doctor" element={<DoctorRegister/>} />
         <Route path="/register/patient" element={<PatientRegister/>} />
+        <Route path="/forgetPassword/enterUsername" element={<ForgetPassword/>} />
       </Routes>
       </BrowserRouter>
     </div>

@@ -46,18 +46,6 @@ const test = {
 let decodedCookie;
 
 const createPatient = async (req, res) => {
-  const schema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    password: Joi.string().required(),
-    name: Joi.string().required(),
-    DOB: Joi.date().iso().required(),
-    gender: Joi.string().valid("male", "female", "other").required(),
-    email: Joi.string().email().required(),
-    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
-    emergencyName: Joi.string().required(),
-    emergencyMobile: Joi.string().required(),
-  });
-  // joi validation
   const {
     username,
     password,
@@ -69,15 +57,34 @@ const createPatient = async (req, res) => {
     emergencyName,
     emergencyMobile,
   } = req.body;
+  const schema = Joi.object({
+    username: Joi.string().max(30).required(),
+    password: Joi.string().required(),
+    name: Joi.string().required(),
+    DOB: Joi.date().iso().required(),
+    gender: Joi.string().valid("male", "female", "other").required(),
+    email: Joi.string().email().required(),
+    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+    emergencyName: Joi.string().required(),
+    emergencyMobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+  });
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    // If validation fails, send a response with the validation error
+    return res.status(201).json({ message: error.details[0].message });
+  }
+  if (isStrongPassword(req.body.password) === false) {
+    return res.status(201).json({ message: "Password is weak" });
+  }
   if (
     (await admin.find({ username: username })).length > 0 ||
     (await doctorModel.find({ username: username })).length > 0 ||
     (await patientModel.find({ username: username })).length > 0 ||
     (await requestModel.find({ username: username })).length > 0
   ) {
-    return res.render("patient/register", {
-      message: "username already exists",
-    });
+    console.log(username);
+    return res.status(201).json({ message: "username already exists" });
   }
   if (
     (await admin.find({ mobile: mobile })).length > 0 ||
@@ -85,7 +92,7 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ mobile: mobile })).length > 0 ||
     (await requestModel.find({ mobile: mobile })).length > 0
   ) {
-    return res.render("patient/register", { message: "mobile already exists" });
+    return res.status(201).json({ message: "mobile already exists" });
   }
   if (
     (await admin.find({ email: email })).length > 0 ||
@@ -93,20 +100,9 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ email: email })).length > 0 ||
     (await requestModel.find({ email: email })).length > 0
   ) {
-    return res.render("patient/register", { message: "email already exists" });
+    return res.status(201).json({ message: "email already exists" });
   }
 
-  const { error, value } = schema.validate(req.body);
-
-  if (error) {
-    // If validation fails, send a response with the validation error
-    return res.status(400).json({ error: error.details[0].message });
-  }
-
-  if (isStrongPassword(req.body.password) === false) {
-    console.log("WEAK PASSWORD");
-    return res.render("patient/register", { message: "password is weak" });
-  }
   const emergency = {
     name: emergencyName,
     mobile: emergencyMobile,
@@ -128,7 +124,7 @@ const createPatient = async (req, res) => {
 
   entry = await entry.save();
 
-  res.status(201).render("home", { message: "sign up succ" });
+  res.status(201).json({ message: "request sent successfully" });
 };
 
 const patientLogout = (req, res) => {
