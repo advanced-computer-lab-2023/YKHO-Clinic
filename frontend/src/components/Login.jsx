@@ -69,6 +69,12 @@ function Login(){
     function handleDoctor(){
         window.location.href="/register/doctor"
     }
+    function handlePatient(){
+        window.location.href="/register/patient"
+    }
+    function goToForgetPassword(){
+        window.location.href="/forgetPassword/enterUsername"  
+    }
     return(
         <div>
             {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -76,12 +82,12 @@ function Login(){
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />
                 <div style={{display:'flex', justifyContent:'space-around'}}>
-                    <Button variant='contained' style={{marginRight: '190px'}}>forget Password</Button>
+                    <Button variant='contained' style={{marginRight: '190px'}} onClick={goToForgetPassword}>forget Password</Button>
                     <Button variant='contained'  onClick={handleLogin}>Login</Button>
                 </div>
                 <br/>
                 <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
-                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained'>register patient</Button>
+                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handlePatient}>register patient</Button>
                 {error && <p>{error}</p>}
             </div>}
         </div>
