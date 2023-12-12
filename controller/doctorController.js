@@ -1,290 +1,321 @@
-const mongoose = require('mongoose');
-const Joi = require('joi');
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken');
-const multer = require('multer');
-const fs = require('fs');
-const {timeSlot} = require('../model/timeSlots');
+const mongoose = require("mongoose");
+const Joi = require("joi");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const fs = require("fs");
+const { timeSlot } = require("../model/timeSlots");
 const { promisify } = require("util");
-const {doctor,validateDoctor} = require('../model/doctor.js');
-const patientModel = require('../model/patient');
+const { doctor, validateDoctor } = require("../model/doctor.js");
+const patientModel = require("../model/patient");
 const notificationModel = require("../model/notification");
-const {appointment} = require('../model/appointments');
-const {healthPackage} = require('../model/healthPackage');
-const { prescription,validatePrescription } = require("../model/prescription");
-const{medicine,validateMedicine}= require("../model/medicine.js");
-const axios = require('axios');
+const { appointment } = require("../model/appointments");
+const { healthPackage } = require("../model/healthPackage");
+const { prescription, validatePrescription } = require("../model/prescription");
+const { medicine, validateMedicine } = require("../model/medicine.js");
+const axios = require("axios");
 const nodemailer = require("nodemailer");
 let id;
 let html;
-const maxAge = 3 * 24 * 60 * 60  ;
+const maxAge = 3 * 24 * 60 * 60;
 const createToken = (name) => {
-    return jwt.sign({ name }, process.env.SECRET, {
-        expiresIn: maxAge
+  return jwt.sign({ name }, process.env.SECRET, {
+    expiresIn: maxAge,
+  });
+};
+
+async function createDoctor(req, res) {
+  const result = validateDoctor(req.body);
+  if (result.error) {
+    return res.send(result.error.message);
+  } else {
+    let newDoctor = new doctor({
+      name: req.body.name,
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email,
+      speciality: req.body.speciality,
+      DOB: req.body.DOB,
+      mobile: req.body.mobile,
+      rate: req.body.rate,
+      affiliation: req.body.affiliation,
+      education: req.body.education,
+      acceptedContract: true,
+      id: req.body.id,
+      medicalLicense: req.body.medicalLicense,
+      medicalDegree: req.body.medicalDegree,
     });
-};
-
-async function createDoctor(req,res){
-    const result=validateDoctor(req.body);
-    if(result.error){
-       return res.send(result.error.message)
+    try {
+      newDoctor = await newDoctor.save();
+      res.status(200).send(newDoctor);
+    } catch (err) {
+      res.status(400).send(err.message);
     }
-    else{
-        let newDoctor= new doctor({name:req.body.name,
-            username:req.body.username,
-            password:req.body.password,
-            email:req.body.email,
-            speciality:req.body.speciality,
-            DOB:req.body.DOB,
-            mobile:req.body.mobile,
-            rate:req.body.rate,
-            affiliation:req.body.affiliation,
-            education:req.body.education,
-            acceptedContract: true,
-            id:req.body.id,
-            medicalLicense:req.body.medicalLicense,
-            medicalDegree:req.body.medicalDegree
-          })
-            try{
-                newDoctor = await newDoctor.save();
-                res.status(200).send(newDoctor)
-            }
-            catch(err){
-                res.status(400).send(err.message)
-            }
-    } 
-    
+  }
 }
-async function createPrescription(req,res){
-    const result=validatePrescription(req.body);
-    if(result.error){
-      return res.send(result.error.message)
+async function createPrescription(req, res) {
+  const result = validatePrescription(req.body);
+  if (result.error) {
+    return res.send(result.error.message);
+  } else {
+    let newPrescription = new prescription({
+      prescriptionName: req.body.prescription,
+      patientID: req.body.patientID,
+      doctorID: req.body.doctorID,
+      doctorName: req.body.doctorName,
+      date: req.body.date,
+      filled: req.body.filled,
+      price: 0,
+      paid: req.body.paid,
+    });
+    try {
+      newPrescription = await newPrescription.save();
+      res.status(200).send(newPrescription);
+    } catch (err) {
+      res.status(400).send(err.message);
     }
-    else{
-      let newPrescription= new prescription({
-          prescriptionName:req.body.prescription,
-          patientID:req.body.patientID,
-          doctorID:req.body.doctorID,
-          doctorName:req.body.doctorName,
-          date:req.body.date,
-          filled:req.body.filled,
-          price:0,
-          paid:req.body.paid
-      })
-        try{
-          newPrescription= await newPrescription.save();
-          res.status(200).send(newPrescription);
-        }
-        catch(err){
-          res.status(400).send(err.message);
-        }
-    }
+  }
 }
 
-
-
-
-async function createMedicine(req, res){
-  id=req.body._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
-  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed}
-  let medicinesup=prescription1.MedicineNames;
+async function createMedicine(req, res) {
+  id = req.body._id;
+  let prescription1 = await prescription.findOne({ _id: req.params.id });
+  idmed = await medicine.findOne({ name: req.body.name }).select(["_id"]);
+  let medicinetobe = {
+    name: req.body.name,
+    dosage: req.body.dosage,
+    price: req.body.price,
+    medicineID: idmed,
+  };
+  let medicinesup = prescription1.MedicineNames;
   medicinesup.push(medicinetobe);
-  let pricenew = prescription1.price+req.body.price;
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
-};
-
-async function deleteMedicine(req,res){
-  id=req.body._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
-  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed};
-  let medicinesup=prescription1.MedicineNames; 
-  medicinesup= medicinesup.filter(item =>item.medicineID != medicinetobe.medicineID);
-  let pricenew = prescription1.price-req.body.price;
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
-
+  let pricenew = prescription1.price + req.body.price;
+  prescription1 = await prescription.findByIdAndUpdate(
+    req.params.id,
+    { $set: { MedicineNames: medicinesup } },
+    { new: true }
+  );
+  prescription1 = await prescription.findByIdAndUpdate(
+    req.params.id,
+    { $set: { price: pricenew } },
+    { new: true }
+  );
 }
-async function updateMedicine(req,res){
-  id=req.body._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
+
+async function deleteMedicine(req, res) {
+  id = req.body._id;
+  let prescription1 = await prescription.findOne({ _id: req.params.id });
+  idmed = await medicine.findOne({ name: req.body.name }).select(["_id"]);
+  let medicinetobe = {
+    name: req.body.name,
+    dosage: req.body.dosage,
+    price: req.body.price,
+    medicineID: idmed,
+  };
+  let medicinesup = prescription1.MedicineNames;
+  medicinesup = medicinesup.filter(
+    (item) => item.medicineID != medicinetobe.medicineID
+  );
+  let pricenew = prescription1.price - req.body.price;
+  prescription1 = await prescription.findByIdAndUpdate(
+    req.params.id,
+    { $set: { MedicineNames: medicinesup } },
+    { new: true }
+  );
+  prescription1 = await prescription.findByIdAndUpdate(
+    req.params.id,
+    { $set: { price: pricenew } },
+    { new: true }
+  );
+}
+async function updateMedicine(req, res) {
+  id = req.body._id;
+  let prescription1 = await prescription.findOne({ _id: req.params.id });
   let medicineup;
   let temp;
-  for(let i=0;i<prescription1.MedicineNames;i++){
-    if(prescription1.MedicineNames[i].name==req.body.name){
-      temp=prescription1.MedicineNames[i]
-      temp.dosage=req.body.dosage;
+  for (let i = 0; i < prescription1.MedicineNames; i++) {
+    if (prescription1.MedicineNames[i].name == req.body.name) {
+      temp = prescription1.MedicineNames[i];
+      temp.dosage = req.body.dosage;
       medicineup.push(temp);
+    } else {
+      medicineup.push(prescription1.MedicineNames[i]);
     }
-    else{
-    medicineup.push(prescription1.MedicineNames[i]);}
   }
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-
+  prescription1 = await prescription.findByIdAndUpdate(
+    req.params.id,
+    { $set: { MedicineNames: medicinesup } },
+    { new: true }
+  );
 }
 
-
-
-
-async function loggedIn(req,res){
-  if(req.user){
-    res.status(200).json({loggedIn:true,type:req.user.type})
-  }else{
-    res.status(200).json({loggedIn:false,type:""})
+async function loggedIn(req, res) {
+  if (req.user) {
+    res.status(200).json({ loggedIn: true, type: req.user.type });
+  } else {
+    res.status(200).json({ loggedIn: false, type: "" });
   }
 }
 
 const doctorLogout = (req, res) => {
-    res.clearCookie('jwt').send(200,"Logged out successfully");
-    res.render("/");
-}
-
-const changePasswordDoctor = async (req, res) => {
-    if ( req.body.oldPassword === "" || req.body.newPassword === "" || req.body.confirmationPassword === "") {
-      res.status(404).json({ message: "Fill the empty fields" });
-    }
-    
-    const user = await doctor.findOne({
-      username: req.user.username,
-    });
-
-    if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
-      if (req.body.newPassword != req.body.confirmationPassword) {
-        return res.status(404).json({ message: "Passwords dont not match" });
-      }
-  
-      if (isStrongPassword(req.body.newPassword) === false) {
-        return res.status(404).json({ message: "Password is weak" });
-      }
-  
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
-      await doctor.findOneAndUpdate(
-        { username: decodedCookie.name },
-        { password: hashedPassword }
-      );
-      return res.status(200).json({ message: "Password changed successfully" });
-    } else {
-      return res
-        .status(404)
-        .json({ message: "Password not changed successfully" });
-    }
+  res.clearCookie("jwt").send(200, "Logged out successfully");
+  res.render("/");
 };
 
-async function goToHome(req,res){
-  res.status(200);
-}
-async function updateMyInfo(req,res){
-    res.render("doctor/doctorUpdate",{errormessage:""})
-}
-async function updateThis(req,res){
- id=req.user._id;
-const updateTerm = req.body.updateTerm
-const schema = Joi.object({
-    email: Joi.string().email().min(1),
-    rate:Joi.number().min(0),
-    affiliation:Joi.string().min(1).max(20),
-  }); 
-  const result = schema.validate({ [updateTerm]: req.body.updateValue });
-  if(result.error){
-    res.status(200).json({message:result.error.message})
-  }
-  else{
-        await doctor.findByIdAndUpdate(id, { [updateTerm]: req.body.updateValue })
-        res.status(200).json({message:"updated successfully"})
+const changePasswordDoctor = async (req, res) => {
+  if (
+    req.body.oldPassword === "" ||
+    req.body.newPassword === "" ||
+    req.body.confirmationPassword === ""
+  ) {
+    res.status(404).json({ message: "Fill the empty fields" });
   }
 
-}
-const checkContract=async (req,res,next)=>{
-  id=req.user._id;
-  if(req.query.accept=="accept"){
-      await doctor.findByIdAndUpdate(id, {acceptedContract:true})
-      res.render("doctor/doctorHome",{name:req.body.name})
+  const user = await doctor.findOne({
+    username: req.user.username,
+  });
+
+  if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
+    if (req.body.newPassword != req.body.confirmationPassword) {
+      return res.status(404).json({ message: "Passwords dont not match" });
+    }
+
+    if (isStrongPassword(req.body.newPassword) === false) {
+      return res.status(404).json({ message: "Password is weak" });
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+    await doctor.findOneAndUpdate(
+      { username: decodedCookie.name },
+      { password: hashedPassword }
+    );
+    return res.status(200).json({ message: "Password changed successfully" });
+  } else {
+    return res
+      .status(404)
+      .json({ message: "Password not changed successfully" });
   }
-  else{
-  const result=await doctor.findById(id)
-  if(result.acceptedContract){
-    res.status(200).json({contract:"acc"});
-  }
-  else{
-    res.status(200).json({contract:"rej"});
+};
+
+async function goToHome(req, res) {
+  res.status(200);
+}
+async function updateMyInfo(req, res) {
+  res.render("doctor/doctorUpdate", { errormessage: "" });
+}
+async function updateThis(req, res) {
+  id = req.user._id;
+  const updateTerm = req.body.updateTerm;
+  const schema = Joi.object({
+    email: Joi.string().email().min(1),
+    rate: Joi.number().min(0),
+    affiliation: Joi.string().min(1).max(20),
+  });
+  const result = schema.validate({ [updateTerm]: req.body.updateValue });
+  if (result.error) {
+    res.status(200).json({ message: result.error.message });
+  } else {
+    await doctor.findByIdAndUpdate(id, { [updateTerm]: req.body.updateValue });
+    res.status(200).json({ message: "updated successfully" });
   }
 }
-}
+const checkContract = async (req, res, next) => {
+  id = req.user._id;
+  if (req.query.accept == "accept") {
+    await doctor.findByIdAndUpdate(id, { acceptedContract: true });
+    res.render("doctor/doctorHome", { name: req.body.name });
+  } else {
+    const result = await doctor.findById(id);
+    if (result.acceptedContract) {
+      res.status(200).json({ contract: "acc" });
+    } else {
+      res.status(200).json({ contract: "rej" });
+    }
+  }
+};
 const uploadHealthRecord = async (req, res) => {
   const patientId = req.params.id;
   const patient = await patientModel.findById(patientId);
   if (!patient) {
-   return res.status(404).send('Patient not found.');
+    return res.status(404).send("Patient not found.");
   }
 
   if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+    return res.status(400).send("No file uploaded.");
   }
-  const base64Data = req.file.buffer.toString('base64');
+  const base64Data = req.file.buffer.toString("base64");
 
   patient.healthRecords.push({
     data: base64Data,
     contentType: req.file.mimetype,
   });
 
-  await patient.save()
-.then(() => {
-  res.status(200).json({result:result});
-})
-.catch((err) => {
-  console.error(err);
-  return res.status(500).send('Error saving patient data.');
-});
-
+  await patient
+    .save()
+    .then(() => {
+      res.status(200).json({ result: result });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).send("Error saving patient data.");
+    });
 };
 async function createTimeSlot(req, res) {
-  id=req.user._id;
+  id = req.user._id;
   const day = req.body.day;
 
   const { from, to } = req.body;
 
   // Check if the new timeslot clashes with any previously added timeslots
   const existingTimeSlots = await timeSlot.find({
-      $or: [
-          { from: { $lte: from }, to: { $gte: from } },
-          { from: { $lte: to }, to: { $gte: to } },
-          { from: { $gte: from }, to: { $lte: to } },
-      ],
-      doctorID: id,
-      day: day,
+    $or: [
+      { from: { $lte: from }, to: { $gte: from } },
+      { from: { $lte: to }, to: { $gte: to } },
+      { from: { $gte: from }, to: { $lte: to } },
+    ],
+    doctorID: id,
+    day: day,
   });
 
   if (existingTimeSlots.length > 0) {
-    res.status(200).json({message:"Timeslot clashes with an existing timeslot"})
-   }
-  if(from>to){
-    return res.status(200).json({message:"end time is less than starting time"})
+    res
+      .status(200)
+      .json({ message: "Timeslot clashes with an existing timeslot" });
+  }
+  if (from > to) {
+    return res
+      .status(200)
+      .json({ message: "end time is less than starting time" });
   }
 
   // Create the new timeslot
-  const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
+  const newTimeSlot = new timeSlot({ day, from, to, doctorID: id });
   await newTimeSlot.save();
-  const times=await timeSlot.find({doctorID:id})
-  res.status(200).json({message:"Timeslot created successfully.",times:times});
+  const times = await timeSlot.find({ doctorID: id });
+  res
+    .status(200)
+    .json({ message: "Timeslot created successfully.", times: times });
 }
 async function deleteTimeSlot(req, res) {
   const id = req.params.id;
   const result = await timeSlot.findByIdAndDelete(id);
   result = await timeSlot.find({ doctorID: req.user._id });
-  res.status(200).json({result:result});
+  res.status(200).json({ result: result });
 }
 
 async function cancelAppointment(req, res) {
   const id = req.body.id;
   console.log(id);
-  const deletedAppointment = await appointment.findByIdAndUpdate(id,{status:"cancelled"},{new:1}).exec();
+  const deletedAppointment = await appointment
+    .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
+    .exec();
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID);
-  const updatedPatient = await patientModel.findByIdAndUpdate(deletedAppointment.patientID,  { Wallet: patient.Wallet + wallet });
+  const updatedPatient = await patientModel.findByIdAndUpdate(
+    deletedAppointment.patientID,
+    { Wallet: patient.Wallet + wallet }
+  );
   const doctore = await doctor.findById(deletedAppointment.doctorID);
   let newNotification = new notificationModel({
     patientID: patient._id,
@@ -299,17 +330,23 @@ async function cancelAppointment(req, res) {
     date: Date.now(),
   });
   await newNotification2.save();
-  await sendEmail(patient.email, "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet");
-  await sendEmail(doctore.email, `Your appointment with ${patient.name} is cancelled`);
-  res.status(200).json({message:"Appointment cancelled successfully."});
+  await sendEmail(
+    patient.email,
+    "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet"
+  );
+  await sendEmail(
+    doctore.email,
+    `Your appointment with ${patient.name} is cancelled`
+  );
+  res.status(200).json({ message: "Appointment cancelled successfully." });
 }
 
-async function showTimeSlots(req,res){ 
-   id=req.user._id;
+async function showTimeSlots(req, res) {
+  id = req.user._id;
   // const days= ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   // html="";
   // for(day in days){
-    
+
   //   html+=`<tr><th >${days[day]}</th>`;
   //   const results=await timeSlot.find({day:days[day],doctorID:id})
   //   for(result in results){
@@ -318,8 +355,8 @@ async function showTimeSlots(req,res){
   //   html+="</tr>"
   // }
   // res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
-  const result=await timeSlot.find({doctorID:id})
-  res.status(200).json({result:result})
+  const result = await timeSlot.find({ doctorID: id });
+  res.status(200).json({ result: result });
 }
 // async function showFollowUp(req, res) {
 //   const doctorID = req.user._id;
@@ -342,87 +379,115 @@ async function showTimeSlots(req,res){
 // }
 async function showFollowUp(req, res) {
   const doctorID = req.user._id;
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   const date = new Date(req.params.date);
   const day = days[date.getDay()];
   let result = await timeSlot.find({ doctorID: doctorID, day: day });
 
   // Check if there is an appointment in the given date with the given doctor
-  for(let i=0;i<result.length;i++){
-    let startTime=result[i].from;
-    const startHour=startTime.split(":")[0];
-    const startMinute=startTime.split(":")[1];
+  for (let i = 0; i < result.length; i++) {
+    let startTime = result[i].from;
+    const startHour = startTime.split(":")[0];
+    const startMinute = startTime.split(":")[1];
     date.setHours(startHour);
     date.setMinutes(startMinute);
-  const appointments = await appointment.find({ doctorID: doctorID, date: date });
-  if (appointments.length > 0) {
-    result.splice(i, 1);
-    i--;
+    const appointments = await appointment.find({
+      doctorID: doctorID,
+      date: date,
+    });
+    if (appointments.length > 0) {
+      result.splice(i, 1);
+      i--;
+    }
   }
-}
   res.status(200).json({ result: result });
 }
-async function createFollowUp(req,res){
-  doctorID=req.user._id;
-  const id=req.body.appointmentId;
-  const date=new Date(req.body.date);
-  const time=req.body.time;
-  const startTime=time.split("-")[0];
-  const endTime=time.split("-")[1];
+async function createFollowUp(req, res) {
+  doctorID = req.user._id;
+  const id = req.body.appointmentId;
+  const date = new Date(req.body.date);
+  const time = req.body.time;
+  const startTime = time.split("-")[0];
+  const endTime = time.split("-")[1];
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
 
   let duration = (endH - startH) * 60 + (endM - startM);
-  duration= duration/60;
+  duration = duration / 60;
   const appointmentt = await appointment.findById(id);
-  const pat= await patientModel.findById(appointmentt.patientID);
+  const pat = await patientModel.findById(appointmentt.patientID);
   let price;
-  if(pat.subscription.healthPackage!="none"){
-  const healthPack = await healthPackage.find({packageName:pat.subscription.healthPackage});
-price= req.user.rate*1.1 - (req.user.rate*1.1*healthPack[0].doctorDiscount)/100;
-  }
-  else{
-  price= req.user.rate*1.1;
+  if (pat.subscription.healthPackage != "none") {
+    const healthPack = await healthPackage.find({
+      packageName: pat.subscription.healthPackage,
+    });
+    price =
+      req.user.rate * 1.1 -
+      (req.user.rate * 1.1 * healthPack[0].doctorDiscount) / 100;
+  } else {
+    price = req.user.rate * 1.1;
   }
   // the startTime contains time in the format of 23:30 for example, so we need to split it to get the hours and minutes
-  const startHour=startTime.split(":")[0];
-  const startMinute=startTime.split(":")[1];
+  const startHour = startTime.split(":")[0];
+  const startMinute = startTime.split(":")[1];
   date.setHours(startHour);
   date.setMinutes(startMinute);
-  const newAppointment=new appointment({doctorID:doctorID,patientID:pat._id,date:date,status:"upcoming",duration:duration,price:price,paid:true})
+  const newAppointment = new appointment({
+    doctorID: doctorID,
+    patientID: pat._id,
+    date: date,
+    status: "upcoming",
+    duration: duration,
+    price: price,
+    paid: true,
+  });
   await newAppointment.save();
-  res.status(200).json({message:"Appointment created successfully."});
+  res.status(200).json({ message: "Appointment created successfully." });
 }
-const docViewWallet = async(req,res) =>{
-  doctorID=req.user._id;
-  let doctorr= await doctor.findOne({_id:doctorID},"Wallet");
-  Wallett=doctorr.Wallet;
-  res.status(200).json({Wallett:Wallett});
-}
-async function showHealthRecord(req,res){
-  const patientId=req.params.id;
-  const healthId=req.params.healthId;
-  let result = await patientModel.find({_id:patientId}).select(["healthRecords"]);
+const docViewWallet = async (req, res) => {
+  doctorID = req.user._id;
+  let doctorr = await doctor.findOne({ _id: doctorID }, "Wallet");
+  Wallett = doctorr.Wallet;
+  res.status(200).json({ Wallett: Wallett });
+};
+async function showHealthRecord(req, res) {
+  const patientId = req.params.id;
+  const healthId = req.params.healthId;
+  let result = await patientModel
+    .find({ _id: patientId })
+    .select(["healthRecords"]);
   let file = result[0].healthRecords[healthId].data;
   let type = result[0].healthRecords[healthId].contentType;
   let name = result[0].healthRecords[healthId].name;
-  res.set('Content-Type', 'application/octet-stream');
-  res.set('Content-Disposition', `attachment; filename="${name}.${type.split("/")[1]}"`); 
+  res.set("Content-Type", "application/octet-stream");
+  res.set(
+    "Content-Disposition",
+    `attachment; filename="${name}.${type.split("/")[1]}"`
+  );
   res.send(file);
-  }
-async function getName(req,res){  
-  const id=req.user._id;
-  const result=await doctor.findById(id,"name")
-  res.status(200).json({name:result.name})
+}
+async function getName(req, res) {
+  const id = req.user._id;
+  const result = await doctor.findById(id, "name");
+  res.status(200).json({ name: result.name });
 }
 const ViewPrescriptionsDoc = async (req, res) => {
   doctorp = await doctor.findOne({ _id: req.user._id });
   let result = await prescription
-    .find({ doctorID: doctorp._id }).populate("patientID")
-    .select(["prescriptionName","filled", "patientID"]);
+    .find({ doctorID: doctorp._id })
+    .populate("patientID")
+    .select(["prescriptionName", "filled", "patientID"]);
   // let prescriptionrows = "<tr><th>name</th></tr>";
 
   // for (prescriptions in result) {
@@ -437,9 +502,9 @@ const ViewPrescriptionsDoc = async (req, res) => {
   // });
   res.status(200).json(result);
 };
-async function sendEmail(email, message ) {
+async function sendEmail(email, message) {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
       user: process.env.EMAIL_ADDRESS,
       pass: process.env.EMAIL_PASSWORD,
@@ -464,11 +529,11 @@ async function sendEmail(email, message ) {
 
 async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
-  const date=new Date(req.body.date);
-  const time=req.body.time;
+  const date = new Date(req.body.date);
+  const time = req.body.time;
   console.log(time);
-  const startTime=time.split("-")[0];
-  const endTime=time.split("-")[1];
+  const startTime = time.split("-")[0];
+  const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
   const startH = parseInt(startTime.split(":")[0]);
@@ -477,19 +542,28 @@ async function rescheduleAppointment(req, res) {
   const endM = parseInt(endTime.split(":")[1]);
   const thisAppointment = await appointment.findById(appointmentID);
   let duration = (endH - startH) * 60 + (endM - startM);
-  duration= duration/60;
-  const pat= await patientModel.findById(thisAppointment.patientID);
+  duration = duration / 60;
+  const pat = await patientModel.findById(thisAppointment.patientID);
   const doctore = await doctor.findById(thisAppointment.doctorID);
   let price;
-  if(pat.subscription.healthPackage!="none"){
-  const healthPack = await healthPackage.find({packageName:pat.subscription.healthPackage});
-price= doctore.rate*1.1 - (doctore.rate*1.1*healthPack[0].doctorDiscount)/100;
-  }
-  else{
-  price= doctore.rate * 1.1;
+  if (pat.subscription.healthPackage != "none") {
+    const healthPack = await healthPackage.find({
+      packageName: pat.subscription.healthPackage,
+    });
+    price =
+      doctore.rate * 1.1 -
+      (doctore.rate * 1.1 * healthPack[0].doctorDiscount) / 100;
+  } else {
+    price = doctore.rate * 1.1;
   }
 
-  const rescheduledAppointment = await appointment.findByIdAndUpdate(appointmentID,{date: date,price:price,duration:duration,status:"rescheduled"},{new:1}).exec();
+  const rescheduledAppointment = await appointment
+    .findByIdAndUpdate(
+      appointmentID,
+      { date: date, price: price, duration: duration, status: "rescheduled" },
+      { new: 1 }
+    )
+    .exec();
   const patient = await patientModel.findById(rescheduledAppointment.patientID);
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
@@ -505,11 +579,38 @@ price= doctore.rate*1.1 - (doctore.rate*1.1*healthPack[0].doctorDiscount)/100;
   });
   await newNotification2.save();
 
-
-  await sendEmail(patient.email, `Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduleAppointment.date}`);
-  await sendEmail(doctore.email, `Your appointment with ${patient.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`);
-  res.status(200).json({message:"Appointment rescheduled successfully."});
+  await sendEmail(
+    patient.email,
+    `Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduleAppointment.date}`
+  );
+  await sendEmail(
+    doctore.email,
+    `Your appointment with ${patient.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`
+  );
+  res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
 
-
-module.exports={updateMedicine,deleteMedicine,createMedicine,createPrescription,docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc,cancelAppointment,rescheduleAppointment};
+module.exports = {
+  updateMedicine,
+  deleteMedicine,
+  createMedicine,
+  createPrescription,
+  docViewWallet,
+  createDoctor,
+  goToHome,
+  updateMyInfo,
+  updateThis,
+  checkContract,
+  uploadHealthRecord,
+  createTimeSlot,
+  showTimeSlots,
+  deleteTimeSlot,
+  showFollowUp,
+  createFollowUp,
+  loggedIn,
+  showHealthRecord,
+  getName,
+  ViewPrescriptionsDoc,
+  cancelAppointment,
+  rescheduleAppointment,
+};
