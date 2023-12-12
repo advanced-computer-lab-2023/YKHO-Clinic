@@ -6,8 +6,7 @@ import './App.css'
 import Login from './components/Login'
 import DoctorHome from './components/doctorComponents/DoctorHome'
 import AdminHome from './components/adminComponents/AdminHome'
-import AdminRegister from './components/adminComponents/AdminRegister'
-import AdminDeleteUser from './components/adminComponents/AdminDeleteUser'
+import AdminDeleteUser from './components/adminComponents/AdminEditUser'
 import AdminHealthPackages from'./components/adminComponents/adminHealthPackages'
 import DoctorUploadedInfo from './components/adminComponents/DoctorUploadedInfo'
 import PatientHome from './components/patientComponents/PatientHome'
@@ -43,7 +42,6 @@ function App() {
         <Route path="/doctor/timeslots" element={<DoctorTimeSlots/>} />
         <Route path="/doctor/contract" element={<DoctorContract/>} />
         <Route path="/admin/home" element={<AdminHome/>}/>
-        <Route path="/admin/register" element={<AdminRegister/>}/>
         <Route path="/admin/deleteUser" element={<AdminDeleteUser/>}/>
         <Route path="/admin/uploadedInfo" element={<DoctorUploadedInfo/>}/>
         <Route path="/patient/home" element={<PatientHome/>} />
