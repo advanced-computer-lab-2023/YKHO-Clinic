@@ -85,7 +85,7 @@ async function createPrescription(req,res){
 
 
 async function createMedicine(req, res){
-  id=req.body._id;
+  id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
   let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed}
@@ -97,7 +97,7 @@ async function createMedicine(req, res){
 };
 
 async function deleteMedicine(req,res){
-  id=req.body._id;
+  id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
   let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed};
@@ -109,7 +109,7 @@ async function deleteMedicine(req,res){
 
 }
 async function updateMedicine(req,res){
-  id=req.body._id;
+  id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   let medicineup;
   let temp;
@@ -124,6 +124,20 @@ async function updateMedicine(req,res){
   }
   prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
 
+}
+async function updatePresc(req,res){
+  id=req.body._id;
+  let prescription1 = await prescription.findOne({_id:req.params.id});
+  let newPrescName = req.body.name;
+  let newPrescFilled = req.body.filled;
+  if(newPrescName!=null&&newPrescFilled!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName,filled:newPrescFilled}},{new:true});}
+  else if(newPrescFilled!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {filled:newPrescFilled}},{new:true});
+  }
+  else if(newPrescName!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName}},{new:true});
+  }
 }
 
 
@@ -512,4 +526,4 @@ price= doctore.rate*1.1 - (doctore.rate*1.1*healthPack[0].doctorDiscount)/100;
 }
 
 
-module.exports={updateMedicine,deleteMedicine,createMedicine,createPrescription,docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc,cancelAppointment,rescheduleAppointment};
+module.exports={updatePresc,updateMedicine,deleteMedicine,createMedicine,createPrescription,docViewWallet,createDoctor,goToHome,updateMyInfo,updateThis,checkContract, uploadHealthRecord,createTimeSlot,showTimeSlots,deleteTimeSlot,showFollowUp,createFollowUp,loggedIn,showHealthRecord,getName,ViewPrescriptionsDoc,cancelAppointment,rescheduleAppointment};

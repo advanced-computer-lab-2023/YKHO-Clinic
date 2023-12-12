@@ -28,6 +28,7 @@ const {
   cancelAppointment,  createMedicine,
   deleteMedicine,
   updateMedicine,
+  updatePresc,
 
 } = require("./controller/doctorController");
 const {
@@ -138,7 +139,8 @@ app.post("/addAppointment", requireAuthDoctor , createAppointment);
 app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
 app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine/:id",requireAuthDoctor,deleteMedicine);
-app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine)
+app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine);
+app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
