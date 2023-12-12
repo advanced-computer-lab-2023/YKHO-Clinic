@@ -8,6 +8,7 @@ import DoctorHome from './components/doctorComponents/DoctorHome'
 import AdminHome from './components/adminComponents/AdminHome'
 import AdminRegister from './components/adminComponents/AdminRegister'
 import AdminDeleteUser from './components/adminComponents/AdminDeleteUser'
+import AdminHealthPackages from'./components/adminComponents/adminHealthPackages'
 import DoctorUploadedInfo from './components/adminComponents/DoctorUploadedInfo'
 import PatientHome from './components/patientComponents/PatientHome'
 import DoctorRegister from './components/doctorComponents/DoctorRegister'
@@ -22,6 +23,8 @@ import PatientHealthRecords from './components/patientComponents/PatientHealthRe
 import PatinetHistory from './components/patientComponents/PatientHistory'
 import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
+import ForgetPassword from './components/ForgetPassword'
+import ChangePassword from './components/adminComponents/changePassword'
 
 import DoctorTimeSlots from './components/doctorComponents/DoctorTimeSlots'
 import DoctorContract from './components/doctorComponents/DoctorContract'
@@ -52,6 +55,9 @@ function App() {
         <Route path="/patient/readFamilyMembers" element={<PatientManageFamily/>} />
         <Route path="/register/doctor" element={<DoctorRegister/>} />
         <Route path="/register/patient" element={<PatientRegister/>} />
+        <Route path="/admin/healthPackages" element={<AdminHealthPackages/>} />
+        <Route path='/admin/changePassword' element={<ChangePassword/>}/>
+        <Route path="/forgetPassword/enterUsername" element={<ForgetPassword/>} />
       </Routes>
       </BrowserRouter>
     </div>

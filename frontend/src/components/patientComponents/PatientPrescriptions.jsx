@@ -1,13 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import Navbar from './Navbar'
+import { motion, AnimatePresence } from 'framer-motion';
+import { Skeleton, Paper, Button, Typography, Grid, Stack, Autocomplete, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import PrescriptionCard from './PrescriptionCard';
+import { set } from 'mongoose';
 const PatientPrescriptions = () => {
     const [result, setResult] = useState(false);
     const [prescriptions, setPrescriptions] = useState([]);
-    const [onePatient, setOnePatient] = useState(false);
+    const [prescriptionPrice, setPrescriptionPrice] = useState([]);
+    const [hasHealthPackage, setHasHealthPackage] = useState(false);
+    const [doctorName, setDoctorName] = useState("");
+    const [selectedDate, setSelectedDate] = useState(null);
     const [filtered, setFiltered] = useState(false);
-    useEffect(() => { check(), getPrescriptions() }, []);
-    useEffect(() => { setSearchBox(); }, [result]);
+    const [filled, setFilled] = useState("");
+    const [uniqueDoctorNames, setUniqueDoctorNames] = useState([]);
+    useEffect(() => { check(), getPrescriptions(),setOptions() }, []);
+    async function setOptions() {
+        const res = await axios.get("http://localhost:3000/patient/AllPresecrptionsInfo", {
+            withCredentials: true
+        }).then((res) => {
+            setUniqueDoctorNames([...new Set(res.data.result.map((option) => option.doctorName))]);
+        }).catch((err) => {
+            console.log(err);   
+        })
+    }
     async function check() {
 
         const res = await axios.get("http://localhost:3000/loggedIn", {
@@ -28,59 +49,57 @@ const PatientPrescriptions = () => {
             }
         })
     }
+    const handleReset = () => {
+        setDoctorName(""); 
+        setSelectedDate(null); 
+        setFilled(""); 
+    };
+    const handleFilled = (event) => {
+        setFilled(event.target.value);
+    };
+
     async function getPrescriptions() {
-        try {
-            const res = await axios.get("http://localhost:3000/patient/prescriptions", {
-                withCredentials: true
-            });
+        await axios.get("http://localhost:3000/patient/AllPresecrptionsInfo", {
+            withCredentials: true
+        }).then((res) => {
             setPrescriptions(res.data.result);
-            setOnePatient(true);
+            setPrescriptionPrice(res.data.totalPrice);
+            setHasHealthPackage(res.data.hasHealthPackage);
             setFiltered(false);
-        } catch (err) {
+        }).catch((err) => {
             console.log(err);
-        }
+        })
     }
-    function setSearchBox() {
 
-        const searchValueInput = document.getElementById('searchvalue');
-        const filterDropdown = document.getElementById('filter');
-        if (searchValueInput) {
-            filterDropdown.addEventListener('change', function () {
-                if (filterDropdown.value === 'Date') {
-                    // Show the date input field when Date is selected
-                    searchValueInput.type = 'date';
-
-                } else {
-                    // Show the text input field for other options
-                    searchValueInput.type = 'text';
-                }
-            }
-            );
-        }
+    async function handleWallet(id) {
+        await axios.get(`http://localhost:3000/patient/paymentWalletpresc/${id}`, {
+            withCredentials: true
+        }).then((res) => {
+            console.log(res.data);
+        }).catch((err) => {
+            console.log(err);
+        })
     }
+
+    async function handleCredit(id) {
+        await axios.get(`http://localhost:3000/patient/paymentcreditpresc/${id}`, {
+            withCredentials: true
+        }).then((res) => {
+            window.location.href = res.data.result;
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
+
     async function prescriptionFiltered() {
         try {
-            const searchValueInput = document.getElementById('searchvalue');
-            const filterDropdown = document.getElementById('filter');
-            const res = await axios.get(`http://localhost:3000/Patient/PrescriptionsFiltered?filter=${filterDropdown.value}&searchvalue=${searchValueInput.value}`, {
+            console.log(doctorName);
+            const res = await axios.get(`http://localhost:3000/Patient/PrescriptionsFiltered?doctor=${doctorName}&&date=${selectedDate}&&filled=${filled}`, {
                 withCredentials: true
             });
             setPrescriptions(res.data.result);
-            setOnePatient(false);
-            setFiltered(false);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-    async function showThis(e) {
-        try {
-            const res = await axios.get(`http://localhost:3000/patient/Prescriptions/${e.target.id}`, {
-                withCredentials: true
-            });
-            setPrescriptions(res.data.result);
-            setOnePatient(false);
-            setFiltered(true);
-            // window.location.href = `/patient/Prescriptions/${e.target.id}`;
+            setPrescriptionPrice(res.data.totalPrice);
+            setHasHealthPackage(res.data.hasHealthPackage);
         } catch (err) {
             console.log(err);
         }
@@ -88,56 +107,51 @@ const PatientPrescriptions = () => {
     return (
         <div>
             {result && <div>
-                <h1>Your prescriptions</h1>
-                {onePatient && <div>
-                    <label htmlFor="filter">Search By</label>
-                    <select id="filter" name="filter" onInput={setSearchBox}>
-                        <option value="DoctorName">DoctorName</option>
-                        <option value="Date">Date</option>
-                        <option value="Filled">Filled</option>
-                    </select>
-                    <label htmlFor="searchvalue">With value</label>
-                    <input id="searchvalue" input="text" name="searchvalue" />
-                    <button type="submit" onClick={prescriptionFiltered}>Search</button>
-                </div>
-                }
-
-                {!filtered && <table>
-                    <thead>
-                        <tr>
-                            <th>name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {prescriptions.map((prescription) => {
-                            return (
-                                <tr>
-                                    <td id={prescription._id} onClick={showThis}> {prescription.prescriptionName} </td>
-                                </tr>
-                            )
-                        })}
-                    </tbody>
-                </table>}
-                {filtered && <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Doctor Name</th>
-                            <th>Filled</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td> {prescriptions[0].prescriptionName} </td>
-                            <td> {prescriptions[0].date.split("T")[0]} </td>
-                            <td> {prescriptions[0].doctorName} </td>
-                            <td> {prescriptions[0].filled? 'True' : 'False'}</td>
-                        </tr>
-                    </tbody>
-                </table>}
-
-
+                <Navbar />
+                <Typography variant="h3" sx={{ marginLeft: "15%", marginTop: "1%" }} gutterBottom>Your Prescriptions</Typography>
+                <Stack direction="column" spacing={5} alignItems="center">
+                    <Stack direction="row" spacing={2} sx={{width:"100%"}} justifyContent="center" alignItems="center">
+                        <Autocomplete loading id="prescBox" sx={{ width: "20%"}} freeSolo options={uniqueDoctorNames} renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Search Doctor Name"
+                                InputProps={{
+                                    ...params.InputProps,
+                                    type: 'search',
+                                }}
+                            />
+                        )} inputValue={doctorName}  onInputChange={(event, value) => setDoctorName(value)} />
+                        <LocalizationProvider dateAdapter={AdapterDayjs} >
+                    
+                        <DatePicker id="DOP" name="DOP" label="Date of Prescription" value={selectedDate} onChange={(date) => setSelectedDate(date)}/>
+                            
+                        </LocalizationProvider>
+                        <FormControl sx={{ m: 1, minWidth: 120 }}>
+                            <InputLabel id="filterFilled">Filled Filter</InputLabel>
+                            <Select
+                                id="filterFilled"
+                                value={filled}
+                                label="Filled Filter"
+                                onChange={handleFilled}
+                            >
+                                <MenuItem value={""}> Any </MenuItem>
+                                <MenuItem value={true}>Filled</MenuItem>
+                                <MenuItem value={false}>Not Filled</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => prescriptionFiltered()}> Filter </Button>
+                        <Button variant="outlined" size="small" sx={{ marginLeft: "1%" }} onClick={() => {getPrescriptions(); handleReset(); }}> Reset </Button>
+                    </Stack>
+                    <Paper elevation={4} sx={{ padding: "20px", width: "80%", height: "640px",overflowY: "auto" }}>
+                        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{width:"100%"}}>
+                            {prescriptions.length > 0 && prescriptions.map((prescription, index) => {
+                                return (
+                                    <PrescriptionCard doctorName={prescription.doctorName} prescriptionName={prescription.prescriptionName} date={prescription.date} filled={prescription.filled} medicines={prescription.MedicineNames} handleWallet={handleWallet} handleCredit={handleCredit} id={prescription._id} paid={prescription.paid} price={prescription.price} discount={prescriptionPrice[index]} hasHealthPackage={hasHealthPackage} />
+                                )
+                            })}
+                        </Stack>
+                    </Paper>
+                </Stack>
             </div>}
         </div>
     )

@@ -24,7 +24,8 @@ const {
   loggedIn,
   getName,
   ViewPrescriptionsDoc,
-  createMedicine,
+  rescheduleAppointment,
+  cancelAppointment,  createMedicine,
   deleteMedicine,
   updateMedicine,
 
@@ -97,6 +98,7 @@ const {
   getFamilyMembersPlan,
   getMyAppointments,
   PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
+  viewAllDataOfPrescriptions,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -150,13 +152,15 @@ app.post("/doctor/patients/:id/upload-pdf", requireAuthDoctor, upload.single("he
 app.get("/doctor/timeSlots", requireAuthDoctor, showTimeSlots);
 app.post("/doctor/addTimeSlot", requireAuthDoctor, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuthDoctor, deleteTimeSlot);
-app.get("/doctor/schedFollowUp/:id/:date",requireAuthDoctor,showFollowUp);
-app.post("/doctor/reserve/:id",requireAuthDoctor, createFollowUp);
+app.get("/doctor/schedFollowUp/:date",requireAuthDoctor,showFollowUp);
+app.post("/doctor/reserve",requireAuthDoctor, createFollowUp);
 app.get("/doctor/patients/:id/:healthId", requireAuthDoctor, showHealthRecord);
 app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
 app.get("/doctor/Prescriptions", requireAuthDoctor, ViewPrescriptionsDoc);
+app.post("/doctor/cancelAppointment",requireAuthDoctor, cancelAppointment);
 app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
+app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 //Admin
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
@@ -216,8 +220,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
 
-
-app.post("/patient/createPatient", createPatient);
+app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
@@ -239,6 +242,7 @@ app.get("/patient/doctors/:id/familyMember/reserve", requireAuthPatient, reserve
 app.get("/patient/plan", requireAuthPatient, getPatientPlan);
 app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan);
 app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
+app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescriptions);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;
