@@ -77,17 +77,15 @@ async function createPrescription(req, res) {
   }
 }
 
-async function createMedicine(req, res) {
-  id = req.body._id;
-  let prescription1 = await prescription.findOne({ _id: req.params.id });
-  idmed = await medicine.findOne({ name: req.body.name }).select(["_id"]);
-  let medicinetobe = {
-    name: req.body.name,
-    dosage: req.body.dosage,
-    price: req.body.price,
-    medicineID: idmed,
-  };
-  let medicinesup = prescription1.MedicineNames;
+
+
+
+async function createMedicine(req, res){
+  id=req.user._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
+  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed}
+  let medicinesup=prescription1.MedicineNames;
   medicinesup.push(medicinetobe);
   let pricenew = prescription1.price + req.body.price;
   prescription1 = await prescription.findByIdAndUpdate(
@@ -102,35 +100,21 @@ async function createMedicine(req, res) {
   );
 }
 
-async function deleteMedicine(req, res) {
-  id = req.body._id;
-  let prescription1 = await prescription.findOne({ _id: req.params.id });
-  idmed = await medicine.findOne({ name: req.body.name }).select(["_id"]);
-  let medicinetobe = {
-    name: req.body.name,
-    dosage: req.body.dosage,
-    price: req.body.price,
-    medicineID: idmed,
-  };
-  let medicinesup = prescription1.MedicineNames;
-  medicinesup = medicinesup.filter(
-    (item) => item.medicineID != medicinetobe.medicineID
-  );
-  let pricenew = prescription1.price - req.body.price;
-  prescription1 = await prescription.findByIdAndUpdate(
-    req.params.id,
-    { $set: { MedicineNames: medicinesup } },
-    { new: true }
-  );
-  prescription1 = await prescription.findByIdAndUpdate(
-    req.params.id,
-    { $set: { price: pricenew } },
-    { new: true }
-  );
+async function deleteMedicine(req,res){
+  id=req.user._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
+  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed};
+  let medicinesup=prescription1.MedicineNames; 
+  medicinesup= medicinesup.filter(item =>item.medicineID != medicinetobe.medicineID);
+  let pricenew = prescription1.price-req.body.price;
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
+
 }
-async function updateMedicine(req, res) {
-  id = req.body._id;
-  let prescription1 = await prescription.findOne({ _id: req.params.id });
+async function updateMedicine(req,res){
+  id=req.user._id;
+  let prescription1 =await prescription.findOne({_id:req.params.id});
   let medicineup;
   let temp;
   for (let i = 0; i < prescription1.MedicineNames; i++) {
@@ -142,12 +126,26 @@ async function updateMedicine(req, res) {
       medicineup.push(prescription1.MedicineNames[i]);
     }
   }
-  prescription1 = await prescription.findByIdAndUpdate(
-    req.params.id,
-    { $set: { MedicineNames: medicinesup } },
-    { new: true }
-  );
+  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+
 }
+async function updatePresc(req,res){
+  id=req.body._id;
+  let prescription1 = await prescription.findOne({_id:req.params.id});
+  let newPrescName = req.body.name;
+  let newPrescFilled = req.body.filled;
+  if(newPrescName!=null&&newPrescFilled!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName,filled:newPrescFilled}},{new:true});}
+  else if(newPrescFilled!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {filled:newPrescFilled}},{new:true});
+  }
+  else if(newPrescName!=null){
+    prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName}},{new:true});
+  }
+}
+
+
+
 
 async function loggedIn(req, res) {
   if (req.user) {
@@ -591,7 +589,7 @@ async function rescheduleAppointment(req, res) {
 }
 
 module.exports = {
-  updateMedicine,
+  updatePresc,updateMedicine,
   deleteMedicine,
   createMedicine,
   createPrescription,

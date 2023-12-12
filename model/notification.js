@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema({
-    doctorID: { type: String },
-    patientID: { type: String },
+    doctorID: { type:mongoose.Schema.Types.ObjectId },
+    patientID: { type:mongoose.Schema.Types.ObjectId },
     text: { type: String, required: true },
     date: {type: Date, required: true},
 });
