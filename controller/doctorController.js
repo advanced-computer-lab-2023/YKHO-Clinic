@@ -271,23 +271,23 @@ async function createTimeSlot(req, res) {
       doctorID: id,
       day: day,
   });
-
-  if (existingTimeSlots.length > 0) {
-    res.status(200).json({message:"Timeslot clashes with an existing timeslot"})
-   }
   if(from>to){
-    return res.status(200).json({message:"end time is less than starting time"})
+    return res.status(200).json({message:"End time is less than starting time",ihavegonemad:false})
   }
+  if (existingTimeSlots.length > 0) {
+    return res.status(200).json({message:"Timeslot clashes with an existing timeslot",ihavegonemad:false})
+   }
+  
 
   // Create the new timeslot
   const newTimeSlot = new timeSlot({day, from, to, doctorID: id  });
   await newTimeSlot.save();
   const times=await timeSlot.find({doctorID:id})
-  res.status(200).json({message:"Timeslot created successfully.",times:times});
+  res.status(200).json({message:"Timeslot created successfully.",times:times,ihavegonemad:true});
 }
 async function deleteTimeSlot(req, res) {
   const id = req.params.id;
-  const result = await timeSlot.findByIdAndDelete(id);
+  let result = await timeSlot.findByIdAndDelete(id);
   result = await timeSlot.find({ doctorID: req.user._id });
   res.status(200).json({result:result});
 }
@@ -333,7 +333,9 @@ async function showTimeSlots(req,res){
   // }
   // res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
   const result=await timeSlot.find({doctorID:id})
+
   res.status(200).json({result:result})
+  
 }
 // async function showFollowUp(req, res) {
 //   const doctorID = req.user._id;
@@ -435,7 +437,7 @@ async function getName(req,res){
 const ViewPrescriptionsDoc = async (req, res) => {
   doctorp = await doctor.findOne({ _id: req.user._id });
   let result = await prescription
-    .find({ doctorID: doctorp._id }).populate("patientID")
+    .find({ doctorID: doctorp._id,patientID:req.query.id }).populate("patientID")
     .select(["prescriptionName","filled", "patientID"]);
   // let prescriptionrows = "<tr><th>name</th></tr>";
 

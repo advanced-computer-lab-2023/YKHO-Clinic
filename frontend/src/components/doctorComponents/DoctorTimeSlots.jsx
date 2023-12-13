@@ -2,12 +2,45 @@ import React from 'react';
 import { useState,useEffect } from 'react';
 import axios from 'axios';
 import Joi from 'joi';
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Grid from '@mui/material/Grid';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import Navbar from './Navbar';
+import TimeSlotCard from './TimeSlotCard';
+import { Button, Paper } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import dayjs from 'dayjs';
+import Alert from '@mui/material/Alert';
+
+
 const DoctorTimeSlots = () => {
+    const [results, setResults] = useState(false);
     const days=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const [result, setResult] = useState(false);
+    //const [result, setResult] = useState(false);
     const [timeSlots, setTimeSlots] = useState([]);
     const [message, setMessage] = useState("");
-    useEffect(() => {check() , getTimeSlots()}, []);
+    const [value, setValue] = useState('1');
+    useEffect(() => {check() , getTimeSlots()},[]);
+    const [Day, setAge] = React.useState("");
+    const [timefrom, setTimeFrom] = React.useState(dayjs('2022-04-17T15:30'));
+    const [timeTo, setTimeTo] = React.useState(dayjs('2022-04-17T15:30'));
+    const [error, setError] = useState(false);
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+
+
 
     async function check() {
         await axios.get("http://localhost:3000/doctor/contract",{
@@ -17,7 +50,7 @@ const DoctorTimeSlots = () => {
             window.location.href="/doctor/contract"
         }
         else{
-          setResult(true)
+          setResults(true)
         }
     }).catch((err)=>{
         console.log(err);
@@ -43,12 +76,17 @@ const DoctorTimeSlots = () => {
             }
         }
     }
+    async function cancel(id){
+        deleteTimeSlot(id);
+    }
     async function getTimeSlots() {
         try {
             const res = await axios.get("http://localhost:3000/doctor/timeSlots", {
                 withCredentials: true
             });
+            //console.log(result);
             setTimeSlots(res.data.result);
+
         } catch (err) {
             console.log(err);
         }
@@ -60,91 +98,255 @@ const DoctorTimeSlots = () => {
 
 
     async function createNewTimeSlot() {
+        
         try {
-            const day = document.getElementById("dayOfWeek").value;
-            const from = document.getElementById("startTime").value;
-            const to = document.getElementById("endTime").value;
+            if(Day==("")){
+                setError(true);
+                return setMessage("Please Choose a Day");
+            }
+            let from1;
+            if(timefrom.minute()=="5"||timefrom.minute()=="0"){
+                from1 = dayjs(timefrom).hour() + ":0"+dayjs(timefrom).minute();
+            }
+            else{
+                from1 = dayjs(timefrom).hour() + ":"+dayjs(timefrom).minute();
+            }
+            let to1;
+            if(timeTo.minute()=="5"||timeTo.minute()=="0"){
+                to1 = dayjs(timeTo).hour() + ":0"+dayjs(timeTo).minute();
+            }
+            else{
+                to1 = dayjs(timeTo).hour() + ":"+dayjs(timeTo).minute();
+            }
+            let day = Day;
+            
+            
 
             const schema = Joi.object({
                 day: Joi.string().required().min(5).max(20),
                 "Start Time": Joi.string().required(),
                 "End Time": Joi.string().required(),
               });
-            const {error,result}=schema.validate({day:day,"Start Time":from,"End Time":to});
-            if (error) {
-                return setMessage(error.details[0].message);
+            const {error1,result}=schema.validate({day:day,"Start Time":from1,"End Time":to1});
+            if (error1) {
+                setError(true);
+                return setMessage(error1.details[0].message);
             }
             const res = await axios.post("http://localhost:3000/doctor/addTimeSlot", {
                 day: day,
-                from: from,
-                to: to
+                from: from1,
+                to: to1
             }, {
                 withCredentials: true
             });
             setMessage(res.data.message);
             if(res.data.message=="Timeslot created successfully."){
                 setTimeSlots(res.data.times)
+                setError(false);
+
             }
+            else(setError(true))
         } catch (err) {
             console.log(err);
         }
     }
     async function deleteTimeSlot(e) {
-            const id=e.target.id;
+            const id=e;
             const res = await axios.get(`http://localhost:3000/doctor/deleteTimeSlot/${id}`, {
                 withCredentials: true
             });
             setTimeSlots(res.data.result);  
+
     }
+    const handleChange1 = (event, newValue) => {
+        setValue(newValue);
+
+      };
+      console.log( dayjs(timefrom).hour() + ":"+dayjs(timefrom).minute() );
+
+    
     return (
         <div>
-            {result&&<div>
-                <h1>Doctor Time Slots</h1>
-            <h2>
-                Current time slots
-            </h2>
-            <table >
-                <tr >
-                    {
-                        days.map((day) => 
-                            <tr style={{"border": "1px solid black","border-collapse": "collapse","padding": "5px"}}>
-                                <th style={{"border": "1px solid black","border-collapse": "collapse","padding": "5px"}}>
-                                    {day}</th> {
-                                timeSlots.map((timeSlot) => 
-                                    timeSlot.day.toLowerCase() == day.toLowerCase() && <td className="tableRow" onClick={deleteTimeSlot} id={timeSlot._id} style={{"border": "1px solid black",
-                                    "border-collapse": "collapse",
-                                    "padding": "5px","cursor":"pointer"}}>{timeSlot.from} - {timeSlot.to}</td>
-                                )
-                            } </tr>
-                        )
-                    }
-                </tr>
-            </table>
-            <h2>
-                Insert new time slot
-            </h2>
+        <Navbar/>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center"  }} columnSpacing={3} rowSpacing={3}>
+            
+            <Paper sx={{ width: '40%', typography: 'body1',marginTop:"100px",marginLeft:"50px",justifyContent:"center" ,alignItems:"center"  }}>
+                <Typography sx={{ fontSize: 20,textAlign:"center",marginTop:"10px"}} > Current Time Slots </Typography>
+                <TabContext value={value} sx={{width:'100%'}}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <TabList onChange={handleChange1} aria-label="lab API tabs example">
+                    <Tab label="Sunday" value="1" />
+                    <Tab label="Monday" value="2" />
+                    <Tab label="Tuesday" value="3" />
+                    <Tab label="Wednesday" value="4" />
+                    <Tab label="Thursday" value="5" />
+                    <Tab label="Friday" value="6" />
+                    <Tab label="Saturday" value="7" />
+                    </TabList>
+                     </Box>
+                    <TabPanel value="1" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center"}} columnSpacing={2} rowSpacing={2}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "sunday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="2" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "monday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="3" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "tuesday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="4" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "wednesday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="5" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "thursday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="6" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "friday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  <TabPanel value="7" sx={{overflowY:'auto',width:'100%',height:"500px"}}>
+                    <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center" }} columnSpacing={3} rowSpacing={3}>
+                    {timeSlots.length !== 0 &&
+                         timeSlots.filter(app => app.day === "saturday").map((app, index) => (
+                    <Grid item key={index}>
+                       <TimeSlotCard from={app.from} to={app.to} _id={app._id} cancel={cancel}/>
+                        </Grid> 
+                    
+                         ))}
+                    </Grid>
+                            
+                  </TabPanel>
+                  </TabContext>
+            </Paper>
+            
+            
+            <Paper sx={{ width: '40%', typography: 'body1',marginTop:"100px",marginLeft:"150px",justifyContent:"center" ,alignItems:"center",height:"578px" }}>
+            <div>
+            <Typography sx={{ fontSize: 20,textAlign:"center",marginTop:"10px"}} > Create Time Slots </Typography>
+            </div>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: "50px" ,width:"100%",justifyContent:"center" ,alignItems:"center",maringBottom:"100px" }}>
+            
+            <FormControl sx={{width:'60%'}}>
+                <InputLabel id="demo-simple-select-label">Day</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={Day}
+                    label="Day"
+                    onChange={handleChange}>
+                    <MenuItem value={"sunday"}>Sunday</MenuItem>
+                    <MenuItem value={"monday"}>Monday</MenuItem>
+                    <MenuItem value={"tuesday"}>Tuesday</MenuItem>
+                    <MenuItem value={"wednesday"}>Wednesday</MenuItem>
+                    <MenuItem value={"thursday"}>Thursday</MenuItem>
+                    <MenuItem value={"friday"}>Friday</MenuItem>
+                    <MenuItem value={"saturday"}>Saturday</MenuItem>
+                    
+                </Select>
+            </FormControl>
+            </Grid>
+            </div>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: "50px" ,width:"100%",justifyContent:"center" ,alignItems:"center",maringBottom:"100px" }}>
+            
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['TimePicker']}>
+            <TimePicker
+            label="From"
+             value={timefrom}
+            onChange={(newValue) => setTimeFrom(newValue)}
+            />
+            </DemoContainer>
+            </LocalizationProvider>
 
-            <label for="day">Day of Week:</label>
-            <select name="day" id="dayOfWeek">
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-            </select>
-            <br />
-            <label for="form">Start Time:</label>
-            <input type="time" name="from" id="startTime" min="0" max="24"  />
-            <br />
-            <label for="to">End Time:</label>
-            <input type="time" name="to" id="endTime" min="0" max="24" />
-            <br />
-            <input onClick={createNewTimeSlot} type="submit" value="Submit" />
-            <p>{message}</p>
-            </div>}
-        </div>
+            </Grid>
+            </div>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: "50px" ,width:"100%",justifyContent:"center" ,alignItems:"center",maringBottom:"100px" }}>
+            
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['TimePicker']}>
+            <TimePicker
+            label="To"
+             value={timeTo}
+            onChange={(newValue) => setTimeTo(newValue)}
+            />
+            </DemoContainer>
+            </LocalizationProvider>
+
+            </Grid>
+            </div>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: "50px" ,width:"100%",justifyContent:"center" ,alignItems:"center",maringBottom:"100px" }}>
+            <Button variant="contained" onClick={createNewTimeSlot}>Create</Button>
+            </Grid>
+            </div>
+            <div>
+            <Grid container sx={{ display: 'flex', marginTop: "50px" ,width:"100%",justifyContent:"center" ,alignItems:"center",maringBottom:"100px" }}>
+            {message.length !== 0 &&error&&<Alert severity="error">{message}</Alert>}
+            {message.length !== 0 &&!error&&<Alert severity="success">{message}</Alert>}
+            </Grid>
+            
+            </div>
+            </Paper>
+            </Grid>
+            </div>
+            
+         </div>
     );
 };
 
