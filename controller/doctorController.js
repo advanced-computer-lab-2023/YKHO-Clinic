@@ -318,6 +318,7 @@ async function cancelAppointment(req, res) {
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
@@ -325,6 +326,7 @@ async function cancelAppointment(req, res) {
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
     text: `Your appointment with ${patient.name} is cancelled`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
@@ -566,6 +568,7 @@ async function rescheduleAppointment(req, res) {
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
     text: `Appointment rescheduled to ${req.body.date}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
@@ -573,6 +576,7 @@ async function rescheduleAppointment(req, res) {
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
     text: `Your appointment with ${patient.name} is rescheduled to ${req.body.date}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();

@@ -758,12 +758,14 @@ async function reserveSlot(req, res) {
   let newNotification = new notificationModel({
     patientID: id,
     text: "You have a new appointment",
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
   let newNotification2 = new notificationModel({
     doctorID: doctorID,
     text: `You have a new appointment with ${patient[0].name}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
@@ -773,6 +775,11 @@ async function reserveSlot(req, res) {
   await sendEmail(patient[0].email, `your appointment is confirmed on ${date}`);
   await sendEmail(doctor[0].email, `your appointment with ${patient[0].name} is confirmed on ${date}`);
 
+}
+
+async function getNotifications(req, res){
+  const notifications = await notificationModel.find({patientID: req.user._id});
+  return res.status(200).json({result: notifications});
 }
 
 async function sendEmail(email, message ) {
@@ -822,6 +829,7 @@ async function cancelAppointment(req, res) {
   let newNotification = new notificationModel({
     patientID: patient[0]._id,
     text: message,
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
@@ -829,6 +837,7 @@ async function cancelAppointment(req, res) {
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
     text: `Your appointment with ${patient[0].name} is cancelled`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
@@ -1496,6 +1505,7 @@ module.exports = {
   getFamilyMembersPlan,
   getMyAppointments,
   viewAllDataOfPrescriptions,
+  getNotifications,
 };
 
 module.exports.readSubscription = readSubscription;

@@ -24,7 +24,7 @@ export default function patientHealthPackages() {
     const [messageCreate, setMessageCreate] = useState("");
 
     const [result,setResult]=useState(false);
-    useEffect(()=>{getPackages(),check()},[]);
+    useEffect(()=>{getPackages(),check(),getSubscription()},[]);
 //  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
     try {
@@ -63,7 +63,7 @@ export default function patientHealthPackages() {
         setError(err.message);
         }
     }
-    }
+}
 
     async function getPackages() {
         try {
@@ -82,7 +82,7 @@ export default function patientHealthPackages() {
         const res = await axios.get("http://localhost:3000/patient/plan", {
             withCredentials: true,
         });
-
+        console.log(res.data.result);
         setSubscription(res.data.result);
         } catch (err) {
         setError(err.message);
@@ -121,7 +121,6 @@ export default function patientHealthPackages() {
             <PrimarySearchAppBar/>
             <div style={{display:'flex', flexDirection:'column',justifyContent:'center', alignItems:'center'}}>     
             <Typography style={{marginBottom:'30px',marginTop:'30px', fontSize:'2em'}}>Health Packages</Typography>
-
                 <Paper elevation={6} sx={{display:'flex', overflowX:'auto', flexDirection:'column',justifyContent:'center', alignItems:'center', marginTop:'80px', width:'1300px'}}>
                     <Stack direction='row' spacing={3} sx={{height:'500px', width:'100%'}}>
                         {healthPackages.map((packagesTable) => (
@@ -134,18 +133,17 @@ export default function patientHealthPackages() {
                                         <Typography>Doctor Discount: <span style={{fontWeight:'bold'}}>{packagesTable.doctorDiscount}%</span></Typography>
                                         <Typography>Family Discount: <span style={{fontWeight:'bold'}}>{packagesTable.familyDiscount}%</span></Typography> 
                                         <Typography style={{marginBottom:'30px'}}>Duraion: <span style={{fontWeight:'bold'}}>1 year</span></Typography>
-                                        <Typography style={{marginBottom:'30px'}}>Price: <span style={{fontWeight:'bold'}}>{packagesTable.price}</span></Typography>
-                                        {/* {subscription ? (
-                                            <div>
-                                                <Button variant="contained"> Subscribed </Button>
-                                                <Button variant="contained" >Cancel</Button>
+                                        <Typography>Price: <span style={{fontWeight:'bold'}}>{packagesTable.price}</span></Typography>
+                                        {subscription==packagesTable.packageName ? (
+                                            <div style={{ marginTop:'13px',display:'flex', flexDirection:'column',justifyContent:'center', alignItems:'center'}}>
+                                                <Button variant="contained" disabled> Subscribed </Button>
+                                                <Button style={{ marginTop:'5px'}} variant="contained" >Cancel</Button>
                                             </div>
                                             ) : (
-                                            <Button variant="contained">
+                                            <Button style={{ marginTop:'30px'}} variant="contained">
                                                 Subscribe
                                             </Button>
-                                        )} */}
-                                        <Button variant="contained" >Subscribe</Button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
