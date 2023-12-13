@@ -101,6 +101,7 @@ const {
   getMyAppointments,
   PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
   viewAllDataOfPrescriptions,
+  getNotifications,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -171,17 +172,16 @@ app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 //Admin
-app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
-app.get("/getHealthPackages", requireAuthAdmin, getHealthPackages);
+app.get("/getHealthPackages", getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
-app.post("/admin/acceptRequest", requireAuthAdmin,acceptRequest);
-app.post("/admin/rejectRequest", requireAuthAdmin,rejectRequest);
+app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
+app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
 app.get("/admin/register",  requireAuthAdmin, adminRegister);
-app.get("/admin/home",requireAuth,goToHome);
+app.get("/admin/home", requireAuth, goToHome);
 app.post("/admin/register", requireAuthAdmin,  createAdmin);
 app.get("/admin/deleteUser", requireAuthAdmin,  goToDeleteUser);
 app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
@@ -228,7 +228,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
-
+app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);

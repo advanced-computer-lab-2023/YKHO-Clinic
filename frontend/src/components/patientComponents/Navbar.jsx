@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -60,9 +62,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-
+  const [notifications, setNotifications] = useState([]);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  useEffect(()=>{getNotifications()},[]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -80,6 +83,18 @@ export default function PrimarySearchAppBar() {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+
+async function getNotifications(){
+    try {
+      const res = await axios.get("http://localhost:3000/patient/getNotifications", {
+        withCredentials: true,
+      });
+      setNotifications(res.data.result);
+      console.log(res.data.result);
+  } catch (err) {
+    console.log(err);
+  }
+}
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (

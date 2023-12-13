@@ -4,17 +4,20 @@ import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { motion } from 'framer-motion';
-import { Container, Typography, duration } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+
 
 
 export default function AdminHome() {
@@ -22,37 +25,69 @@ export default function AdminHome() {
   const [requests, setRequests] = useState([]);
   const [healthPackages, setHealthPackages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  //useEffect(()=>{check()},[]);
+  useEffect(() => {getRequests();getPackages()}, []);
+  const [result,setResult]=useState(false);
+  useEffect(()=>{check()},[]);
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
+  async function check() {
+    try {
+      const res = await axios.get("http://localhost:3000/loggedIn", {
+        withCredentials: true
+      });
+  
+      if (res.data.type === "admin") {
+        setResult(true);
+  
+        // Check if breadcrumbs contain the "Home" breadcrumb
+        const homeBreadcrumb = { label: "Home", href: "/admin/home" };
+        const hasHomeBreadcrumb = breadcrumbs.some(
+          (item) => item.label == homeBreadcrumb.label
+        );
+  
+        // If not, add it to the breadcrumbs
+        if (!hasHomeBreadcrumb) {
+          const updatedBreadcrumbs = [homeBreadcrumb];
+          setBreadcrumbs(updatedBreadcrumbs);
+          localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+        }
+      } else if (res.data.type === "patient") {
+        window.location.href = "/patient/home";
+      } else if (res.data.type === "doctor") {
+        window.location.href = "/doctor/home";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/";
+      } else {
+        setError(err.message);
+      }
+    }
+  }
 
-  // async function check(){
-  //   const res= await axios.get("http://localhost:3000/loggedIn",{
-  //     withCredentials:true
-  // }).then((res)=>{
-  //         if(res.data.type == "admin" ){
-  //           window.location.href="/admin/home"
-  //         }
-  //         else if(res.data.type=="patient"){
-  //             window.location.href="/patient/home"
-  //         }
-  //         else if(res.data.type=="doctor"){
-  //             window.location.href="/doctor/home"
-  //         }
-  //         else{
-  //          window.location.href="/"
-  //         }
-  //      }
-  //  ).catch((err)=>{
-  //     if(err.response.status==401){
-  //         window.location.href="/"
-  //     }
-  //  })
-  // }
+  function handleBreadcrumbClick(event, breadcrumb) {
+    event.preventDefault();
+    // Find the index of the clicked breadcrumb in the array
+    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+    let updatedBreadcrumbs;
+    if(index == -1){
+      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+    }else{
+    // Slice the array up to the clicked breadcrumb (inclusive)
+      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+    }
+    console.log(index);
+    // Set the updated breadcrumbs
+    setBreadcrumbs(updatedBreadcrumbs);
 
+    // Save updated breadcrumbs to localStorage
+    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
 
-  useEffect(() => {
-    getRequests();
-    getPackages();
-  }, []);
+    console.log(updatedBreadcrumbs)
+    // Navigate to the new page
+    window.location.href = breadcrumb.href;
+  }
 
   async function getPackages() {
     try {
@@ -65,7 +100,6 @@ export default function AdminHome() {
       setError(err.message);
     }
   }
-  console.log({healthPackages});
 
   async function getRequests() {
     try {
@@ -78,28 +112,33 @@ export default function AdminHome() {
       setError(err.message);
     }
   }
-  function goHome(){
-    window.location.href = "/admin/home";
-    }
 
-  function createAdminButton() {
-    window.location.href = "/admin/register";
+  function goHome() {
+    const breadcrumb = { label: "Home", href: "/admin/home" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
-
+  
   function editUserButton() {
-    window.location.href = "/admin/deleteUser";
+    const breadcrumb = { label: "Edit A User", href: "/admin/deleteUser" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
-
+  
   function uploadedInfoButton() {
-    window.location.href = "/admin/uploadedInfo";
+    const breadcrumb = { label: "View Doctors Uploaded Info", href: "/admin/uploadedInfo" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
-
+  
   function healthPackagesButton() {
-    window.location.href = "/admin/healthPackages";
+    const breadcrumb = { label: "Health Packages", href: "/admin/healthPackages" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
-  function changePasswordButton(){
-    window.location.href='/admin/changePassword';
+  
+  function changePasswordButton() {
+    const breadcrumb = { label: "Change Password", href: "/admin/changePassword" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
+  
+
 
   async function LogoutButton() {
     try {
@@ -107,11 +146,10 @@ export default function AdminHome() {
             withCredentials: true
         });
         window.location.href = "/";
-        
+        localStorage.removeItem('breadcrumbs');
     } catch (err) {
         setError(err.message);
     }
-
 }
 
   function toggleFilter() {
@@ -143,9 +181,9 @@ async function RejectButton(e) {
 }
 
   return (
-    <div>
+    (result && <div>
       <title>Home</title>
-<div style={{display:"flex"}}>
+    <div style={{display:"flex"}}>
       <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 945}}>
         <div style={{ marginLeft: 8 }}>
           <IconButton onClick={toggleFilter}>
@@ -178,8 +216,21 @@ async function RejectButton(e) {
           </Button>
         </motion.div>
       </Box>
-<div >
+  <div>
       <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:150}}>
+      <Breadcrumbs separator="›" aria-label="breadcrumb">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <Link
+            key={index}
+            underline="hover"
+            color="inherit"
+            href={breadcrumb.href}
+            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+          >
+            {breadcrumb.label}
+          </Link>
+        ))}
+      </Breadcrumbs>
         <Table sx={{ minWidth: 650}} aria-label="simple table" >
           <TableHead bgcolor="primary.main.dark" style={{backgroundColor:'grey'}}>
             <TableRow>
@@ -261,5 +312,5 @@ async function RejectButton(e) {
       </div>
     </div>
     </div>
-  );
+  ));
 }

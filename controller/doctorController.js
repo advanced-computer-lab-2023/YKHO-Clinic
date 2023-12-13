@@ -286,29 +286,23 @@ async function createTimeSlot(req, res) {
     doctorID: id,
     day: day,
   });
-
+  if(from>to){
+    return res.status(200).json({message:"End time is less than starting time",ihavegonemad:false})
+  }
   if (existingTimeSlots.length > 0) {
-    res
-      .status(200)
-      .json({ message: "Timeslot clashes with an existing timeslot" });
-  }
-  if (from > to) {
-    return res
-      .status(200)
-      .json({ message: "end time is less than starting time" });
-  }
+    return res.status(200).json({message:"Timeslot clashes with an existing timeslot",ihavegonemad:false})
+   }
+  
 
   // Create the new timeslot
   const newTimeSlot = new timeSlot({ day, from, to, doctorID: id });
   await newTimeSlot.save();
-  const times = await timeSlot.find({ doctorID: id });
-  res
-    .status(200)
-    .json({ message: "Timeslot created successfully.", times: times });
+  const times=await timeSlot.find({doctorID:id})
+  res.status(200).json({message:"Timeslot created successfully.",times:times,ihavegonemad:true});
 }
 async function deleteTimeSlot(req, res) {
   const id = req.params.id;
-  const result = await timeSlot.findByIdAndDelete(id);
+  let result = await timeSlot.findByIdAndDelete(id);
   result = await timeSlot.find({ doctorID: req.user._id });
   res.status(200).json({ result: result });
 }
@@ -328,6 +322,7 @@ async function cancelAppointment(req, res) {
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
@@ -335,6 +330,7 @@ async function cancelAppointment(req, res) {
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
     text: `Your appointment with ${patient.name} is cancelled`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
@@ -363,8 +359,10 @@ async function showTimeSlots(req, res) {
   //   html+="</tr>"
   // }
   // res.render("doctor/doctorTimeSlots",{timeSlot:html , message:""})
-  const result = await timeSlot.find({ doctorID: id });
-  res.status(200).json({ result: result });
+  const result=await timeSlot.find({doctorID:id})
+
+  res.status(200).json({result:result})
+  
 }
 // async function showFollowUp(req, res) {
 //   const doctorID = req.user._id;
@@ -573,6 +571,7 @@ async function rescheduleAppointment(req, res) {
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
     text: `Appointment rescheduled to ${req.body.date}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
@@ -580,6 +579,7 @@ async function rescheduleAppointment(req, res) {
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
     text: `Your appointment with ${pat.name} is rescheduled to ${req.body.date}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
