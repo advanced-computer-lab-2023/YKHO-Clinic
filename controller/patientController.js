@@ -1416,10 +1416,12 @@ const successPresc = async (req, res) => {
 const failPresc = async (req, res) => {
   res.redirect("http://localhost:5173/patient/Prescriptions");
 };
+
 const getPatientPlan = async (req, res) => {
   const patient = await patientModel.findById(req.user._id,"subscription");
   res.status(201).json({result:patient.subscription.healthPackage});
 }
+
 const getFamilyMembersPlan = async (req, res) => {
   const familyMembers = await patientModel.findById(req.user._id,"familyMembers");
   var familyPlan = [];

@@ -10,6 +10,7 @@ import AdminDeleteUser from './components/adminComponents/AdminEditUser'
 import AdminHealthPackages from'./components/adminComponents/adminHealthPackages'
 import DoctorUploadedInfo from './components/adminComponents/DoctorUploadedInfo'
 import PatientHome from './components/patientComponents/PatientHome'
+import PatientHealthPackages from './components/patientComponents/PatientHealthPackages'
 import DoctorRegister from './components/doctorComponents/DoctorRegister'
 import PatientRegister from './components/patientComponents/PatientRegister'
 import DoctorInfo from './components/doctorComponents/DoctorInfo'
@@ -45,6 +46,7 @@ function App() {
         <Route path="/admin/deleteUser" element={<AdminDeleteUser/>}/>
         <Route path="/admin/uploadedInfo" element={<DoctorUploadedInfo/>}/>
         <Route path="/patient/home" element={<PatientHome/>} />
+        <Route path="/patient/healthPackages" element={<PatientHealthPackages/>} />
         <Route path="/patient/Prescriptions" element={<PatientPrescriptions/>} />
         <Route path="/patient/Appointments" element={<PatientAppointment/>} />
         <Route path="/patient/HealthRecords" element={<PatientHealthRecords/>} />
