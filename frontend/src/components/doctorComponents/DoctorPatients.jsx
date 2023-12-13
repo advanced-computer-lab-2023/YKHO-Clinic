@@ -1,14 +1,37 @@
+import React from 'react';
 import axios from 'axios';
 import Joi from 'joi';
 import PatientCard from './PatientCard';
 import { useEffect, useState } from 'react';
 import Navbar from './Navbar';
-import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography,Button } from '@mui/material';
+import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography,Button, Paper, CardActions, CircularProgress, IconButton, Autocomplete } from '@mui/material';
 import PlaceHolder from '../PlaceHolder';
 import LoadingComponent from '../LoadingComponent';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import MedicationIcon from '@mui/icons-material/Medication';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import PrescriptionCards from './PrescriptionCards';
+import MedicineCards from './MedicineCards';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 const DoctorPatients = () => {
     const [result, setResult] = useState(false);
     const [patients, setPatients] = useState([]);
@@ -18,8 +41,17 @@ const DoctorPatients = () => {
     const [open, setOpen] = useState(false);
     const [patientLoading, setPatientLoading] = useState(true);
     const [open2, setOpen2] = useState(false);
+    const [healthName, setHealthName] = useState("");
+    const [file, setFile] = useState("");
+    const [open3, setOpen3] = useState(false);
+    const [ErrorMessage, setErrorMessage] = useState("");
+    const [loading2, setLoading2] = useState(false);
+    const [prescriptionsOpen, setPrescriptionsOpen] = useState(false);
+    const [availableMedicine, setAvailableMedicine] = useState([]);
+    const [unit, setUnit] = useState('mg');
     useEffect(() => {
-        check();
+        check(); 
+        getMedicine();
     }, []);
 
     async function check() {
@@ -116,28 +148,44 @@ const DoctorPatients = () => {
         }
     }
     async function uploadFile() {
-        try {
-            const name = document.getElementById("healthName").value;
-            const file = document.getElementById("healthFile").files[0];
+            setLoading2(true);
+            const name = healthName;
+            const file2 = file;
+            console.log(file2)
             const uploadSchema = Joi.object({
                 name: Joi.string().required(),
                 file: Joi.required()
             });
-            const { error, result } = uploadSchema.validate({name:name,file:file});
-            if (error) {
-                    return setMessage(error.details[0].message);
+            
+            const { error, result } = uploadSchema.validate({name:name,file:file2});
+            if (error || file2=="") {
+                    setLoading2(false);
+                    if(file2==""){
+                        setErrorMessage("Please upload a file");
+                    }
+                    else{
+                        setErrorMessage(error.details[0].message);
+                    }
+                    return setOpen3(true);
             }
+            else{
             const id = onePatient.patientID._id;
             const formData = new FormData();
             formData.append("name", name);
-            formData.append("healthRecords", file);
+            formData.append("healthRecords", file2);
             const res = await axios.post(`http://localhost:3000/doctor/patients/${id}/upload-pdf`, formData, {
                 withCredentials: true
             },{headers:{"Content-Type":"multipart/form-data"}});
             setOnePatient(res.data.result);
-        } catch (err) {
-            console.log(err);
-        }
+            setLoading2(false);
+            setOpen4(true);
+            setHealthName("");
+            setFile("");
+                }
+        
+    }
+    async function uploadPrescription(){
+        const id = onePatient.patientID._id;
     }
     let loading =[];
     for(let i=0;i<12;i++){
@@ -153,10 +201,238 @@ const DoctorPatients = () => {
         setOpen2(true);
         setOpen(false);
     }
+    function handleFileChange(e){
+        setFile(e.target.files[0]);
+    }
+    function closeAlert(){
+        setOpen3(false);
+    }
+    const [open4, setOpen4] = React.useState(false);
+    function closeAlert2(){
+        setOpen4(false);
+    }
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [prescriptionsLoading, setPrescriptionsLoading] = useState(true);
+    const [medicineNames, setMedicineNames] = useState([]);
+    const [medicineOpen, setMedicineOpen] = useState(false);
+    const [prescription,setPrescription] = useState("");
+    const [uploadingMedicine, setUploadingMedicine] = useState(false);
+
+    function handleUnitChange(event) {
+        setUnit(event.target.value);
+        }
+    async function openPrescriptions(){
+        setPrescriptionsLoading(true);
+        const id = onePatient.patientID._id;
+         await axios.get(`http://localhost:3000/doctor/Prescriptions?id=${id}`, {
+                withCredentials: true
+            }).then((res)=>{
+            console.log(res.data.result)
+            setPrescriptions(res.data.result);
+            setPrescriptionsLoading(false);
+            })
+    }
+    function showMedicine(med,id){
+        setMedicineNames(med);
+        setPrescription(id);
+        setMedicineOpen(true);
+        setPrescriptionsOpen(false);
+    }
+    function uploadMedicine(){
+        setUploadingMedicine(true);
+    }
+    async function deleteMedicine(price,name){
+        await axios.post(`http://localhost:3000/doctor/deleteMedicine`,{price:price,name:name,id:prescription}, {
+                withCredentials: true
+        }).then((res)=>{
+            console.log(res.data.result)
+            setMedicineNames(res.data.result);
+        })
+    }
+    async function getMedicine(){
+        await axios.get(`http://localhost:3000/doctor/getMedicine`, {
+                withCredentials: true
+        }).then((res)=>{
+            console.log(res.data.result)
+            setAvailableMedicine(res.data.result);
+        })
+    }
+    const [dos,setDos] = useState("");
+    function setDosage(e){
+        setDos(e.target.value);
+    }
+    async function addMedicine() {
+        if (selectedMedicine && selectedMedicine.label && dos && unit) {
+            console.log(medicineNames)
+            const medicineLabelExists = medicineNames.some(
+                (medicine) => medicine.name === selectedMedicine.label
+            );
+            if (!medicineLabelExists) {
+                await axios
+                    .post(
+                        `http://localhost:3000/doctor/addMedicine/${prescription}`,
+                        {
+                            name: selectedMedicine.label,
+                            dosage: dos + unit,
+                            id: prescription,
+                            price: selectedMedicine.price,
+                        },
+                        {
+                            withCredentials: true,
+                        }
+                    )
+                    .then((res) => {
+                        setMedicineNames(res.data.result);
+                        setUploadingMedicine(false);
+                    });
+            } else {
+                setErrorMessage("Medicine already exists");
+                setOpen3(true);
+            }
+        } else {
+            setErrorMessage("Please fill all the fields");
+            setOpen3(true);
+        }
+    }
+    const [selectedMedicine, setSelectedMedicine] = React.useState(null);
+
+    const handleMedicineChange = (event, value) => {
+      setSelectedMedicine(value);
+    }
     return (
         <div>
             {result && (
                 <div >
+                        <Snackbar
+                    open={open3}
+                    autoHideDuration={2000}
+                    onClose={closeAlert}
+                    message="Note archived"
+                        >
+                            <Alert severity="error">{ErrorMessage}</Alert>
+                        </Snackbar>
+                        <Snackbar
+                    open={open4}
+                    autoHideDuration={2000}
+                    onClose={closeAlert2}
+                    message="Note archived"
+                        >
+                            <Alert severity="success">health record uploaded successfully</Alert>
+                        </Snackbar>
+                        <Dialog 
+                    open={prescriptionsOpen}
+                    keepMounted
+                    onClose={()=>{setPrescriptionsOpen(false);}}
+                    aria-describedby="alert-dialog-slide-description"
+                    maxWidth="lg"
+                    sx={{width:"100%"}}
+                    >
+                    {prescriptionsOpen&& <>
+                    <div style={{display:"flex"}}>
+                    <DialogTitle>{onePatient.patientID.name}'s Prescriptions</DialogTitle>
+                    <IconButton  onClick={()=>{uploadPrescription();}}>
+                        <NoteAddIcon />
+                    </IconButton>
+                    
+                    </div>
+                    <div style={{overflowY:"auto",height:400}}>
+                    <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center",marginBottom:5}}>
+                    {
+                                !prescriptionsLoading&& prescriptions.map((prescription) =>{ return (
+                                    <Grid item key={prescription._id}>
+                                        <PrescriptionCards prescriptionName={prescription.prescriptionName} MedicineNames={prescription.MedicineNames} filled={prescription.filled} _id={prescription._id} retrieveNames={showMedicine}/>
+                                    </Grid>
+                                    
+                                )})
+                            }
+                           
+                            
+                    </Grid>
+                    </div>
+                    </>}
+                    </Dialog>
+                    <Dialog 
+                    open={medicineOpen}
+                    keepMounted
+                    onClose={()=>{setMedicineOpen(false);}}
+                    aria-describedby="alert-dialog-slide-description"
+                    maxWidth="lg"
+                    sx={{width:"100%"}}
+                    >
+                    {medicineOpen&& <>
+                    <div style={{display:"flex",width:700}}>
+                    <DialogTitle>{onePatient.patientID.name}'s medicine</DialogTitle>
+                    <IconButton  onClick={()=>{uploadMedicine();}}>
+                        <NoteAddIcon />
+                    </IconButton>
+                    </div>
+                    <div style={{overflowY:"auto",height:400}}>
+                    <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center",marginBottom:5}}>
+                            {
+                                medicineNames.map((medicine) =>{ return (
+                                    <Grid item>
+                                        <MedicineCards name={medicine.name} dosage={medicine.dosage} price={medicine.price} deleteMedicine={deleteMedicine}/>
+                                    </Grid>
+                                    
+                                )})
+                            }
+                            
+                    </Grid>
+                    </div>
+                    </>}
+                    </Dialog>
+                    <Dialog
+                    open={uploadingMedicine}
+                    keepMounted
+                    onClose={()=>{setUploadingMedicine(false);}}
+                    aria-describedby="alert-dialog-slide-description"
+                    maxWidth="lg"
+                    sx={{width:"100%"}}
+                    >
+                    {uploadingMedicine&& <>
+                        <DialogTitle>Add medicine</DialogTitle>
+                    <div style={{display:"flex",width:700,height:300,flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                    <DialogContent>
+                    <Autocomplete
+      disablePortal
+      id="combo-box-demo"
+      options={availableMedicine}
+      sx={{ width: 300 }}
+      renderInput={(params) => <TextField {...params} label="Medicine name" />}
+      PaperComponent={(props) => (
+        <Paper {...props} style={{ height: 100 }}>
+          {props.children}
+        </Paper>
+      )}
+      value={selectedMedicine}
+      onChange={handleMedicineChange}
+      getOptionLabel={(option) => option.label}
+    />
+                        <div style={{display:"flex"}}>
+                        <TextField type="number" id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
+                        
+                        <InputLabel id="demo-simple-select-label">unit</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={unit}
+                                label="unit"
+                                onChange={handleUnitChange}
+                                sx={{width:100}}
+                            >
+                                <MenuItem value={"mg"}>mg</MenuItem>
+                                <MenuItem value={"ml"}>ml</MenuItem>
+                            </Select>
+                       
+                        </div>
+                    </DialogContent>
+                    <DialogActions>
+                    <Button variant="contained" onClick={addMedicine}>add</Button>
+                    </DialogActions>
+                    </div>
+                    </>
+                    }
+                    </Dialog>
                     <Dialog 
                     open={open}
                     keepMounted
@@ -189,7 +465,7 @@ const DoctorPatients = () => {
                     </DialogContent>
                     <DialogActions sx={{width:"100%"}}>
                     <Button sx={{marginRight:"auto"}}variant="text" startIcon={<MedicalInformationIcon />} onClick={openHealthRecords}>View health records</Button>
-                    <Button variant="text" startIcon={<MedicationIcon />}>View prescriptions</Button>
+                    <Button variant="text" onClick={()=>{openPrescriptions();setPrescriptionsOpen(true); setOpen(false);}} startIcon={<MedicationIcon />}>View prescriptions</Button>
                     </DialogActions>
                     </Dialog>
                     <Dialog
@@ -202,17 +478,37 @@ const DoctorPatients = () => {
                         {open2 && (
                             <>
                                 <DialogTitle>{onePatient.patientID.name}'s Health Records</DialogTitle>
-                                <DialogContent>
+                                <DialogContent sx={{display:"flex"}}>
+                                    <Card sx={{height:200, width:400}}>
+                                    <CardContent>
+                                    <Typography variant="h6">Upload new health record</Typography>
+                                    <TextField value={healthName} onChange={(e)=>{setHealthName(e.target.value)}} id="healthName" label="name" variant="standard" sx={{ marginTop: 2 }} />         
+                                    </CardContent>
+                                    <CardActions>
+                                    <Button component="label" sx={{marginRight:"auto"}} variant="contained" startIcon={<CloudUploadIcon />}>
+                                        Upload file
+                                        <VisuallyHiddenInput type="file" onChange={handleFileChange} />
+                                    </Button>
+                                    {loading2&&<CircularProgress/>}
+                                    <Button sx={{marginLeft:2}} variant="contained" disabled={loading2} onClick={uploadFile}>Confirm</Button>  
+                                    </CardActions>
+                                    </Card>
+                                    <Paper sx={{height:200,overflowY:"auto",marginLeft:5}}>
+                                        <div  style={{position: 'sticky', backgroundColor:"white",height:60,top: 0, zIndex: 1}}>
+                                        <Typography variant="h6">Uploaded Health Records</Typography>
+                                        </div>
                                     {onePatient.patientID.healthRecords.map((record, index) => (
                                         <div key={index} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <Typography>{record.name}</Typography>
+                                            <Typography sx={{marginLeft:3}}>{record.name}</Typography>
+                                            
                                             <a href={`http://localhost:3000/doctor/patients/${onePatient.patientID._id}/${index}`} download>
-                                                <Button variant="text">
-                                                    view
+                                                <Button sx={{marginRight:3}}  variant="text">
+                                                    Download
                                                 </Button>
                                             </a>
                                         </div>
                                     ))}
+                                    </Paper>
                                 </DialogContent>
                             </>
                         )}

@@ -29,7 +29,7 @@ const {
   deleteMedicine,
   updateMedicine,
   updatePresc,
-
+  getMedicine
 } = require("./controller/doctorController");
 const {
 
@@ -65,6 +65,7 @@ const {
   showDoctorRecord,
   getRequests,
   getHealthPackages,
+  
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -120,6 +121,11 @@ mongoose
   )
   .then(() => console.log("connected to clinicDB at " + MONGO_URI))
   .catch((err) => console.log(err.message));
+
+  const client = mongoose.connection.getClient();
+  const gfsBucket = new mongoose.mongo.GridFSBucket(client.db('clinic'), {
+    bucketName: 'uploads',
+  });
 app.use(cors( {origin:"http://localhost:5173",credentials: true}));
 const id = "1";
 
@@ -138,7 +144,7 @@ app.post("/addDoctor", createDoctor);
 app.post("/addAppointment", requireAuthDoctor , createAppointment);
 app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
 app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
-app.post("/doctor/deleteMedicine/:id",requireAuthDoctor,deleteMedicine);
+app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
@@ -163,6 +169,7 @@ app.post("/doctor/cancelAppointment",requireAuthDoctor, cancelAppointment);
 app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
+app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 //Admin
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);

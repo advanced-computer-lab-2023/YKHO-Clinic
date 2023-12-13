@@ -803,16 +803,20 @@ async function sendEmail(email, message ) {
 //TODO: check if the dates' format in the new appointment are valid
 async function cancelAppointment(req, res) {
   const appointmentID = req.params.appointmentId;
-  const deletedAppointment = await appointmentModel.findByIdAndDelete(appointmentID).exec();
+  const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID);
-
+  const doctore= await doctor.findById(deletedAppointment.doctorID);
   if(deleteAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
-    let wallet = patient[0].wallet + deletedAppointment.price;
+    if(deletedAppointment.paid == true){
+    let wallet = patient.wallet + deletedAppointment.price;
+    let doctorWallet = doctore.wallet - deletedAppointment.price;
     const patientUpdate = await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
+    const doctorUpdate = await findByIdAndUpdate(doctor._id, {Wallet: doctorWallet}).exec();
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
     }
     message = "Your appointment has been cancelled and the amount has been refunded to your wallet";
+  }
   }else{//usability: if appointment is cancelled more than 24 hours before
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled";
@@ -820,7 +824,7 @@ async function cancelAppointment(req, res) {
     message = "Your appointment has been cancelled";
   }
   let newNotification = new notificationModel({
-    patientID: patient[0]._id,
+    patientID: patient._id,
     text: message,
     date: Date.now(),
   });
@@ -828,13 +832,13 @@ async function cancelAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient[0].name} is cancelled`,
+    text: `Your appointment with ${patient.name} is cancelled`,
     date: Date.now(),
   });
   await newNotification2.save();
 
-  await sendEmail(patient[0].email, message);
-  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} on ${deleteAppointment.date} is cancelled`);
+  await sendEmail(patient.email, message);
+  await sendEmail(doctor.email, `Your appointment with ${patient.name} on ${deleteAppointment.date} is cancelled`);
 
   res.redirect(`patient/Appointments`);
 }

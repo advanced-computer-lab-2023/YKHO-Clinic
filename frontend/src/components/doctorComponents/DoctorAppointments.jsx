@@ -297,8 +297,8 @@ function DoctorAppointments() {
         {rescheduleLoading&&<Box sx={{ display: 'flex' }}>
       <CircularProgress />
     </Box>}
-          <Button onClick={handleClose} >No</Button>
-          <Button onClick={cancelAppointment} color="error">Yes</Button>
+          <Button disabled={rescheduleLoading} onClick={handleClose} >No</Button>
+          <Button disabled={rescheduleLoading} onClick={cancelAppointment} color="error">Yes</Button>
         </DialogActions>
       </Dialog>
           <Navbar />

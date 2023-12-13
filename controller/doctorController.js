@@ -81,13 +81,14 @@ async function createPrescription(req, res) {
 
 
 async function createMedicine(req, res){
+  console.log(req.body)
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed}
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:parseInt(req.body.price),medicineID:idmed}
   let medicinesup=prescription1.MedicineNames;
   medicinesup.push(medicinetobe);
-  let pricenew = prescription1.price + req.body.price;
+  let pricenew = prescription1.price + parseInt(req.body.price);
   prescription1 = await prescription.findByIdAndUpdate(
     req.params.id,
     { $set: { MedicineNames: medicinesup } },
@@ -98,19 +99,18 @@ async function createMedicine(req, res){
     { $set: { price: pricenew } },
     { new: true }
   );
+  res.status(200).json({result:medicinesup})
 }
 
 async function deleteMedicine(req,res){
   id=req.user._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
-  idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:req.body.price,medicineID:idmed};
+  let prescription1 =await prescription.findOne({_id:req.body.id});
   let medicinesup=prescription1.MedicineNames; 
-  medicinesup= medicinesup.filter(item =>item.medicineID != medicinetobe.medicineID);
+  medicinesup= medicinesup.filter(item =>item.name != req.body.name);
   let pricenew = prescription1.price-req.body.price;
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {price: pricenew} },{ new: true });
-
+  prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
+  prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {price: pricenew} },{ new: true });
+  res.status(200).json({result:medicinesup})
 }
 async function updateMedicine(req,res){
   id=req.user._id;
@@ -232,33 +232,44 @@ const checkContract = async (req, res, next) => {
     }
   }
 };
+const zlib = require('zlib');
+
 const uploadHealthRecord = async (req, res) => {
   const patientId = req.params.id;
-  const patient = await patientModel.findById(patientId);
-  if (!patient) {
-    return res.status(404).send("Patient not found.");
+  const name = req.body.name;
+
+  try {
+    // Compress the file data using zlib
+    const compressedData = zlib.gzipSync(req.file.buffer);
+
+    await patientModel.findByIdAndUpdate(
+      patientId,
+      {
+        $push: {
+          healthRecords: {
+            data: compressedData, // Save the compressed data
+            contentType: req.file.mimetype,
+            name: name,
+          },
+        },
+      }
+    );
+
+    let result = await patientModel.findById(patientId, '-healthRecords.data');
+    if (!result) {
+      return res.status(404).send('Patient not found.');
+    }
+
+    // Remove the data property from the result
+    res.status(200).json({ result: { patientID: result } });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Error saving patient data.');
   }
-
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
-  }
-  const base64Data = req.file.buffer.toString("base64");
-
-  patient.healthRecords.push({
-    data: base64Data,
-    contentType: req.file.mimetype,
-  });
-
-  await patient
-    .save()
-    .then(() => {
-      res.status(200).json({ result: result });
-    })
-    .catch((err) => {
-      console.error(err);
-      return res.status(500).send("Error saving patient data.");
-    });
 };
+
+module.exports = { uploadHealthRecord };
+
 async function createTimeSlot(req, res) {
   id = req.user._id;
   const day = req.body.day;
@@ -304,17 +315,16 @@ async function deleteTimeSlot(req, res) {
 
 async function cancelAppointment(req, res) {
   const id = req.body.id;
-  console.log(id);
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
   const wallet = deletedAppointment.price;
-  const patient = await patientModel.findById(deletedAppointment.patientID);
-  const updatedPatient = await patientModel.findByIdAndUpdate(
-    deletedAppointment.patientID,
-    { Wallet: patient.Wallet + wallet }
-  );
+  const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
+  patient.Wallet += wallet;
+  await patient.save();
   const doctore = await doctor.findById(deletedAppointment.doctorID);
+  doctore.Wallet -= wallet;
+  await doctore.save();
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
@@ -401,6 +411,7 @@ async function showFollowUp(req, res) {
     const appointments = await appointment.find({
       doctorID: doctorID,
       date: date,
+      status: "upcoming"||"rescheduled",
     });
     if (appointments.length > 0) {
       result.splice(i, 1);
@@ -424,7 +435,7 @@ async function createFollowUp(req, res) {
   let duration = (endH - startH) * 60 + (endM - startM);
   duration = duration / 60;
   const appointmentt = await appointment.findById(id);
-  const pat = await patientModel.findById(appointmentt.patientID);
+  const pat = await patientModel.findById(appointmentt.patientID, "-healthRecords -medicalHistory");
   let price;
   if (pat.subscription.healthPackage != "none") {
     const healthPack = await healthPackage.find({
@@ -462,18 +473,33 @@ const docViewWallet = async (req, res) => {
 async function showHealthRecord(req, res) {
   const patientId = req.params.id;
   const healthId = req.params.healthId;
-  let result = await patientModel
-    .find({ _id: patientId })
-    .select(["healthRecords"]);
-  let file = result[0].healthRecords[healthId].data;
-  let type = result[0].healthRecords[healthId].contentType;
-  let name = result[0].healthRecords[healthId].name;
-  res.set("Content-Type", "application/octet-stream");
-  res.set(
-    "Content-Disposition",
-    `attachment; filename="${name}.${type.split("/")[1]}"`
-  );
-  res.send(file);
+
+  try {
+    const result = await patientModel
+      .findById(patientId)
+      .select({ healthRecords: { $slice: [parseInt(healthId), 1] } });
+
+    if (!result || !result.healthRecords || result.healthRecords.length === 0) {
+      return res.status(404).send('Health record not found.');
+    }
+
+    const compressedData = result.healthRecords[0].data;
+    const decompressedData = zlib.gunzipSync(compressedData);
+
+    const type = result.healthRecords[0].contentType;
+    const name = result.healthRecords[0].name;
+
+    res.set("Content-Type", "application/octet-stream");
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${name}.${type.split("/")[1]}"`
+    );
+    
+    res.send(decompressedData);
+  } catch (error) {
+    console.error('Error retrieving health record:', error);
+    res.status(500).send('Error retrieving health record.');
+  }
 }
 async function getName(req, res) {
   const id = req.user._id;
@@ -481,24 +507,9 @@ async function getName(req, res) {
   res.status(200).json({ name: result.name });
 }
 const ViewPrescriptionsDoc = async (req, res) => {
-  doctorp = await doctor.findOne({ _id: req.user._id });
-  let result = await prescription
-    .find({ doctorID: doctorp._id })
-    .populate("patientID")
-    .select(["prescriptionName", "filled", "patientID"]);
-  // let prescriptionrows = "<tr><th>name</th></tr>";
-
-  // for (prescriptions in result) {
-  //   prescriptionrows =
-  //     prescriptionrows +
-  //     <tr><td id="${result[prescriptions]._id}" onclick="showThis(event)" style="cursor: pointer;"> ${result[prescriptions].prescriptionName} </td>\
-  //       </tr>;
-  // }
-  // res.render("patient/Prescriptions", {
-  //   prescriptionrows: prescriptionrows,
-  //   onepatient: true,
-  // });
-  res.status(200).json(result);
+  let result =  await prescription
+  .find({ doctorID: req.user._id,patientID:req.query.id }).select(["prescriptionName","filled","MedicineNames"]);
+  res.status(200).json({result});
 };
 async function sendEmail(email, message) {
   const transporter = nodemailer.createTransport({
@@ -517,11 +528,7 @@ async function sendEmail(email, message) {
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
+    
   });
 }
 
@@ -529,7 +536,7 @@ async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
   const date = new Date(req.body.date);
   const time = req.body.time;
-  console.log(time);
+
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
@@ -541,7 +548,7 @@ async function rescheduleAppointment(req, res) {
   const thisAppointment = await appointment.findById(appointmentID);
   let duration = (endH - startH) * 60 + (endM - startM);
   duration = duration / 60;
-  const pat = await patientModel.findById(thisAppointment.patientID);
+  const pat = await patientModel.findById(thisAppointment.patientID,"-healthRecords -medicalHistory");
   const doctore = await doctor.findById(thisAppointment.doctorID);
   let price;
   if (pat.subscription.healthPackage != "none") {
@@ -562,7 +569,7 @@ async function rescheduleAppointment(req, res) {
       { new: 1 }
     )
     .exec();
-  const patient = await patientModel.findById(rescheduledAppointment.patientID);
+  
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
     text: `Appointment rescheduled to ${req.body.date}`,
@@ -572,22 +579,26 @@ async function rescheduleAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
-    text: `Your appointment with ${patient.name} is rescheduled to ${req.body.date}`,
+    text: `Your appointment with ${pat.name} is rescheduled to ${req.body.date}`,
     date: Date.now(),
   });
   await newNotification2.save();
 
   await sendEmail(
-    patient.email,
+    pat.email,
     `Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduleAppointment.date}`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${patient.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`
+    `Your appointment with ${pat.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
-
+async function getMedicine(req, res) {
+  let result = await medicine.find({}, "name price -_id");
+  result = result.map(item => ({ price:item.price, label: item.name }));
+  res.status(200).json({ result });
+}
 module.exports = {
   updatePresc,updateMedicine,
   deleteMedicine,
@@ -611,4 +622,5 @@ module.exports = {
   ViewPrescriptionsDoc,
   cancelAppointment,
   rescheduleAppointment,
+  getMedicine
 };
