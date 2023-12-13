@@ -28,7 +28,8 @@ const {
   cancelAppointment,  createMedicine,
   deleteMedicine,
   updateMedicine,
-
+  updatePresc,
+  getMedicine
 } = require("./controller/doctorController");
 const {
 
@@ -64,6 +65,7 @@ const {
   showDoctorRecord,
   getRequests,
   getHealthPackages,
+  
 } = require("./controller/adminController.js");
 // request controller
 const { createRequest } = require("./controller/requestController");
@@ -99,6 +101,7 @@ const {
   getMyAppointments,
   PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
   viewAllDataOfPrescriptions,
+  getNotifications,
   viewPrescriptionPDF,
 } = require("./controller/patientController.js");
 const cors=require('cors')
@@ -120,6 +123,11 @@ mongoose
   )
   .then(() => console.log("connected to clinicDB at " + MONGO_URI))
   .catch((err) => console.log(err.message));
+
+  const client = mongoose.connection.getClient();
+  const gfsBucket = new mongoose.mongo.GridFSBucket(client.db('clinic'), {
+    bucketName: 'uploads',
+  });
 app.use(cors( {origin:"http://localhost:5173",credentials: true}));
 const id = "1";
 
@@ -138,8 +146,9 @@ app.post("/addDoctor", createDoctor);
 app.post("/addAppointment", requireAuthDoctor , createAppointment);
 app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
 app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
-app.post("/doctor/deleteMedicine/:id",requireAuthDoctor,deleteMedicine);
-app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine)
+app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
+app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine);
+app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -162,18 +171,18 @@ app.post("/doctor/cancelAppointment",requireAuthDoctor, cancelAppointment);
 app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
+app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 //Admin
-app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
-app.get("/getHealthPackages", requireAuthAdmin, getHealthPackages);
+app.get("/getHealthPackages", getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
-app.post("/admin/acceptRequest", requireAuthAdmin,acceptRequest);
-app.post("/admin/rejectRequest", requireAuthAdmin,rejectRequest);
+app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
+app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
 app.get("/admin/register",  requireAuthAdmin, adminRegister);
-app.get("/admin/home",requireAuth,goToHome);
+app.get("/admin/home", requireAuth, goToHome);
 app.post("/admin/register", requireAuthAdmin,  createAdmin);
 app.get("/admin/deleteUser", requireAuthAdmin,  goToDeleteUser);
 app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
@@ -220,7 +229,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
-
+app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);

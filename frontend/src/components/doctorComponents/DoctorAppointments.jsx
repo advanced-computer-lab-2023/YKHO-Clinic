@@ -11,11 +11,10 @@ import {
   RadioGroup,
   FormControlLabel,
   FormControl,
-  TextField,
+  
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import SearchIcon from '@mui/icons-material/Search';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -23,14 +22,12 @@ import LoadingComponent from '../LoadingComponent';
 import PlaceHolder from '../PlaceHolder';
 import Navbar from './Navbar';
 import AppointmentCard from './AppointmentCard';
-import CardActions from '@mui/material/CardActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import Slide from '@mui/material/Slide';
 let status = '';
 let date = undefined;
 import InputLabel from '@mui/material/InputLabel';
@@ -39,22 +36,7 @@ import Select from '@mui/material/Select';
 import dayjs from 'dayjs';
 import CircularProgress from '@mui/material/CircularProgress';
 
-async function reschedule(e) {
-  await axios
-    .post(
-      'http://localhost:3000/doctor/reschedule',
-      {
-        id: e.target.id,
-      },
-      { withCredentials: true }
-    )
-    .then((res) => {
-      window.location.href = '/doctor/appointments';
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}
+
 function DoctorAppointments() {
   const [searchvalue, setSearchValue] = useState('upcoming');
   const [result, setResult] = useState(false);
@@ -97,7 +79,7 @@ function DoctorAppointments() {
         console.log(err);
       });
 
-    const res = await axios
+     await axios
       .get('http://localhost:3000/loggedIn', {
         withCredentials: true,
       })
@@ -125,7 +107,7 @@ function DoctorAppointments() {
   }
   async function cancelAppointment() {
     setRescheduleLoading(true);
-    await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then((res) => {
+    await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then(() => {
       window.location.href = '/doctor/appointments';
     }).catch((err) => {
       console.log(err);
@@ -135,17 +117,7 @@ function DoctorAppointments() {
     });
   }
 
-  async function loadAppointments() {
-    await axios
-      .get('http://localhost:3000/doctor/Appointments', { withCredentials: true })
-      .then((res) => {
-        setAppointments(res.data.result);
-        setAppLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+
 
   function changeRadioValue(event) {
     status = event.target.value;
@@ -166,7 +138,7 @@ function DoctorAppointments() {
 
   }
 
-  async function searchAppointments(event) {
+  async function searchAppointments() {
 
     await axios
       .get(`http://localhost:3000/doctor/AppointmentsFilter/?date=${date}&searchvalue=${searchvalue}&filters=${status}`, {
@@ -216,15 +188,15 @@ function DoctorAppointments() {
         setTimes([]);
         setRescheduleDate(null);
         setOpen(false);
-        setIsButtonDisabled(true);
+        setIsButtonDisabled(true); 
         setIsOpen2(false);
-      }
+      }  
     };
-    const reschedule = async (e) => {
+    const reschedule = async () => {
       setIsButtonDisabled(true);
       setRescheduleLoading(true);
       if(isScheduleFollowUp){
-        await axios.post('http://localhost:3000/doctor/reserve', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then((res) => {
+        await axios.post('http://localhost:3000/doctor/reserve', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
           window.location.href = '/doctor/appointments';
         }).catch((err) => {
           console.log(err);
@@ -237,7 +209,7 @@ function DoctorAppointments() {
         });
       }
       else{
-        await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then((res) => {
+        await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
           window.location.href = '/doctor/appointments';
         }).catch((err) => {
           console.log(err);
@@ -270,7 +242,6 @@ function DoctorAppointments() {
     <div>
       {result && (
         <div>
-         
       <Dialog
         open={open}
         keepMounted
@@ -295,7 +266,7 @@ function DoctorAppointments() {
           disabled={times.length==0}
         >
           {
-          times.map((time,index)=>{return <MenuItem value={time}>{time}</MenuItem>}
+          times.map((time,index)=>{return <MenuItem key={index} value={time}>{time}</MenuItem>}
           )
         }
         </Select>
@@ -326,8 +297,8 @@ function DoctorAppointments() {
         {rescheduleLoading&&<Box sx={{ display: 'flex' }}>
       <CircularProgress />
     </Box>}
-          <Button onClick={handleClose} >No</Button>
-          <Button onClick={cancelAppointment} color="error">Yes</Button>
+          <Button disabled={rescheduleLoading} onClick={handleClose} >No</Button>
+          <Button disabled={rescheduleLoading} onClick={cancelAppointment} color="error">Yes</Button>
         </DialogActions>
       </Dialog>
           <Navbar />
@@ -391,11 +362,11 @@ function DoctorAppointments() {
                     value={searchvalue}
                     onChange={changeSearchValue}
                   >
+                    
                 <MenuItem value="upcoming">upcoming</MenuItem>
                 <MenuItem value="completed">completed</MenuItem>
                 <MenuItem value="cancelled">cancelled</MenuItem>
                 <MenuItem value="rescheduled">rescheduled</MenuItem>
-                   
                   </Select>
                   
                 </FormControl>

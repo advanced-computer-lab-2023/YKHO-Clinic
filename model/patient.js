@@ -47,10 +47,14 @@ const familyMemberSchema = {
     },
 }
 const healthRecordSchema = {
+    name:{
+        type:String,
+        required:true,
+    },
     data: {
         type: Buffer,
         required: true
-    },
+      },
     contentType: {
         type: String,
         required: true

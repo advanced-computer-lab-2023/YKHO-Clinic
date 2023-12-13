@@ -127,38 +127,41 @@ const Login = async (req, res) => {
 };
 
 const changePasswordAdmin = async (req, res) => {
+  console.log("AAAAAAAAAAAAAAA")
+  oldPassword = req.body.oldPassword;
+  newPassword = req.body.newPassword;
+  confirmationPassword = req.body.confirmationPassword;
   if (
-    req.body.oldPassword === "" ||
-    req.body.newPassword === "" ||
-    req.body.confirmationPassword === ""
+    oldPassword === "" ||
+    newPassword === "" ||
+    confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(200).json({ message: "Fill the empty fields" });
   }
 
   const user = await adminsTable.findOne({
-    username: req.user.username,
+    username: req.user.admin.username,
   });
-
-  if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
-    if (req.body.newPassword != req.body.confirmationPassword) {
-      return res.status(404).json({ message: "Passwords dont not match" });
+  if (user && (await bcrypt.compare(oldPassword, user.password))) {
+    if (newPassword != confirmationPassword) {
+      return res.status(200).json({ message: "Passwords dont not match" });
     }
 
-    if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(404).json({ message: "Password is weak" });
+    if (isStrongPassword(newPassword) === false) {
+      return res.status(200).json({ message: "Password is weak" });
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
     await adminsTable.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.admin.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });
   } else {
     return res
-      .status(404)
-      .json({ message: "Password not changed successfully" });
+      .status(200)
+      .json({ message: "Old Password is wrong" });
   }
 };
 
@@ -174,7 +177,7 @@ const sendOTP = async (req, res) => {
   let username = req.query.username;
   let email = "";
   if (username == "") {
-    return res.status(201).json( { message: "please enter your username"});
+    return res.status(200).json( { message: "please enter your username"});
   }
 
   let patient = await patientsTable.findOne({
@@ -332,12 +335,10 @@ const logout = (req, res) => {
 };
 
 const createAdmin = async (req, res) => {
-  console.log(req.body);
-  if (
-    req.body.password === "" ||
-    req.body.username === "" ||
-    req.body.email === ""
-  ) {
+  username = req.body.username;
+  password = req.body.password; 
+  email = req.body.email;
+  if (username === "" || password === "" || email === "") {
     //look for any missing fields
     return res.status(200).json({ message: "Insert missing fields" });
   }

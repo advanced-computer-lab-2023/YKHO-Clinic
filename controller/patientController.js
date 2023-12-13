@@ -790,12 +790,14 @@ async function reserveSlot(req, res) {
   let newNotification = new notificationModel({
     patientID: id,
     text: "You have a new appointment",
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
   let newNotification2 = new notificationModel({
     doctorID: doctorID,
     text: `You have a new appointment with ${patient[0].name}`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
@@ -807,7 +809,12 @@ async function reserveSlot(req, res) {
 
 }
 
-async function sendEmail(email, message) {
+async function getNotifications(req, res){
+  const notifications = await notificationModel.find({patientID: req.user._id});
+  return res.status(200).json({result: notifications});
+}
+
+async function sendEmail(email, message ) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -835,38 +842,44 @@ async function sendEmail(email, message) {
 //TODO: check if the dates' format in the new appointment are valid
 async function cancelAppointment(req, res) {
   const appointmentID = req.params.appointmentId;
-  const deletedAppointment = await appointmentModel.findByIdAndDelete(appointmentID).exec();
+  const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID);
-
-  if (deleteAppointment.date - Date.now() < 24 * 60 * 60 * 1000) { //if appointment is within 24 hours
-    let wallet = patient[0].wallet + deletedAppointment.price;
-    const patientUpdate = await findByIdAndUpdate(patient._id, { Wallet: wallet }).exec();
-    if (deletedAppointment.patientID != req.user._id) {
+  const doctore= await doctor.findById(deletedAppointment.doctorID);
+  if(deleteAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
+    if(deletedAppointment.paid == true){
+    let wallet = patient.wallet + deletedAppointment.price;
+    let doctorWallet = doctore.wallet - deletedAppointment.price;
+    const patientUpdate = await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
+    const doctorUpdate = await findByIdAndUpdate(doctor._id, {Wallet: doctorWallet}).exec();
+    if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
     }
     message = "Your appointment has been cancelled and the amount has been refunded to your wallet";
-  } else {//usability: if appointment is cancelled more than 24 hours before
-    if (deletedAppointment.patientID != req.user._id) {
+  }
+  }else{//usability: if appointment is cancelled more than 24 hours before
+    if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled";
     }
     message = "Your appointment has been cancelled";
   }
   let newNotification = new notificationModel({
-    patientID: patient[0]._id,
+    patientID: patient._id,
     text: message,
+    read: false,
     date: Date.now(),
   });
   await newNotification.save();
 
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient[0].name} is cancelled`,
+    text: `Your appointment with ${patient.name} is cancelled`,
+    read: false,
     date: Date.now(),
   });
   await newNotification2.save();
 
-  await sendEmail(patient[0].email, message);
-  await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} on ${deleteAppointment.date} is cancelled`);
+  await sendEmail(patient.email, message);
+  await sendEmail(doctor.email, `Your appointment with ${patient.name} on ${deleteAppointment.date} is cancelled`);
 
   res.redirect(`patient/Appointments`);
 }
@@ -1448,10 +1461,12 @@ const successPresc = async (req, res) => {
 const failPresc = async (req, res) => {
   res.redirect("http://localhost:5173/patient/Prescriptions");
 };
+
 const getPatientPlan = async (req, res) => {
   const patient = await patientModel.findById(req.user._id, "subscription");
   res.status(201).json({ result: patient.subscription.healthPackage });
 }
+
 const getFamilyMembersPlan = async (req, res) => {
   const familyMembers = await patientModel.findById(req.user._id, "familyMembers");
   var familyPlan = [];
@@ -1553,6 +1568,7 @@ module.exports = {
   getFamilyMembersPlan,
   getMyAppointments,
   viewAllDataOfPrescriptions,
+  getNotifications,
   viewPrescriptionPDF,
 };
 
