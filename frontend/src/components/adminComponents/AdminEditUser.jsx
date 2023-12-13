@@ -3,19 +3,11 @@ import axios from 'axios';
 import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
 import MuiAlert from '@mui/material/Alert';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { motion } from 'framer-motion';
-import { Container, duration } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -24,39 +16,116 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 export default function AdminDeleteUser() {
   const [error, setError] = useState("");
-  const [healthPackages, setHealthPackages] = useState([]);
   const [message, setMessage] = useState("");
   const [messageCreate, setMessageCreate] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  function createAdminButton() {
-    window.location.href = "/admin/register";
+
+  const [result,setResult]=useState(false);
+  useEffect(()=>{check()},[]);
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
+  async function check() {
+    try {
+      const res = await axios.get("http://localhost:3000/loggedIn", {
+        withCredentials: true
+      });
+  
+      if (res.data.type === "admin") {
+        setResult(true);
+  
+        // Check if breadcrumbs contain the "Home" breadcrumb
+        let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+        setBreadcrumbs(savedBreadcrumbs);
+
+        const editBreadcrumb = { label: "Edit A User", href: "/admin/deleteUser" };
+        const hasEditBreadcrumb = savedBreadcrumbs.some(
+          (item) => item.label == editBreadcrumb.label
+        );
+          console.log(hasEditBreadcrumb)
+        // If not, add it to the breadcrumbs
+        if (!hasEditBreadcrumb) {
+          const updatedBreadcrumbs = [editBreadcrumb];
+          setBreadcrumbs(updatedBreadcrumbs);
+          localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+        }
+      } else if (res.data.type === "patient") {
+        window.location.href = "/patient/home";
+      } else if (res.data.type === "doctor") {
+        window.location.href = "/doctor/home";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/";
+      } else {
+        setError(err.message);
+      }
+    }
   }
-  function goHome(){
-    window.location.href = "/admin/home";
+  
+  function handleBreadcrumbClick(event, breadcrumb) {
+    event.preventDefault();
+    // Find the index of the clicked breadcrumb in the array
+    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+    let updatedBreadcrumbs;
+    if(index == -1){
+      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+    }else{
+    // Slice the array up to the clicked breadcrumb (inclusive)
+      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+    }
+    console.log(index);
+    // Set the updated breadcrumbs
+    setBreadcrumbs(updatedBreadcrumbs);
+
+    // Save updated breadcrumbs to localStorage
+    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+
+    console.log(updatedBreadcrumbs)
+    // Navigate to the new page
+    window.location.href = breadcrumb.href;
   }
 
+  
+  function goHome() {
+    const breadcrumb = { label: "Home", href: "/admin/home" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
+  function editUserButton() {
+    const breadcrumb = { label: "Edit A User", href: "/admin/deleteUser" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
   function uploadedInfoButton() {
-    window.location.href = "/admin/uploadedInfo";
+    const breadcrumb = { label: "View Doctors Uploaded Info", href: "/admin/uploadedInfo" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
-
+  
   function healthPackagesButton() {
-    window.location.href = "/admin/healthPackages";
+    const breadcrumb = { label: "Health Packages", href: "/admin/healthPackages" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
+  function changePasswordButton() {
+    const breadcrumb = { label: "Change Password", href: "/admin/changePassword" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
 
-  function LogoutButton() {
-    window.location.href = "/";
-  }
-
-  function changePasswordButton(){
-    window.location.href='/admin/changePassword';
-  }
+  async function LogoutButton() {
+    try {
+        const res = await axios.get("http://localhost:3000/logout", {
+            withCredentials: true
+        });
+        window.location.href = "/";
+        localStorage.removeItem('breadcrumbs');
+    } catch (err) {
+        setError(err.message);
+    }
+}
 
   function toggleFilter() {
     setIsOpen(!isOpen);
-  }
-
-  function editUserButton() {
-    window.location.href = "/admin/deleteUser";
   }
 
   async function deleteUser() {
@@ -99,7 +168,7 @@ export default function AdminDeleteUser() {
 
 
   return (
-    <div>
+    (result && <div>
      <div>
             <div style={{display:'flex'}}>
       <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 925}}>
@@ -136,6 +205,19 @@ export default function AdminDeleteUser() {
       <div style={{display:'grid', marginLeft:50, marginTop:50}}>
       
      <div style={{display:'flex', marginLeft:50}}>
+     <Breadcrumbs separator="›" aria-label="breadcrumb">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <Link
+            key={index}
+            underline="hover"
+            color="inherit"
+            href={breadcrumb.href}
+            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+          >
+            {breadcrumb.label}
+          </Link>
+        ))}
+      </Breadcrumbs>
       <div style={{marginTop: '50px',marginRight:100 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
             {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'450px', width:'650px', border:'2px solid black'}}>
                 <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Remove User</Typography>
@@ -148,7 +230,7 @@ export default function AdminDeleteUser() {
                 </div>
 
                 <Button style={{marginTop:'150px', marginBottom:'20px'}} variant="contained" onClick={deleteUser} >Delete</Button>
-                {message && <Alert severity="error">{message}</Alert>}
+                {(message=="User deleted successfully" && <Alert severity="success">{message}</Alert>) || (message && <Alert severity="error">{message}</Alert>)}
 
             </div>}
        </div>
@@ -184,5 +266,5 @@ export default function AdminDeleteUser() {
       
     </div>
     </div>
-  );
+  ));
 }

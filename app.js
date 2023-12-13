@@ -164,7 +164,6 @@ app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 //Admin
-app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
 app.get("/getHealthPackages", requireAuthAdmin, getHealthPackages);

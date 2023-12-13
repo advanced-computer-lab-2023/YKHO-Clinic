@@ -3,6 +3,8 @@ import axios from 'axios';
 import Button from '@mui/material/Button';
 import MenuIcon from '@mui/icons-material/Menu';
 import Table from '@mui/material/Table';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
@@ -18,10 +20,52 @@ import { styled } from '@mui/material/styles';
 export default DoctorUploadedInfo;
 
 function DoctorUploadedInfo() {
-    const [error, setError] = useState("");
-    const [requests, setRequests] = useState([]);
+  const [error, setError] = useState("");
+  const [requests, setRequests] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [result,setResult]=useState(false);
+  useEffect(()=>{check()},[]);
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
+  async function check() {
+    try {
+      const res = await axios.get("http://localhost:3000/loggedIn", {
+        withCredentials: true
+      });
+  
+      if (res.data.type === "admin") {
+        setResult(true);
+  
+        // Check if breadcrumbs contain the "Home" breadcrumb
+        let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+        setBreadcrumbs(savedBreadcrumbs);
+
+        const infoBreadcrumb = { label: "View Doctors Uploaded Info", href: "/admin/uploadedInfo" };
+        const hasInfoBreadcrumb = savedBreadcrumbs.some(
+          (item) => item.label == infoBreadcrumb.label
+        );
+          console.log(hasInfoBreadcrumb)
+        // If not, add it to the breadcrumbs
+        if (!hasInfoBreadcrumb) {
+          const updatedBreadcrumbs = [infoBreadcrumb];
+          setBreadcrumbs(updatedBreadcrumbs);
+          localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+        }
+      } else if (res.data.type === "patient") {
+        window.location.href = "/patient/home";
+      } else if (res.data.type === "doctor") {
+        window.location.href = "/doctor/home";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/";
+      } else {
+        setError(err.message);
+      }
+    }
+  }
     useEffect(() => {
         getRequests();
     }, []);
@@ -37,62 +81,97 @@ function DoctorUploadedInfo() {
             setError(err.data.message);
         }
     }
-
-    function goHome(){
-        window.location.href = "/admin/home";
-        }
-        function createAdminButton() {
-            window.location.href = "/admin/register";
-          }
-        
-          function deleteUserButton() {
-            window.location.href = "/admin/deleteUser";
-          }
-        
-          function uploadedInfoButton() {
-            window.location.href = "/admin/uploadedInfo";
-          }
-        
-          function healthPackagesButton() {
-            window.location.href = "/admin/healthPackages";
-          }
-        
-          function LogoutButton() {
-            window.location.href = "/";
-          }
-          function changePasswordButton(){
-            window.location.href='/admin/changePassword';
-          }
-          function toggleFilter() {
-            setIsOpen(!isOpen);
-          }
-          async function AcceptButton(e) {
-            try {
-                const res = await axios.post("http://localhost:3000/admin/acceptRequest", {
-                    email: e.target.id
-                }, {
-                    withCredentials: true
-                });
-                window.location.reload();
-            } catch (err) {
-                setError(err.message);
-            }
-        }
-        async function RejectButton(e) {
-            try {
-                const res = await axios.post("http://localhost:3000/admin/rejectRequest", {
-                    email: e.target.id
-                }, {
-                    withCredentials: true
-                });
-                window.location.reload();
-            } catch (err) {
-                setError(err.data.message);
-            }
+    
+    function handleBreadcrumbClick(event, breadcrumb) {
+      event.preventDefault();
+      // Find the index of the clicked breadcrumb in the array
+      const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+      let updatedBreadcrumbs;
+      if(index == -1){
+        updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+      }else{
+      // Slice the array up to the clicked breadcrumb (inclusive)
+        updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+      }
+      console.log(index);
+      // Set the updated breadcrumbs
+      setBreadcrumbs(updatedBreadcrumbs);
+  
+      // Save updated breadcrumbs to localStorage
+      localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+  
+      console.log(updatedBreadcrumbs)
+      // Navigate to the new page
+      window.location.href = breadcrumb.href;
     }
 
+    function goHome() {
+      const breadcrumb = { label: "Home", href: "/admin/home" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function editUserButton() {
+      const breadcrumb = { label: "Edit A User", href: "/admin/deleteUser" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function uploadedInfoButton() {
+      const breadcrumb = { label: "View Doctors Uploaded Info", href: "/admin/uploadedInfo" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function healthPackagesButton() {
+      const breadcrumb = { label: "Health Packages", href: "/admin/healthPackages" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function changePasswordButton() {
+      const breadcrumb = { label: "Change Password", href: "/admin/changePassword" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+
+    async function LogoutButton() {
+      try {
+          const res = await axios.get("http://localhost:3000/logout", {
+              withCredentials: true
+          });
+          window.location.href = "/";
+          
+      } catch (err) {
+          setError(err.message);
+      }
+  }
+
+  function toggleFilter() {
+      setIsOpen(!isOpen);
+  }
+  async function AcceptButton(e) {
+      try {
+          const res = await axios.post("http://localhost:3000/admin/acceptRequest", {
+              email: e.target.id
+          }, {
+              withCredentials: true
+          });
+          window.location.reload();
+      } catch (err) {
+          setError(err.message);
+      }
+  }
+    async function RejectButton(e) {
+        try {
+            const res = await axios.post("http://localhost:3000/admin/rejectRequest", {
+                email: e.target.id
+            }, {
+                withCredentials: true
+            });
+            window.location.reload();
+        } catch (err) {
+            setError(err.data.message);
+        }
+  }
+
     return (
-        <div>
+        (result && <div>
         <title>Home</title>
   <div style={{display:"flex"}}>
         <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 945}}>
@@ -108,7 +187,7 @@ function DoctorUploadedInfo() {
             style={{overflow: 'hidden' }}
           ><Button variant ='contained' style={{marginBottom:3,width:280}} onClick={goHome}>Home</Button>
             
-            <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={deleteUserButton}>
+            <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={editUserButton}>
               Edit A User
             </Button>
             <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={uploadedInfoButton}>
@@ -127,6 +206,19 @@ function DoctorUploadedInfo() {
         </Box>
   <div >
         <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:150}}>
+        <Breadcrumbs separator="›" aria-label="breadcrumb">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <Link
+            key={index}
+            underline="hover"
+            color="inherit"
+            href={breadcrumb.href}
+            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+          >
+            {breadcrumb.label}
+          </Link>
+        ))}
+      </Breadcrumbs>
           <Table sx={{ minWidth: 650}} aria-label="simple table" >
             <TableHead bgcolor="primary.main.dark" style={{backgroundColor:'grey'}}>
               <TableRow>
@@ -181,7 +273,7 @@ function DoctorUploadedInfo() {
         </div>
       </div>
       </div>
-    );
+    ));
   }
 
 
