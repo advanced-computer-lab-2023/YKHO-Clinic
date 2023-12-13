@@ -101,6 +101,7 @@ const PatientHome = () => {
             setAppLoadingPrescription(false)
         });
     }
+    
     function handlePrescriptions() {
         window.location.href = "/patient/Prescriptions"
     }
@@ -168,10 +169,10 @@ const PatientHome = () => {
                                 <AnimatePresence>
                                     <div style={{ marginLeft: "3%", paddingRight: "30%", paddingBottom: "1%" }}>
                                         {appLoadingFamily ? <div>
-                                            <Skeleton width={800} height={35} />
-                                            <Skeleton width={800} height={35} />
-                                            <Skeleton width={800} height={35} />
-                                            <Skeleton width={800} height={35} />
+                                            <Skeleton animation="wave" width={800} height={35} />
+                                            <Skeleton animation="wave" width={800} height={35} />
+                                            <Skeleton animation="wave" width={800} height={35} />
+                                            <Skeleton animation="wave" width={800} height={35} />
                                         </div> : familyMembers.length > 0 && familyMembers.map((familyMember, index) => (
                                             <motion.div
                                                 initial={{ opacity: 0, y: -50 }}
@@ -195,10 +196,10 @@ const PatientHome = () => {
                                     <div style={{ paddingBottom: "20px" }}>
                                         {appLoadingAppointment ?
                                             <div style={{ marginLeft: "5px" }}>
-                                                <Skeleton width={900} height={70} />
-                                                <Skeleton width={900} height={70} />
-                                                <Skeleton width={900} height={70} />
-                                                <Skeleton width={900} height={70} />
+                                                <Skeleton animation="wave" width={900} height={70} />
+                                                <Skeleton animation="wave" width={900} height={70} />
+                                                <Skeleton animation="wave" width={900} height={70} />
+                                                <Skeleton animation="wave" width={900} height={70} />
                                             </div>
                                             : appointments.length > 0 && appointments.map((appointment, index) => (
                                                 <motion.div
@@ -230,8 +231,8 @@ const PatientHome = () => {
                                             <Button variant="outlined" sx={{ marginLeft: "60%" }} onClick={() => { handlePrescriptions(); }}>View All</Button></Typography>
                                         <AnimatePresence>
                                             {appLoadingPrescription ? <div style={{ marginLeft: "5px" }}>
-                                                <Skeleton width={890} height={70} />
-                                                <Skeleton width={890} height={70} />
+                                                <Skeleton animation="wave" width={890} height={70} />
+                                                <Skeleton animation="wave" width={890} height={70} />
                                             </div> : prescriptions.length > 0 && prescriptions.map((prescription, index) => (
                                                 <motion.div
                                                     initial={{ opacity: 0, y: -50 }}

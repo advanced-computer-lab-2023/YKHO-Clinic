@@ -71,7 +71,7 @@ const { createRequest } = require("./controller/requestController");
 const {
   createPatient,
   createFamilyMember,
- PayByCredit,PayByWallet, readFamilyMembers,
+  PayByCredit,PayByWallet, readFamilyMembers,
   readDoctors,
   searchDoctors,
   filterDoctors,
@@ -99,6 +99,7 @@ const {
   getMyAppointments,
   PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
   viewAllDataOfPrescriptions,
+  viewPrescriptionPDF,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -243,6 +244,8 @@ app.get("/patient/plan", requireAuthPatient, getPatientPlan);
 app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan);
 app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
 app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescriptions);
+app.get("/patient/prescriptionPDF/:id", requireAuthPatient, viewPrescriptionPDF);
+
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;

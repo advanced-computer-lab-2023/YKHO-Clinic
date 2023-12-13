@@ -25,7 +25,7 @@ import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
 import ForgetPassword from './components/ForgetPassword'
 import ChangePassword from './components/adminComponents/changePassword'
-
+import PatientSearch from './components/patientComponents/PatientSearch'
 import DoctorTimeSlots from './components/doctorComponents/DoctorTimeSlots'
 import DoctorContract from './components/doctorComponents/DoctorContract'
 function App() {
@@ -58,6 +58,7 @@ function App() {
         <Route path="/admin/healthPackages" element={<AdminHealthPackages/>} />
         <Route path='/admin/changePassword' element={<ChangePassword/>}/>
         <Route path="/forgetPassword/enterUsername" element={<ForgetPassword/>} />
+        <Route path="/patient/search/:searchValue" element={<PatientSearch/>} />
       </Routes>
       </BrowserRouter>
     </div>

@@ -4,7 +4,7 @@ import { Skeleton, Paper, Button, Typography, Grid, Stack } from '@mui/material'
 import MedicationLiquidIcon from '@mui/icons-material/MedicationLiquid';
 export default function PrescriptionCard(props) {
     return (
-        <Paper elevation={7} sx={{ padding: "20px", width: "95%", height: "100%" }}>
+        <Paper elevation={7} sx={{ padding: "20px", width: "100%", height: "80%" }}>
             <Stack direction="row" spacing={5} >
 
                 <Stack direction="column" spacing={2}>
@@ -36,11 +36,9 @@ export default function PrescriptionCard(props) {
                         <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleWallet(props.id)}> Pay by Wallet </Button>}
                     {props.paid ? <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)} disabled> Pay by Credit Card </Button> :
                         <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)}> Pay by Credit Card </Button>}
-
-
-
+                        
+                    <Button variant="contained" size="small" href={`http://localhost:3000/patient/prescriptionPDF/${props.id}`} target="_blank"> Download PDF</Button>
                 </Stack>
-
                 <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
                     {props.medicines.map((medicine) => {
                         return (

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -16,6 +16,12 @@ import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Button, Stack } from '@mui/material';
+import { FilledInput } from '@mui/material';
+import { useNavigate,useParams } from 'react-router-dom';
+// Inside your component
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -57,12 +63,20 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar() {
+export default function PrimarySearchAppBar({content}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-
+  const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const { searchvalue } = useParams();
+
+
+  const handleSearch = () => {
+    if(values != "" && values != null){
+      window.location.href = `/patient/search/${values}`
+    }
+  }
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -183,8 +197,12 @@ export default function PrimarySearchAppBar() {
             <StyledInputBase
               placeholder="Search for Doctors…"
               inputProps={{ 'aria-label': 'search' }}
+              type='search'
+              onChange={(e) => setValues(e.target.value)}
+              defaultValue={content}
             />
           </Search>
+          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch}> Search </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <IconButton

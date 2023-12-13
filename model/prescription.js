@@ -1,93 +1,102 @@
 const mongoose = require('mongoose');
 const Joi = require('joi-oid');
-const {doctor}= require("./doctor");
-const patient= require("./patient");
+const { doctor } = require("./doctor");
+const patient = require("./patient");
 const { medicine } = require('./medicine');
 const medicineSchema = new mongoose.Schema({
     name: {
-      type: String,
-      required: true,
-      unique: true,
+        type: String,
+        required: true,
+        unique: true,
     },
     dosage: {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
     },
     price: {
         type: String,
         required: true,
     },
-    medicineID:{
-        type:mongoose.Schema.Types.ObjectId,
-        required:true,
-        ref:medicine,
+    medicineID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: medicine,
     }
     //TODO: medicineID
-  });
+});
+
+const prescriptionPDF = {
+    data: {
+        type: Buffer,
+        required: true
+    }
+}
+
 const prescriptionSchema = new mongoose.Schema({
     prescriptionName:
     {
-        type:String,
-        required:true,
-        minlength:5,
-        maxlength:50,
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 50,
     },
     patientID:
     {
-        type:mongoose.Schema.Types.ObjectId,
-        required:true,
-        ref:patient
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: patient
     }
     ,
     doctorID:
     {
-        type:mongoose.Schema.Types.ObjectId,
-        required:true,
-        ref:doctor
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: doctor
     },
     doctorName:
     {
-        type:String,
-        required:true,
-        minlength:5,
-        maxlength:20,
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 20,
     },
-    date: 
+    date:
     {
-        type:Date,
-        required:true,
+        type: Date,
+        required: true,
     },
     filled:
     {
-        type:Boolean,
-        required:true,
-        default:false,
+        type: Boolean,
+        required: true,
+        default: false,
     },
     price:
     {
-        type:Number,
-        required:true,
-        default:0,
+        type: Number,
+        required: true,
+        default: 0,
     },
     MedicineNames: [medicineSchema],
+    prescriptionPDF: prescriptionPDF,
     paid:
     {
-        type:Boolean,
-        required:true,
-        default:false,
+        type: Boolean,
+        required: true,
+        default: false,
     }
+});
+function validatePrescription(newPrescription) {
+    const schema = Joi.object({
+        prescriptionName: Joi.string().required().min(5).max(50),
+        patientID: Joi.objectId().required(),
+        doctorID: Joi.objectId().required(),
+        doctorName: Joi.string().required().min(5).max(20),
+        date: Joi.date().required(),
+        filled: Joi.boolean().required(),
+        price: Joi.Number().required(),
     });
-    function validatePrescription(newPrescription){
-        const schema = Joi.object({
-            prescriptionName: Joi.string().required().min(5).max(50),
-            patientID: Joi.objectId().required(),
-            doctorID: Joi.objectId().required(),
-            doctorName: Joi.string().required().min(5).max(20),
-            date: Joi.date().required(),
-            filled:Joi.boolean().required(),
-            price:Joi.Number().required(),
-          }); 
-        return schema.validate(newPrescription);
-    }
+    return schema.validate(newPrescription);
+}
 const prescription = mongoose.model('prescription', prescriptionSchema);
-module.exports={prescription,validatePrescription};
+module.exports = { prescription, validatePrescription };
