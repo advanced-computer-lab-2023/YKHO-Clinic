@@ -108,7 +108,7 @@ const {
 const cors=require('cors')
 
 const port = 3000;
-const MONGO_URI = "mongodb://127.0.0.1:27017";
+const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.use(cookieParser());
 app.listen(port, () => {

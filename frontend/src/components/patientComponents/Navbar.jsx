@@ -97,6 +97,10 @@ export default function PrimarySearchAppBar({content}) {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
+  function showNotifications() {
+      
+  }
+
 async function getNotifications(){
     try {
       const res = await axios.get("http://localhost:3000/patient/getNotifications", {
@@ -156,13 +160,14 @@ async function getNotifications(){
         </IconButton>
         <p>Messages</p>
       </MenuItem>
+      {/* ma3rfsh meen el element dah lol */}
       <MenuItem>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
           color="inherit"
         >
-          <Badge badgeContent={17} color="error">
+          <Badge badgeContent={13} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
@@ -231,10 +236,11 @@ async function getNotifications(){
             </IconButton>
             <IconButton
               size="large"
-              aria-label="show 17 new notifications"
+              aria-label="13"
               color="inherit"
+              onClick={showNotifications}
             >
-              <Badge badgeContent={17} color="error">
+              <Badge badgeContent={notifications.length} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
