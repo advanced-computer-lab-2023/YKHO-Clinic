@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
+import axios from 'axios'
+import { useState } from 'react'
+import { useEffect } from 'react'
+import Navbar from './Navbar'
+import { Stack, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, Alert, Button } from '@mui/material'
+import { set } from 'mongoose';
+import FamilyMemberCard from './FamilyMemeberCard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { useParams } from 'react-router-dom';
+import AppointmentCard from './AppointmentsCard';
 
 const PatientAppointments = () => {
     const [result, setResult] = useState(false);
@@ -29,13 +41,14 @@ const PatientAppointments = () => {
     }
 
     async function loadAppointments() {
-        await axios.get("http://localhost:3000/patient/Appointments", { withCredentials: true }).then((res) => {
-
-            setAppointments(res.data.result);
+        await axios.get("http://localhost:3000/Patient/Appointments", { withCredentials: true }).then((res) => {
+            var app = res.data.result
+            setAppointments(app);
+            console.log(app);
         }
         ).catch((err) => {
             console.log(err);
-        });
+        })
     }
     function setSearchBox() {
 
@@ -95,42 +108,16 @@ const PatientAppointments = () => {
     return (
         <div>
             {result && <div>
-                <h1>Your Appointments</h1>
-                <label htmlFor="filter">Search By</label>
-                <select id="filter" name="filter">
-                    <option value="Status">Status</option>
-                    <option value="Date">Date</option>
-                </select>
-                <label htmlFor="searchvalue">With value</label>
-                <input id="searchvalue" type="text" name="searchvalue" />
-                <br />
-                <input type="radio" id="upcoming" name="filters" value="upcoming" />
-                <label htmlFor="upcoming">Upcoming Appointments</label>
-                <br />
-                <input type="radio" id="past" name="filters" value="past" />
-                <label htmlFor="past">Past Appointments</label>
-                <br />
-                <button type="submit" onClick={searchAppointments} style={{ display: "block" }}>
-                    Search
-                </button>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {appointments.map((appointment) => (
-                            <tr>
-                                <td id={appointment._id}> {appointment.doctorID.name} </td>
-                                <td id={appointment._id}> {appointment.date.split('T')[0]} </td>
-                                <td id={appointment._id}> {appointment.status} </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <Navbar />
+                <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
+                    <Paper variant="elevation" elevation={4} sx={{ height: "800px", width: "80%", overflowY:"auto" }}>
+                        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
+                        {appointments.length > 0 && appointments.map((appointment) => {
+                           return <AppointmentCard doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status}/>
+                        })}
+                        </Stack>
+                    </Paper>
+                </Stack>
             </div>}
         </div>
     );

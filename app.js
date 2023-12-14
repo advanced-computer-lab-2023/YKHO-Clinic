@@ -103,6 +103,7 @@ const {
   viewAllDataOfPrescriptions,
   getNotifications,
   viewPrescriptionPDF,
+  getDoctorSpeciality,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -254,7 +255,7 @@ app.get("/patient/familyMembersPlans", requireAuthPatient, getFamilyMembersPlan)
 app.get("/patient/appointmentsCards", requireAuthPatient, getMyAppointments);
 app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescriptions);
 app.get("/patient/prescriptionPDF/:id", requireAuthPatient, viewPrescriptionPDF);
-
+app.get("/patient/doctorSpecialities", requireAuthPatient, getDoctorSpeciality);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;

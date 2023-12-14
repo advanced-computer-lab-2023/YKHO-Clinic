@@ -190,7 +190,7 @@ const PatientHome = () => {
                         <Grid item xs={6}>
                             <Paper variant='elevation' elevation={5} sx={{ height: "396px" }}>
                                 <Typography variant="h4" sx={{ font: "bold", marginLeft: "3%", paddingTop: "3%" }} gutterBottom>
-                                    Upcoming Appointment <Button variant="outlined" sx={{ marginLeft: "40%" }}>View All</Button>
+                                    Upcoming Appointments <Button variant="outlined" sx={{ marginLeft: "40%" }} onClick={handleAppointments}>View All</Button>
                                 </Typography>
                                 <AnimatePresence>
                                     <div style={{ paddingBottom: "20px" }}>

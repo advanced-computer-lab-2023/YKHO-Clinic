@@ -265,7 +265,7 @@ const searchDoctors = async (req, res) => {
   let searchedDoctors = req.query.searchValues;
   const EnumSpecialities = await doctorModel.schema.path('speciality').enumValues;
   // empty input fields
-  if (!isEmpty(searchedDoctors)) {
+  if (searchedDoctors != "undefined") {
     searchedDoctors = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/i);   
     searchedDoctors = searchedDoctors.filter((speciality) => {
       for (let i = 0; i < EnumSpecialities.length; i++) {
@@ -302,17 +302,57 @@ const searchDoctors = async (req, res) => {
   // res.status(201).render("patient/home", { results, one: true });
   res.status(201).json({ results: results });
 };
-
+const getDoctorSpeciality = async (req, res) =>{
+  const EnumSpecialities = await doctorModel.schema.path('speciality').enumValues;
+  res.status(200).json({results:EnumSpecialities});
+}
 const filterDoctors = async (req, res) => {
-  let doctors;
-  if (req.query.speciality != "any")
-    doctors = await doctorModel
-      .find({ speciality: req.query.speciality })
-      .sort({ name: 1 });
-  else doctors = await doctorModel.find().sort({ name: 1 });
+  // let doctors;
+  let doctors = await doctorModel.find().sort({ name: 1 }).select('-id -medicalLicense -medicalDegree');
+  let searchedDoctors = req.query.searchValues;
+  const EnumSpecialities = await doctorModel.schema.path('speciality').enumValues;
+  // empty input fields
+  if (searchedDoctors != "undefined") {
+    searchedDoctors = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/i);   
+    searchedDoctors = searchedDoctors.filter((speciality) => {
+      for (let i = 0; i < EnumSpecialities.length; i++) {
+        if (EnumSpecialities[i].includes(speciality)) return false;
+      }
+      return true;
+    });
+    if (searchedDoctors.length > 0)
+      doctors = doctors.filter((doctor) => {
+        for (let i = 0; i < searchedDoctors.length; i++) {
+          if (doctor.name.includes(searchedDoctors[i])) return true;
+        }
+        return false;
+      });
+  } 
+  let searchedSpecialities = req.query.searchValues;
+  if (!isEmpty(searchedSpecialities)) {
+    searchedSpecialities = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/);
+    searchedSpecialities = searchedSpecialities.filter((speciality) => {
+      for (let i = 0; i < EnumSpecialities.length; i++) {
+        if (EnumSpecialities[i].includes(speciality)) return true;
+      }
+    });
+    if (searchedSpecialities.length > 0)
+      doctors = doctors.filter((doctor) => {
+        for (let i = 0; i < searchedSpecialities.length; i++) {
+          if (doctor.speciality.includes(searchedSpecialities[i])) return true;
+        }
+        return false;
+      });
+  }
+  if (req.query.speciality != "")
+    doctors = doctors.filter((doctor) => doctor.speciality==req.query.speciality)
+    // doctors = await doctorModel
+    //   .find({ speciality: req.query.speciality })
+    //   .sort({ name: 1 });
+  // else doctors = await doctorModel.find().sort({ name: 1 });
 
   let date = req.query.date;
-  if (date != "") {
+  if (date != "" && date != "null") {
     date = new Date(date);
 
     // filter doctors with appointments
@@ -343,7 +383,8 @@ const filterDoctors = async (req, res) => {
   }
 
   let results = await helper(doctors, req.user._id);
-  res.status(201).render("patient/home", { results, one: true });
+  res.status(200).json({results: results});
+  // res.status(201).render("patient/home", { results, one: true });
 };
 async function selectDoctor(req, res) {
   try {
@@ -1570,6 +1611,7 @@ module.exports = {
   viewAllDataOfPrescriptions,
   getNotifications,
   viewPrescriptionPDF,
+  getDoctorSpeciality,
 };
 
 module.exports.readSubscription = readSubscription;
