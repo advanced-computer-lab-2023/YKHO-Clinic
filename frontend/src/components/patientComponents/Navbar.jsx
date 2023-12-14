@@ -17,11 +17,21 @@ import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
 import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Button, Stack } from '@mui/material';
 import { FilledInput } from '@mui/material';
 import { useNavigate,useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
 // Inside your component
 
 const Search = styled('div')(({ theme }) => ({
@@ -64,7 +74,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content}) {
+export default function PrimarySearchAppBar({content, openHelp}) {
+  const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]);  const [values, setValues] = useState("");
@@ -73,12 +84,53 @@ export default function PrimarySearchAppBar({content}) {
   useEffect(()=>{getNotifications()},[]);
   const { searchvalue } = useParams();
 
-
+  function toggleFilter() {
+    setIsOpen(!isOpen);
+  }
   const handleSearch = () => {
     if(values != "" && values != null){
       window.location.href = `/patient/search/${values}`
     }
   }
+  function goAllApointments() {
+    window.location.href= '/patient/Appointments';
+      const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  function goHome() {
+    window.location.href= '/patient/home';
+    const breadcrumb = { label: "Home", href: "/patient/home" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function goPrescriptions() {
+    window.location.href= '/patient/Prescriptions';
+    const breadcrumb = { label: "Prescriptions", href: "/patient/Prescriptions" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function goSeeFamilyOrDie(){
+    window.location.href='/patient/readFamilyMembers';
+  }
+  function goHealthRecords(){
+    window.location.href = '/patient/HealthRecords'
+  }
+  function goPackages(){
+    window.location.href='/patient/healthPackages'
+  }
+  function goMedicalHistory(){
+    window.location.href='/patient/medicalHistory'
+  }
+  const [error, setError] = useState('');
+  async function LogoutButton() {
+    try {
+        const res = await axios.get("http://localhost:3000/logout", {
+            withCredentials: true
+        });
+        window.location.href = "/";
+        
+    } catch (err) {
+        setError(err.message);
+    }
+}
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -112,6 +164,80 @@ async function getNotifications(){
     console.log(err);
   }
 }
+const [state, setState] = React.useState({
+  top: false,
+  left: false,
+  bottom: false,
+  right: false,
+});
+
+const toggleDrawer = (anchor, open) => (event) => {
+  if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+    return;
+  }
+
+  setState({ ...state, [anchor]: open });
+};
+
+const list = (anchor) => (
+  <Box
+    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250 }}
+    role="presentation"
+    onClick={toggleDrawer(anchor, false)}
+    onKeyDown={toggleDrawer(anchor, false)}
+  >
+    <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goHome}>
+            <ListItemText primary={'Home'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goAllApointments}>
+            <ListItemText primary={'Appointments'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goPrescriptions}>
+            <ListItemText primary={'Prescriptions'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goSeeFamilyOrDie}>
+            <ListItemText primary={'Family Members'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goHealthRecords}>
+            <ListItemText primary={'Health Records'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goMedicalHistory}>
+            <ListItemText primary={'Medical History'} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    <Divider />
+    <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={LogoutButton}>
+            <ListItemText primary={'Logout'} style={{textAlign:'center'}} />
+          </ListItemButton>
+        </ListItem>
+      </List>
+  </Box>
+)
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -189,6 +315,17 @@ async function getNotifications(){
   );
 
   return (
+    <div>
+    
+          
+          <Drawer
+            anchor={'left'}
+            open={state['left']}
+            onClose={toggleDrawer('left', false)}
+          >
+            {list('left')}
+          </Drawer>
+       
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
@@ -198,7 +335,10 @@ async function getNotifications(){
             color="inherit"
             aria-label="open drawer"
             sx={{ mr: 2 }}
+            onClick={toggleDrawer('left', true)}
           >
+            
+            
             <MenuIcon />
           </IconButton>
           <Typography
@@ -273,5 +413,6 @@ async function getNotifications(){
       {renderMobileMenu}
       {renderMenu}
     </Box>
+    </div>
   );
 }
