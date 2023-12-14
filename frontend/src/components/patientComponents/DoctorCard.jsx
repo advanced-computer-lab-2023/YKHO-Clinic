@@ -52,7 +52,6 @@ export default function DoctorCard(props) {
     });
     let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     days = days.filter(day => day == currentDay || day == tomorrowDay || day == afterTomorrowDay);
-    console.log(props.timeSlots);
     return (
         <Paper elevation={7} sx={{ padding: "20px", width: "100%", height: "90%" }}>
             <Stack direction='row' spacing={2} sx={{ width: "100%" }} justifyContent="center" alignItems="center">

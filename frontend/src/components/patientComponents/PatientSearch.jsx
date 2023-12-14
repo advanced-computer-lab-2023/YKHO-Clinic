@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import Navbar from './Navbar'
-import { Stack, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, Alert } from '@mui/material'
+import { Stack, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, Alert, Button } from '@mui/material'
 import { set } from 'mongoose';
 import FamilyMemberCard from './FamilyMemeberCard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,8 @@ const PatientSearch = () => {
     const [doctors, setDoctors] = useState([]);
     const [timeSlots, setTimeSlots] = useState([]);
     const [appointments, setAppointments] = useState([]);
-    useEffect(() => { check(), getDoctors() }, []);
+    const [speciality, setSpeciality] = useState([]);
+    useEffect(() => { check(), getDoctors(), getDoctorSpeciality() }, []);
     const { searchValue } = useParams();
     useEffect(() => { getDoctors() }, [searchValue]);
     const [open, setOpen] = useState(false);
@@ -67,6 +68,34 @@ const PatientSearch = () => {
             console.log(err)
         });
     }
+
+    async function doctorsFiltered() {
+        await axios.get(`http://localhost:3000/patient/filterDoctors/?searchValues=${searchValue}&&speciality=${filled}&&date=${selectedDate}`, {
+            withCredentials: true,
+        }).then((res) => {
+            setDoctors(res.data.results.doctors)
+            setTimeSlots(res.data.results.timeSlots)
+            setAppointments(res.data.results.doctorAppointments)
+            console.log(res.data);
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    async function getDoctorSpeciality() {
+        await axios.get(`http://localhost:3000/patient/doctorSpecialities`, {
+            withCredentials: true,
+        }).then((res) => {
+            setSpeciality(res.data.results);
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
+    const handleReset = () => {
+        setSelectedDate(null);
+        setFilled("");
+    };
+
     const handleClick = () => {
         setOpen(true);
     };
@@ -86,29 +115,33 @@ const PatientSearch = () => {
         <div>
             {result && <div>
                 <Navbar content={searchValue} />
-                <Snackbar anchorOrigin={{ vertical:"bottom", horizontal:"center" }} open={open} autoHideDuration={6000} onClose={handleClose} key={'bottom'+'center'}>
+                <Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "center" }} open={open} autoHideDuration={6000} onClose={handleClose} key={'bottom' + 'center'}>
                     <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
                         Appoinment Reserved Successfully
                     </Alert>
                 </Snackbar>
                 <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
                     <Stack direction="row" spacing={2} justifyContent="flex-start" alignItems="center" sx={{ width: "70%" }} >
-                        <FormControl sx={{ m: 1, minWidth: 120 }}>
-                            <InputLabel id="filterFilled">Filled Filter</InputLabel>
+                        <FormControl sx={{ m: 1, minWidth: 200 }}>
+                            <InputLabel id="filterSpeciality">Speciality Filter</InputLabel>
                             <Select
-                                id="filterFilled"
+                                id="filterSpeciality"
                                 value={filled}
-                                label="Filled Filter"
+                                label="Speciality Filter"
                                 onChange={handleFilled}
                             >
                                 <MenuItem value={""}> Any </MenuItem>
-                                <MenuItem value={true}>Filled</MenuItem>
-                                <MenuItem value={false}>Not Filled</MenuItem>
+                                {speciality.length > 0 && speciality.map((speciality) => {
+
+                                    return <MenuItem value={speciality}> {speciality}</MenuItem>
+                                })}
                             </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={AdapterDayjs} >
                             <DatePicker id="DOP" name="DOP" label="Date of Prescription" value={selectedDate} onChange={(date) => setSelectedDate(date)} />
                         </LocalizationProvider>
+                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => doctorsFiltered()}> Filter </Button>
+                        <Button variant="outlined" size="small" sx={{ marginLeft: "1%" }} onClick={() => { getDoctors(); handleReset(); }}> Reset </Button>
                     </Stack>
                     <Paper elevation={7} sx={{ padding: "20px", width: "80%", height: "700px", overflowY: "auto" }}>
                         <Stack direction="column" spacing={1} sx={{ width: "100%" }}>

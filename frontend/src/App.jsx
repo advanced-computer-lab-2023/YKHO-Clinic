@@ -59,6 +59,7 @@ function App() {
         <Route path='/admin/changePassword' element={<ChangePassword/>}/>
         <Route path="/forgetPassword/enterUsername" element={<ForgetPassword/>} />
         <Route path="/patient/search/:searchValue" element={<PatientSearch/>} />
+        <Route path="/patient/search" element={<PatientSearch/>}/>
       </Routes>
       </BrowserRouter>
     </div>

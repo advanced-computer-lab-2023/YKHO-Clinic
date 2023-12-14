@@ -32,7 +32,6 @@ export default function ReservationTimeSlot(props) {
     // let appointmentsOfToday = props.appointments.filter(appointment => appointment.date === props.todayDate);
     // let appointmentsOfTomorrow = props.appointments.filter(appointment => appointment.date === props.TomorrowDate);
     // let appointmentsOfAfterTomorrow = props.appointments.filter(appointment => appointment.date === props.AfterTomorrowDate);
-    console.log(dayTimeSlots);
     return (
         // <Stack direction='column' spacing={2} sx={{ width: "100%" }}>
         //     {dayTimeSlots.map(slot => (
