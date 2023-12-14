@@ -1470,6 +1470,7 @@ const getPatientPlan = async (req, res) => {
 const getFamilyMembersPlan = async (req, res) => {
   const familyMembers = await patientModel.findById(req.user._id, "familyMembers");
   var familyPlan = [];
+  if(familyMembers.familyMembers)
   for (let i = 0; i < familyMembers.familyMembers.length; i++) {
     const member = await patientModel.findById(familyMembers.familyMembers[i].patientID, "subscription");
     if (member !== null)

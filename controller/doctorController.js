@@ -114,10 +114,10 @@ async function deleteMedicine(req,res){
 }
 async function updateMedicine(req,res){
   id=req.user._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
-  let medicineup;
+  let prescription1 =await prescription.findOne({_id:req.body.id});
+  let medicineup=[];
   let temp;
-  for (let i = 0; i < prescription1.MedicineNames; i++) {
+  for (let i = 0; i < prescription1.MedicineNames.length; i++) {
     if (prescription1.MedicineNames[i].name == req.body.name) {
       temp = prescription1.MedicineNames[i];
       temp.dosage = req.body.dosage;
@@ -126,8 +126,9 @@ async function updateMedicine(req,res){
       medicineup.push(prescription1.MedicineNames[i]);
     }
   }
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-
+  prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicineup} },{ new:true  });
+  console.log(prescription1)
+  res.status(200).json({result:prescription1})
 }
 async function updatePresc(req,res){
   id=req.body._id;

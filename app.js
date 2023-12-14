@@ -107,7 +107,7 @@ const {
 const cors=require('cors')
 
 const port = 3000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = "mongodb://127.0.0.1:27017";
 const app = express();
 app.use(cookieParser());
 app.listen(port, () => {
@@ -147,7 +147,7 @@ app.post("/addAppointment", requireAuthDoctor , createAppointment);
 app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
 app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
-app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine);
+app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);

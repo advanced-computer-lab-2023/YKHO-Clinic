@@ -299,10 +299,42 @@ const DoctorPatients = () => {
     const handleMedicineChange = (event, value) => {
       setSelectedMedicine(value);
     }
+    function selectMedicine(name){
+        setMedicineName(name);
+        setUpdateMedicineOpen(true);
+    }
+    async function updateMedicine(){
+        const id= prescription;
+        const dosage= dos+unit;
+        const name=medicineName;
+        if(!dos){
+            setErrorMessage("Please fill all the fields");
+            setOpen3(true);
+            return;
+        }
+
+        await axios.post("http://localhost:3000/doctor/updatePrescMed",{
+            id:id,
+            dosage:dosage,
+            name:name
+        }
+        ,
+        {
+            withCredentials: true,
+        }).then((res)=>{
+            console.log(res.data.result)
+            setMedicineNames(res.data.result.MedicineNames);
+            setUpdateMedicineOpen(false);
+        })
+    }
+    const [medicineName,setMedicineName] = React.useState("");
+    const [updateMedicineOpen,setUpdateMedicineOpen]= React.useState(false);
+
     return (
         <div>
             {result && (
                 <div >
+                    
                         <Snackbar
                     open={open3}
                     autoHideDuration={2000}
@@ -371,7 +403,7 @@ const DoctorPatients = () => {
                             {
                                 medicineNames.map((medicine) =>{ return (
                                     <Grid item>
-                                        <MedicineCards name={medicine.name} dosage={medicine.dosage} price={medicine.price} deleteMedicine={deleteMedicine}/>
+                                        <MedicineCards name={medicine.name} dosage={medicine.dosage} price={medicine.price} deleteMedicine={deleteMedicine} updateMedicine={selectMedicine}/>
                                     </Grid>
                                     
                                 )})
@@ -411,7 +443,7 @@ const DoctorPatients = () => {
                         <div style={{display:"flex"}}>
                         <TextField type="number" id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
                         
-                        <InputLabel id="demo-simple-select-label">unit</InputLabel>
+                        <InputLabel id="demo-simple-select-label">unit
                             <Select
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
@@ -423,7 +455,7 @@ const DoctorPatients = () => {
                                 <MenuItem value={"mg"}>mg</MenuItem>
                                 <MenuItem value={"ml"}>ml</MenuItem>
                             </Select>
-                       
+                        </InputLabel>
                         </div>
                     </DialogContent>
                     <DialogActions>
@@ -512,6 +544,39 @@ const DoctorPatients = () => {
                                 </DialogContent>
                             </>
                         )}
+                    </Dialog>
+                    <Dialog
+                     open={updateMedicineOpen}
+                     keepMounted
+                     onClose={()=>{setUpdateMedicineOpen(false);}}
+                     aria-describedby="alert-dialog-slide-description"
+                     maxWidth="lg"
+                     sx={{width:"100%"}}>
+                        {updateMedicineOpen&&<>
+                        <DialogTitle>Update {medicineName}'s Dosage</DialogTitle>
+                        <DialogContent>
+                            <div style={{display:"flex"}}>
+                            <TextField type="number" id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
+                            <InputLabel id="demo-simple-select-label">unit</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={unit}
+                                label="unit"
+                                onChange={handleUnitChange}
+                                sx={{width:100}}
+                            >
+                                <MenuItem value={"mg"}>mg</MenuItem>
+                                <MenuItem value={"ml"}>ml</MenuItem>
+                            </Select>
+                            </div>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <Button sx={{marginTop:4}} variant="contained"onClick={updateMedicine}> 
+                                                    Submit
+                            </Button>
+                            </div>
+                        </DialogContent>
+                        </>}
                     </Dialog>
                     <Navbar />
                     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"80vh",marginTop:40}}>

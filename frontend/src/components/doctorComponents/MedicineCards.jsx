@@ -17,7 +17,7 @@ export default function MedicineNames(props) {
     </div>
     <div style={{display:"flex", marginTop:-60,marginLeft:"auto"}}>
 
-    <IconButton onClick={()=>{}}>
+    <IconButton onClick={()=>{props.updateMedicine(props.name)}}>
         <EditNoteIcon/>
     </IconButton>
     <IconButton onClick={()=>{props.deleteMedicine(props.price,props.name)}}>
