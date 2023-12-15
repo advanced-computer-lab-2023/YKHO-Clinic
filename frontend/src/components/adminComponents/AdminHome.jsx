@@ -183,7 +183,7 @@ async function RejectButton(e) {
   return (
     (result && <div>
       <title>Home</title>
-    <div style={{display:"flex"}}>
+    <div style={{}}>
       <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 945}}>
         <div style={{ marginLeft: 8 }}>
           <IconButton onClick={toggleFilter}>

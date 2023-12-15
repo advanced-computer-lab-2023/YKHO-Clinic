@@ -5,10 +5,14 @@ import { useEffect } from 'react'
 import Navbar from './Navbar'
 import { set } from 'mongoose';
 import FamilyMemberCard from './FamilyMemeberCard';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton, Paper, Button, Typography, Grid } from '@mui/material'
 
+
+
 const PatientHome = () => {
+    
     const [result, setResult] = useState(false);
     const [user, setUser] = useState({});
     const [plan, setPlan] = useState("");
@@ -101,6 +105,14 @@ const PatientHome = () => {
             setAppLoadingPrescription(false)
         });
     }
+    const [isOpen, setIsOpen] = useState(false);
+    function toggleFilter() {
+        setIsOpen(!isOpen);
+      }
+    function goHome() {
+      const breadcrumb = { label: "Home", href: "/patient/home" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
     
     function handlePrescriptions() {
         window.location.href = "/patient/Prescriptions"
@@ -140,7 +152,9 @@ const PatientHome = () => {
     return (
         <div>
             {result && <div>
-                <Navbar />
+                <Navbar openHelp={toggleFilter} />
+                <div style={{}}>
+                
                 <div style={{ width: "96.5%", marginTop: "5%", marginLeft: "2%" }}>
                     <Grid container spacing={2} justifyContent="center">
                         <Grid item xs={6}>
@@ -174,7 +188,7 @@ const PatientHome = () => {
                                             <Skeleton animation="wave" width={800} height={35} />
                                             <Skeleton animation="wave" width={800} height={35} />
                                         </div> : familyMembers.length > 0 && familyMembers.map((familyMember, index) => (
-                                            <motion.div
+                                            <motion.div key={familyMember.name}
                                                 initial={{ opacity: 0, y: -50 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.5, delay: index * 0.2 }} // Adjust the delay for staggered effect
@@ -252,6 +266,7 @@ const PatientHome = () => {
                             </Grid>
                         </Grid>
                     </Grid>
+                </div>
                 </div>
             </div>}
         </div>

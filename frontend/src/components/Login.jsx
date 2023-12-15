@@ -4,6 +4,10 @@ import axios from 'axios'
 import { useState ,useEffect} from 'react'
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function Login(){
     const [error,setError]= useState("")
@@ -87,8 +91,8 @@ function Login(){
                 </div>
                 <br/>
                 <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
-                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handlePatient}>register patient</Button>
-                {error && <p>{error}</p>}
+                <Button style={{...styles.input,marginBottom:'30px'}} variant='contained' onClick={handlePatient}>register patient</Button>
+                {error && <Alert severity="error"> {error} </Alert>}
             </div>}
         </div>
     )
