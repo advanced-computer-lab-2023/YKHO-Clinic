@@ -561,18 +561,22 @@ async function sendEmail(email, message) {
 async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
   let date = new Date(req.body.date);
+  let dateConverted = date.toISOString();
   const time = req.body.time;
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
-  let dateConverted = date.toISOString();
   let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
   const thisAppointment = await appointment.findById(appointmentID);
+  let appointmentDate = new Date(thisAppointment.date);
+  let appointmentDateConverted = appointmentDate.toISOString();
+  let appointmentDateText = `${appointmentDateConverted.split("T")[0]} at ${parseInt(appointmentDateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${appointmentDateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
+
   let duration = (endH - startH) * 60 + (endM - startM);
   duration = duration / 60;
   const pat = await patientModel.findById(thisAppointment.patientID,"-healthRecords -medicalHistory");
@@ -599,7 +603,7 @@ async function rescheduleAppointment(req, res) {
   
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
-    text: `Your Appointment with ${doctore.name} on ${thisAppointment.date} rescheduled to ${dateText}`,
+    text: `Your Appointment with ${doctore.name} on ${appointmentDateText} rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -607,7 +611,7 @@ async function rescheduleAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
-    text: `Your appointment with ${pat.name} on ${thisAppointment.date} is rescheduled to ${dateText}`,
+    text: `Your appointment with ${pat.name} on ${appointmentDateText} is rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -615,11 +619,11 @@ async function rescheduleAppointment(req, res) {
 
   await sendEmail(
     pat.email,
-    `Your Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduledAppointment.date}`
+    `Your Appointment with Doctor ${doctore.name} on ${appointmentDateText} rescheduled to ${dateText}`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${pat.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduledAppointment.date}`
+    `Your appointment with ${pat.name} that was on ${appointmentDateText}} is rescheduled to ${dateText}`
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
