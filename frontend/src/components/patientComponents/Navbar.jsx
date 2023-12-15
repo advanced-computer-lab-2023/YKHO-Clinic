@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
@@ -149,21 +150,54 @@ export default function PrimarySearchAppBar({content, openHelp}) {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
-  function showNotifications() {
-      
-  }
-
 async function getNotifications(){
     try {
       const res = await axios.get("http://localhost:3000/patient/getNotifications", {
         withCredentials: true,
       });
       setNotifications(res.data.result);
-      console.log(res.data.result);
   } catch (err) {
     console.log(err);
   }
 }
+
+const [notificationsState, setNotificationsState] = React.useState({
+  top: false,
+  left: false,
+  bottom: false,
+  right: false,
+});
+
+const toggleNotifications = (anchor, open) => (event) => {
+  if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+  }
+
+  setNotificationsState({ ...notificationsState, [anchor]: open });
+}
+
+const notificationsList = (anchor) => (
+  <Box
+    sx={{ width: 350 }}
+    role="presentation"
+    onClick={toggleNotifications(anchor, false)}
+    onKeyDown={toggleNotifications(anchor, false)}
+  >
+    <List sx={{display:'flex', flexDirection:'column' , justifyContent:'center', alignItems:'center'}}>
+        <Typography><b>Notifications</b></Typography>
+        {notifications.map((notification) => (
+          <Paper elevation={4} sx={{marginBottom:'10px'}}>
+            <ListItem>
+              {/* button to remove notification */}
+                <ListItemText primary={notification.text} />
+                <Typography></Typography>
+            </ListItem>
+          </Paper>
+        ))}
+    </List>
+  </Box>
+)
+
 const [state, setState] = React.useState({
   top: false,
   left: false,
@@ -316,14 +350,19 @@ const list = (anchor) => (
 
   return (
     <div>
-    
-          
           <Drawer
             anchor={'left'}
             open={state['left']}
             onClose={toggleDrawer('left', false)}
           >
             {list('left')}
+          </Drawer>
+          <Drawer
+            anchor={'right'}
+            open={notificationsState['right']}
+            onClose={toggleNotifications('right', false)}
+          >
+            {notificationsList('right')}
           </Drawer>
        
     <Box sx={{ flexGrow: 1 }}>
@@ -337,9 +376,7 @@ const list = (anchor) => (
             sx={{ mr: 2 }}
             onClick={toggleDrawer('left', true)}
           >
-            
-            
-            <MenuIcon />
+          <MenuIcon />
           </IconButton>
           <Typography
             variant="h6"
@@ -378,11 +415,11 @@ const list = (anchor) => (
               size="large"
               aria-label="13"
               color="inherit"
-              onClick={showNotifications}
+              onClick={toggleNotifications('right', true)}
             >
-              <Badge badgeContent={notifications.length} color="error">
-                <NotificationsIcon />
-              </Badge>
+            <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon />
+            </Badge>
             </IconButton>
             <IconButton
               size="large"

@@ -571,7 +571,7 @@ async function rescheduleAppointment(req, res) {
   
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
-    text: `Appointment rescheduled to ${req.body.date}`,
+    text: `Appointment on ${thisAppointment.date} rescheduled to ${req.body.date}`,
     read: false,
     date: Date.now(),
   });
