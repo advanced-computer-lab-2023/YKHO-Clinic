@@ -29,7 +29,10 @@ const {
   deleteMedicine,
   updateMedicine,
   updatePresc,
-  getMedicine
+  getMedicine,
+  ShowRequests,
+  AcceptFollowupRequest,
+  RejectFollowupRequest
 } = require("./controller/doctorController");
 const {
 
@@ -149,7 +152,7 @@ app.post("/addAppointment", requireAuthDoctor , createAppointment);
 app.post("/doctor/addPrescription", requireAuthDoctor,createPrescription); 
 app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
-app.post("/doctor/updatePrescMed/:id",requireAuthDoctor,updateMedicine);
+app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
@@ -174,6 +177,9 @@ app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
+app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
+app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
+app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);

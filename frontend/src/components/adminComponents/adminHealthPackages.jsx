@@ -164,7 +164,6 @@ export default function AdminHome() {
             document.getElementById("doctorDiscountToBeCreated").value= "";
             document.getElementById("pharmacyDiscountToBeCreated").value= "";
             document.getElementById("familyDiscountToBeCreated").value= "";
-            
           }
           setMessageAdd(res.data.message);
         });

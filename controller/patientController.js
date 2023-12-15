@@ -8,7 +8,7 @@ const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-
+const FollowUpRequest = require("../model/followUpRequests");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const admin = require("../model/admin.js");
@@ -187,6 +187,29 @@ const createFamilyMember = async (req, res) => {
   res.status(201).render("patient/family", { results });
 };
 
+const addFollowUpRequest = async (req, res) => {
+  const { doctorID, date, time } = req.body;
+  const patientID = req.user._id;
+  const doc = await doctorModel.findById(doctorID);
+  const pat = await patientModel.findById(patientID,"-healthRecords");
+  const price = doctor.rate * 1.1 - (doctor.rate * 1.1 * healthPack.doctorDiscount) / 100;
+  startTimeHours= time.split("-")[0].split(":")[0];
+  startTimeMinutes= time.split("-")[0].split(":")[1];
+  endTimeHours= time.split("-")[1].split(":")[0];
+  endTimeMinutes= time.split("-")[1].split(":")[1];
+  const duration = (endTimeHours - startTimeHours) * 60 + (endTimeMinutes - startTimeMinutes);
+  date.setHours(startTimeHours);
+  date.setMinutes(startTimeMinutes);
+  const newFollowUpRequest = new FollowUpRequest({
+    doctorID,
+    patientID,
+    date,
+    duration,
+    price,
+  })
+  await newFollowUpRequest.save();
+  res.status(201).json({ message: "Follow up request sent successfully" });
+  };
 const readFamilyMembers = async (req, res) => {
   patient = await patientModel.findOne({ _id: req.user._id });
   let results = patient.familyMembers;
@@ -786,7 +809,7 @@ async function reserveSlot(req, res) {
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]) + 3;
   const endM = parseInt(endTime.split(":")[1]);
-  const doctor = await doctorModel.find({ _id: doctorID }).select(["rate"]);
+  const doctor = await doctorModel.find({ _id: doctorID }).select(["name","rate"]);
   const patient = await patientModel.find({ _id: id }).select(["subscription", "email", "name"]);
   let duration = (endH - startH) * 60 + (endM - startM);
   //console.log(patient);
@@ -830,7 +853,7 @@ async function reserveSlot(req, res) {
 
   let newNotification = new notificationModel({
     patientID: id,
-    text: "You have a new appointment",
+    text: `You have a new appointment on ${date} with doctor ${doctor[0].name}`,
     read: false,
     date: Date.now(),
   });
@@ -843,9 +866,8 @@ async function reserveSlot(req, res) {
   });
   await newNotification2.save();
 
-  // res.redirect(`/patient/doctors/${doctorID}`);
   res.status(201).send("Appointment reserved successfully");
-  await sendEmail(patient[0].email, `your appointment is confirmed on ${date}`);
+  await sendEmail(patient[0].email, `your appointment is confirmed on ${date} with doctor ${doctor[0].name}` );
   await sendEmail(doctor[0].email, `your appointment with ${patient[0].name} is confirmed on ${date}`);
 
 }
@@ -886,6 +908,7 @@ async function cancelAppointmentPatient(req, res) {
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID,"Wallet name email _id");
   const doctore= await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
+  const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
   var message = "";
   if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
     if(deletedAppointment.paid == true){
@@ -896,13 +919,13 @@ async function cancelAppointmentPatient(req, res) {
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
     }
-    message = "Your appointment has been cancelled and the amount has been refunded to your wallet";
+    message = `Your appointment with ${doctor.name} on ${deletedAppointment.date} has been cancelled and the amount has been refunded to your wallet`;
   }
   }else{//usability: if appointment is cancelled more than 24 hours before
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled";
     }
-    message = "Your appointment has been cancelled";
+    message = `Your appointment with ${doctor.name} on ${date} has been cancelled`;
   }
   let newNotification = new notificationModel({
     patientID: patient._id,
@@ -921,9 +944,8 @@ async function cancelAppointmentPatient(req, res) {
   await newNotification2.save();
 
   await sendEmail(patient.email, message);
-  await sendEmail(doctore.email, `Your appointment with ${patient.name} on ${deletedAppointment.date} is cancelled`);
+  await sendEmail(doctore.email, `Your appointment with ${patient.name} on ${date} is cancelled`);
   res.status(200).send("Appointment cancelled successfully");
-  // res.redirect(`patient/Appointments`);
 }
 
 
@@ -1512,6 +1534,7 @@ const getPatientPlan = async (req, res) => {
 const getFamilyMembersPlan = async (req, res) => {
   const familyMembers = await patientModel.findById(req.user._id, "familyMembers");
   var familyPlan = [];
+  if(familyMembers.familyMembers)
   for (let i = 0; i < familyMembers.familyMembers.length; i++) {
     const member = await patientModel.findById(familyMembers.familyMembers[i].patientID, "subscription");
     if (member !== null)

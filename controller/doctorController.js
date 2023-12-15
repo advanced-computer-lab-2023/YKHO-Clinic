@@ -13,6 +13,8 @@ const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const { prescription, validatePrescription } = require("../model/prescription");
 const { medicine, validateMedicine } = require("../model/medicine.js");
+const requestModel = require("../model/request.js");
+const followUpRequestModel = require("../model/followUpRequests.js");
 const axios = require("axios");
 const nodemailer = require("nodemailer");
 let id;
@@ -54,27 +56,21 @@ async function createDoctor(req, res) {
   }
 }
 async function createPrescription(req, res) {
-  const result = validatePrescription(req.body);
-  if (result.error) {
-    return res.send(result.error.message);
-  } else {
     let newPrescription = new prescription({
-      prescriptionName: req.body.prescription,
-      patientID: req.body.patientID,
-      doctorID: req.body.doctorID,
-      doctorName: req.body.doctorName,
-      date: req.body.date,
-      filled: req.body.filled,
+      prescriptionName: req.body.name,
+      patientID: req.body.id,
+      doctorID: req.user._id,
+      doctorName: req.user.name,
+      date: new Date(),
+      filled: false,
       price: 0,
-      paid: req.body.paid,
+      paid: false,
+      MedicineNames: [],
     });
-    try {
       newPrescription = await newPrescription.save();
-      res.status(200).send(newPrescription);
-    } catch (err) {
-      res.status(400).send(err.message);
-    }
-  }
+      const presc = await prescription.find({ doctorID: req.user._id,patientID:req.body.id });
+      res.status(200).json({result:presc});
+  
 }
 
 
@@ -114,10 +110,10 @@ async function deleteMedicine(req,res){
 }
 async function updateMedicine(req,res){
   id=req.user._id;
-  let prescription1 =await prescription.findOne({_id:req.params.id});
-  let medicineup;
+  let prescription1 =await prescription.findOne({_id:req.body.id});
+  let medicineup=[];
   let temp;
-  for (let i = 0; i < prescription1.MedicineNames; i++) {
+  for (let i = 0; i < prescription1.MedicineNames.length; i++) {
     if (prescription1.MedicineNames[i].name == req.body.name) {
       temp = prescription1.MedicineNames[i];
       temp.dosage = req.body.dosage;
@@ -126,8 +122,9 @@ async function updateMedicine(req,res){
       medicineup.push(prescription1.MedicineNames[i]);
     }
   }
-  prescription1= await prescription.findByIdAndUpdate(req.params.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
-
+  prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicineup} },{ new:true  });
+  console.log(prescription1)
+  res.status(200).json({result:prescription1})
 }
 async function updatePresc(req,res){
   id=req.body._id;
@@ -145,7 +142,36 @@ async function updatePresc(req,res){
 }
 
 
-
+async function ShowRequests(req, res) {
+  const drId= req.user._id;
+  const result = await followUpRequestModel.find({ doctorID: drId }).populate("patientID", "-healthRecords -medicalHistory");
+  res.status(200).json({result:result});
+}
+async function AcceptFollowupRequest(req, res) {
+  const drId= req.user._id;
+  const id = req.body.id;
+  const result = await followUpRequestModel.findById(id);
+  appointmentt = new appointment({
+    doctorID: drId,
+    patientID: result.patientID,
+    date: result.date,
+    status: "upcoming",
+    duration: result.duration,
+    price: result.price,
+    paid: true,
+  });
+  await appointmentt.save();
+  await followUpRequestModel.deleteMany({ date: result.date });
+  const newRequests= await followUpRequestModel.find({ doctorID: drId });
+  res.status(200).json({result:newRequests});
+}
+async function RejectFollowupRequest(req, res) {
+  const drId= req.user._id;
+  const id = req.body.id;
+  await followUpRequestModel.findByIdAndDelete(id);
+  const newRequests= await followUpRequestModel.find({ doctorID: drId });
+  res.status(200).json({result:newRequests});
+}
 
 async function loggedIn(req, res) {
   if (req.user) {
@@ -570,7 +596,7 @@ async function rescheduleAppointment(req, res) {
   
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
-    text: `Appointment rescheduled to ${req.body.date}`,
+    text: `Appointment on ${thisAppointment.date} rescheduled to ${req.body.date}`,
     read: false,
     date: Date.now(),
   });
@@ -622,5 +648,8 @@ module.exports = {
   ViewPrescriptionsDoc,
   cancelAppointment,
   rescheduleAppointment,
-  getMedicine
+  getMedicine,
+  ShowRequests,
+  AcceptFollowupRequest,
+  RejectFollowupRequest,
 };
