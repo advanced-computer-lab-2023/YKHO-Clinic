@@ -440,6 +440,7 @@ const list = (anchor) => (
               <NotificationsIcon />
             </Badge>
             </IconButton>
+
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton

@@ -90,33 +90,9 @@ export default function PrimarySearchAppBar({content, openHelp}) {
       window.location.href = `/patient/search/${values}`
     }//a3ml7a ezay deh lel doc
   }
-  function goAllApointments() {
-    window.location.href= '/patient/Appointments';
-      const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
-      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-    }
-  function goHome() {
-    window.location.href= '/patient/home';
-    const breadcrumb = { label: "Home", href: "/patient/home" };
-    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-  }
-  function goPrescriptions() {
-    window.location.href= '/patient/Prescriptions';
-    const breadcrumb = { label: "Prescriptions", href: "/patient/Prescriptions" };
-    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-  }
-  function goSeeFamilyOrDie(){
-    window.location.href='/patient/readFamilyMembers';
-  }
-  function goHealthRecords(){
-    window.location.href = '/patient/HealthRecords'
-  }
-  function goPackages(){
-    window.location.href='/patient/healthPackages'
-  }
-  function goMedicalHistory(){
-    window.location.href='/patient/medicalHistory'
-  }
+
+  
+
   const [error, setError] = useState('');
   async function LogoutButton() {
     try {
@@ -237,47 +213,40 @@ const list = (anchor) => (
   >
     <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={goHome}>
-            <ListItemText primary={'Home'} />
+          <ListItemButton onClick={goPatients}>
+            <ListItemText primary={'Your Patients'} />
           </ListItemButton>
         </ListItem>
     </List>
     <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={goAllApointments}>
-            <ListItemText primary={'Appointments'} />
+          <ListItemButton onClick={goAppointments}>
+            <ListItemText primary={'Your appointments'} />
           </ListItemButton>
         </ListItem>
     </List>
     <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={goPrescriptions}>
-            <ListItemText primary={'Prescriptions'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goSeeFamilyOrDie}>
-            <ListItemText primary={'Family Members'} />
+          <ListItemButton onClick={goTimeSlots}>
+            <ListItemText primary={'Your time slots'} />
           </ListItemButton>
         </ListItem>
       </List>
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={goHealthRecords}>
-            <ListItemText primary={'Health Records'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goMedicalHistory}>
-            <ListItemText primary={'Medical History'} />
+          <ListItemButton onClick={goFollowUp}>
+            <ListItemText primary={'follow up requests'} />
           </ListItemButton>
         </ListItem>
       </List>
     <Divider />
+    <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={editDoctorInfo}>
+            <ListItemText primary={'edit your info'} style={{textAlign:'center'}}/>
+          </ListItemButton>
+        </ListItem>
+    </List>
     <List>
         <ListItem disablePadding>
           <ListItemButton onClick={LogoutButton}>
