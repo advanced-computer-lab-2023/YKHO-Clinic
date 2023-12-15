@@ -102,12 +102,13 @@ const {
   getPatientPlan,
   getFamilyMembersPlan,
   getMyAppointments,
-  PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
+  PayPresc,
   viewAllDataOfPrescriptions,
   getNotifications,
   viewPrescriptionPDF,
   getDoctorSpeciality,
   cancelAppointmentPatient,
+  deleteNotification,
   getTimeSlotOnDate,
 } = require("./controller/patientController.js");
 const cors=require('cors')
@@ -116,7 +117,7 @@ const port = 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.use(cookieParser());
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening to requests on http://localhost:${port}`);
 });
 app.use(express.json());
@@ -136,6 +137,9 @@ mongoose
   });
 app.use(cors( {origin:"http://localhost:5173",credentials: true}));
 const id = "1";
+
+
+
 
 app.get("/",  home);
 app.post("/login", Login);
@@ -239,6 +243,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
 app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
@@ -286,10 +291,66 @@ app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
 
-app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayByCreditPresc);
-app.get("/patient/paymentWalletpresc/:id",requireAuthPatient,PayByWalletPresc);
-app.get("/successPresc/:id",requireAuth,successPresc);
-app.get("/failPresc",requireAuth,failPresc);
+app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
+
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)
+
+// socket.io
+const {Server} = require("socket.io");
+
+const io = new Server(server,{
+  cors:{
+      origin: "http://localhost:5173",
+      credentials:true
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('connected', socket.id);
+
+
+  socket.on("join_room", (data) => {
+      console.log("joined room "+ data)
+      socket.join(data);
+  })    
+ 
+  // chat
+  socket.on("send_message", (data) => {
+    console.log(data)
+      socket.in(data.room).emit("receive_message", data);
+      save(data);
+  })
+
+  // video
+  socket.on("outgoing", data => {
+    console.log("outgoing ", data.room)
+    socket.in(data.room).emit("incoming", data.room)
+  })
+
+  socket.on("answered", data => {
+    socket.in(data.room).emit("answered")
+  })
+
+  socket.on("declined", data => {
+    socket.in(data.room).emit("declined")
+  })
+
+  
+
+
+
+  socket.on("disconnect", (data) => {
+      console.log("disconnected", socket.id)
+  })
+});
+
+// chat
+const {chats, send, read, start, save, contacts} = require("./controller/chatController.js");
+
+app.get("/chats", requireAuth, chats);
+app.post("/text", requireAuth, send);
+app.post("/read", requireAuth, read);
+app.post("/start", requireAuth, start);
+app.get("/contacts", requireAuth, contacts);

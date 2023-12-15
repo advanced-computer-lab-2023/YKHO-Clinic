@@ -81,10 +81,10 @@ async function createMedicine(req, res){
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:parseInt(req.body.price),medicineID:idmed}
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:parseFloat(req.body.price),medicineID:idmed}
   let medicinesup=prescription1.MedicineNames;
   medicinesup.push(medicinetobe);
-  let pricenew = prescription1.price + parseInt(req.body.price);
+  let pricenew = prescription1.price + parseFloat(req.body.price);
   prescription1 = await prescription.findByIdAndUpdate(
     req.params.id,
     { $set: { MedicineNames: medicinesup } },
@@ -103,7 +103,7 @@ async function deleteMedicine(req,res){
   let prescription1 =await prescription.findOne({_id:req.body.id});
   let medicinesup=prescription1.MedicineNames; 
   medicinesup= medicinesup.filter(item =>item.name != req.body.name);
-  let pricenew = prescription1.price-req.body.price;
+  let pricenew = prescription1.price-parseFloat(req.body.price);
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {price: pricenew} },{ new: true });
   res.status(200).json({result:medicinesup})
@@ -338,10 +338,11 @@ async function cancelAppointment(req, res) {
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
-  const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
+  let dateConverted = (new Date(deletedAppointment.date)).toISOString();
+  const date = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
-  patient.Wallet += wallet;
+  patient.wallet += wallet;
   await patient.save();
   const doctore = await doctor.findById(deletedAppointment.doctorID);
   doctore.Wallet -= wallet;
@@ -622,11 +623,13 @@ async function rescheduleAppointment(req, res) {
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
+
 async function getMedicine(req, res) {
   let result = await medicine.find({}, "name price -_id");
   result = result.map(item => ({ price:item.price, label: item.name }));
   res.status(200).json({ result });
 }
+
 module.exports = {
   updatePresc,updateMedicine,
   deleteMedicine,
