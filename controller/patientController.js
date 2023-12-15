@@ -84,7 +84,6 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ username: username })).length > 0 ||
     (await requestModel.find({ username: username })).length > 0
   ) {
-    console.log(username);
     return res.status(201).json({ message: "username already exists" });
   }
   if (
