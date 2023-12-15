@@ -255,7 +255,7 @@ const PatientHome = () => {
                                                 >
                                                     <Paper variant='elevation' elevation={3} sx={{ marginLeft: "1.5%", width: "890px", height: "70px", marginTop: "5px" }}>
                                                         <Typography sx={{ fontSize: "25px", whiteSpace: "nowrap", marginLeft: "1.5%", paddingTop: "1.6%" }} gutterBottom>
-                                                            you have a prescription from Dr.{prescription.doctorName} <Button variant="text">View it</Button>
+                                                            you have a prescription from Dr.{prescription.doctorName}
                                                         </Typography>
                                                     </Paper>
                                                 </motion.div>
