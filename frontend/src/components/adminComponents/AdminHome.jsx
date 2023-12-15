@@ -13,8 +13,8 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
+import typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
@@ -66,7 +66,33 @@ export default function AdminHome() {
     }
   }
 
-  function handleBreadcrumbClick(event, breadcrumb) {
+  
+
+async function getPackages() {
+    try {
+      const res = await axios.get("http://localhost:3000/getHealthPackages", {
+        withCredentials: true,
+      });
+
+      setHealthPackages(res.data.healthPackages);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+async function getRequests() {
+    try {
+      const res = await axios.get("http://localhost:3000/getRequests", {
+        withCredentials: true,
+      });
+
+      setRequests(res.data.requests.splice(0,3));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+function handleBreadcrumbClick(event, breadcrumb) {
     event.preventDefault();
     // Find the index of the clicked breadcrumb in the array
     const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
@@ -87,30 +113,6 @@ export default function AdminHome() {
     console.log(updatedBreadcrumbs)
     // Navigate to the new page
     window.location.href = breadcrumb.href;
-  }
-
-  async function getPackages() {
-    try {
-      const res = await axios.get("http://localhost:3000/getHealthPackages", {
-        withCredentials: true,
-      });
-
-      setHealthPackages(res.data.healthPackages);
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  async function getRequests() {
-    try {
-      const res = await axios.get("http://localhost:3000/getRequests", {
-        withCredentials: true,
-      });
-
-      setRequests(res.data.requests.splice(0,3));
-    } catch (err) {
-      setError(err.message);
-    }
   }
 
   function goHome() {

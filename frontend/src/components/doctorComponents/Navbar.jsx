@@ -72,7 +72,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp}) {
+export default function PrimarySearchAppBar({goHome, goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp}) {
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
@@ -81,17 +81,6 @@ export default function PrimarySearchAppBar({content, openHelp}) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   useEffect(()=>{getNotifications()},[]);
   const { searchvalue } = useParams();
-
-  function toggleFilter() {
-    setIsOpen(!isOpen);
-  }
-  const handleSearch = () => {
-    if(values != "" && values != null){
-      window.location.href = `/patient/search/${values}`
-    }//a3ml7a ezay deh lel doc
-  }
-
-  
 
   const [error, setError] = useState('');
   async function LogoutButton() {
@@ -104,24 +93,6 @@ export default function PrimarySearchAppBar({content, openHelp}) {
     } catch (err) {
         setError(err.message);
     }
-}
-function goHome(){
-  window.location.href='/doctor/home'
-}
-function goPatients(){
-  window.location.href='/doctor/patients'
-}
-function goAppointments(){
-  window.location.href='/doctor/appointments'
-}
-function goTimeSlots(){
-  window.location.href='/doctor/timeslots'
-}
-function goFollowUp(){
-  window.location.href='/doctor/followup'
-}
-function editDoctorInfo(){
-  window.location.href='/doctor/edit'
 }
 
   const handleProfileMenuOpen = (event) => {

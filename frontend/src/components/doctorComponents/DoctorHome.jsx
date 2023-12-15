@@ -17,6 +17,9 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import DialogTitle from "@mui/material/DialogTitle";
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+
 function DoctorHome() {
   const [result, setResult] = useState(false);
   const [appointments, setAppointments] = useState([]);
@@ -32,6 +35,8 @@ function DoctorHome() {
   useEffect(() => {
     check(), loadAppointments(), loadRequests(), getName(), getWallet();
   }, []);
+
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
   async function check() {
     await axios
       .get("http://localhost:3000/doctor/contract", {
@@ -42,6 +47,18 @@ function DoctorHome() {
           window.location.href = "/doctor/contract";
         } else {
           setResult(true);
+          // Check if breadcrumbs contain the "Home" breadcrumb
+          const homeBreadcrumb = { label: "Home", href: "/doctor/home" };
+          const hasHomeBreadcrumb = breadcrumbs.some(
+            (item) => item.label == homeBreadcrumb.label
+          );
+          
+          // If not, add it to the breadcrumbs
+          if (!hasHomeBreadcrumb) {
+            const updatedBreadcrumbs = [homeBreadcrumb];
+            setBreadcrumbs(updatedBreadcrumbs);
+            localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+          }
         }
       })
       .catch((err) => {
@@ -67,6 +84,29 @@ function DoctorHome() {
           window.location.href = "/";
         }
       });
+  }
+
+  function handleBreadcrumbClick(event, breadcrumb) {
+    event.preventDefault();
+    // Find the index of the clicked breadcrumb in the array
+    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+    let updatedBreadcrumbs;
+    if(index == -1){
+      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+    }else{
+    // Slice the array up to the clicked breadcrumb (inclusive)
+      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+    }
+    console.log(index);
+    // Set the updated breadcrumbs
+    setBreadcrumbs(updatedBreadcrumbs);
+
+    // Save updated breadcrumbs to localStorage
+    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+
+    console.log(updatedBreadcrumbs)
+    // Navigate to the new page
+    window.location.href = breadcrumb.href;
   }
 
   async function loadAppointments() {
@@ -152,12 +192,37 @@ function DoctorHome() {
         console.log(err);
       });
   }
+
   function allAppointments() {
-    window.location.href = "/doctor/appointments";
+    const breadcrumb = { label: "appointments", href: "/doctor/appointments" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
+
   function toFollowUp() {
-    window.location.href = "/doctor/followup";
+    const breadcrumb = { label: "followUp", href: "/doctor/followup" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
+
+  function goHome(){
+    const breadcrumb = { label: "home", href: "/doctor/home" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+
+  function goPatients(){
+    const breadcrumb = { label: "patients", href: "/doctor/patients" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
+  function goTimeSlots(){
+    const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots"};
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
+  function editDoctorInfo(){
+    const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+
   async function confirm(id, type) {
     setId(id);
     setConfirmOpen(true);
@@ -170,12 +235,12 @@ function DoctorHome() {
       await rejectRequest(id);
     }
     setConfirmOpen(false);
-  }
+}
   return (
     <div>
       {result && (
         <div>
-          <Navbar />
+          <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
           <Dialog
             open={confirmOpen}
             keepMounted
@@ -195,6 +260,19 @@ function DoctorHome() {
                     <Button onClick={confirmAction}>Yes</Button>
                 </DialogActions>
             </Dialog>
+            <Breadcrumbs separator="›" aria-label="breadcrumb">
+            {breadcrumbs.map((breadcrumb, index) => (
+              <Link
+                key={index}
+                underline="hover"
+                color="inherit"
+                href={breadcrumb.href}
+                onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+              >
+                {breadcrumb.label}
+              </Link>
+            ))}
+          </Breadcrumbs>
           <Typography
             variant="h4"
             sx={{ font: "bold", marginTop: "3%", marginLeft: "3%" }}
