@@ -14,7 +14,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
-import Navbar from './Navbar';
 const DoctorInfo = () => {
     const [error,setError]= useState("")
     const updateDoctor= async()=>{
@@ -46,7 +45,7 @@ const DoctorInfo = () => {
             let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
             setBreadcrumbs(savedBreadcrumbs);
   
-            const homeBreadcrumb = { label: "followUp", href: "/doctor/followup" };
+            const homeBreadcrumb = { label: "editInfo", href: "/doctor/edit" };
             const hasHomeBreadcrumb = savedBreadcrumbs.some(
               (item) => item.label == homeBreadcrumb.label
             );
@@ -158,6 +157,7 @@ const DoctorInfo = () => {
                 message={error}>
                     <Alert severity="info">{error}</Alert>
                 </Snackbar> 
+                
                 <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
         <Breadcrumbs separator="›" aria-label="breadcrumb">
                         {breadcrumbs.map((breadcrumb, index) => (
@@ -172,6 +172,7 @@ const DoctorInfo = () => {
                         </Link>
                         ))}
         </Breadcrumbs>
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center", height:"90vh"}}>
         <Card sx={{width:"80%",height:"80%",padding:5}}>
         <Typography variant="h4">Update your information</Typography>
         <CardContent sx={{width:"100%",height:"80%",display:"flex",justifyContent:"center",alignItems:"center"}}>
