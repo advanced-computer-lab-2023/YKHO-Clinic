@@ -33,6 +33,7 @@ const {
   ShowRequests,
   AcceptFollowupRequest,
   RejectFollowupRequest,
+  downloadPresc,
   getNotificationsDoctor,
 } = require("./controller/doctorController");
 const {
@@ -188,6 +189,7 @@ app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
+app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
@@ -305,25 +307,23 @@ const {Server} = require("socket.io");
 
 const io = new Server(server,{
   cors:{
-      origin: "http://localhost:5173",
-      credentials:true
+    origin: "http://localhost:5173",
+    credentials:true
   }
 });
 
 io.on('connection', (socket) => {
   console.log('connected', socket.id);
 
-
   socket.on("join_room", (data) => {
-      console.log("joined room "+ data)
-      socket.join(data);
+    console.log("joined room "+ data)
+    socket.join(data);
   })    
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
-      socket.in(data.room).emit("receive_message", data);
-      save(data);
+    socket.in(data.room).emit("receive_message", data);
+    save(data);
   })
 
   // video
@@ -340,12 +340,8 @@ io.on('connection', (socket) => {
     socket.in(data.room).emit("declined")
   })
 
-  
-
-
-
   socket.on("disconnect", (data) => {
-      console.log("disconnected", socket.id)
+    console.log("disconnected", socket.id)
   })
 });
 
@@ -357,3 +353,7 @@ app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
+
+// notification
+const {rooms} = require("./controller/appointmentController");
+app.get("/rooms", requireAuth, rooms)

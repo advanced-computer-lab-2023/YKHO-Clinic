@@ -17,6 +17,8 @@ const requestModel = require("../model/request.js");
 const followUpRequestModel = require("../model/followUpRequests.js");
 const axios = require("axios");
 const nodemailer = require("nodemailer");
+const PDFDocument = require('pdfkit');
+const Table = require('pdfkit-table');
 let id;
 let html;
 const maxAge = 3 * 24 * 60 * 60;
@@ -166,14 +168,14 @@ async function AcceptFollowupRequest(req, res) {
   });
   await appointmentt.save();
   await followUpRequestModel.deleteMany({ date: result.date });
-  const newRequests= await followUpRequestModel.find({ doctorID: drId });
+  const newRequests= await followUpRequestModel.find({ doctorID: drId }).populate("patientID", "-healthRecords -medicalHistory");
   res.status(200).json({result:newRequests});
 }
 async function RejectFollowupRequest(req, res) {
   const drId= req.user._id;
   const id = req.body.id;
   await followUpRequestModel.findByIdAndDelete(id);
-  const newRequests= await followUpRequestModel.find({ doctorID: drId });
+  const newRequests= await followUpRequestModel.find({ doctorID: drId }).populate("patientID", "-healthRecords -medicalHistory");
   res.status(200).json({result:newRequests});
 }
 
@@ -263,6 +265,10 @@ const checkContract = async (req, res, next) => {
   }
 };
 const zlib = require('zlib');
+const path = require('path');
+
+
+
 
 const uploadHealthRecord = async (req, res) => {
   const patientId = req.params.id;
@@ -635,7 +641,67 @@ async function rescheduleAppointment(req, res) {
 async function getMedicine(req, res) {
   let result = await medicine.find({}, "name price -_id");
   result = result.map(item => ({ price:item.price, label: item.name }));
+  
   res.status(200).json({ result });
+}
+
+async function downloadPresc(req, res) {
+  const id = req.params.id;
+  console.log(id);
+  const result = await prescription.findById(id).populate("patientID", "-healthRecords -medicalHistory");
+
+  // Create a new PDF document
+  const doc = new PDFDocument();
+
+  // Set the response headers for PDF
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename="prescription.pdf"');
+  doc.pipe(res);
+  // Set font and font size
+  doc.font('Helvetica-Bold');
+  doc.fontSize(14);
+  // Import the path module
+  // Get the absolute path to the image file
+  const imagePath = path.join(__dirname, '../images', 'logo.png');
+
+  // Add the image to the PDF
+  const imageWidth = 50;
+  const imageHeight = 50;
+  const imageX = (doc.page.width - imageWidth) / 2;
+  doc.image(imagePath, imageX, doc.y, { width: imageWidth, height: imageHeight });
+
+  doc.text('Prescription', { align: 'center', underline: true });
+  doc.moveDown();
+  
+
+  // Add doctor name, patient name, date, and prescription name to the PDF
+  doc.font('Helvetica');
+  doc.fontSize(12);
+  doc.text(`Doctor Name: ${result.doctorName} | Patient Name: ${result.patientID.name} | Date: ${result.date.toISOString().split('T')[0]} | Prescription Name: ${result.prescriptionName}`);
+  doc.moveDown();
+  doc.lineWidth(1); // Set the line width to the width of the page
+  doc.strokeColor('#3B82F6'); // Set the line color to blue
+  doc.lineCap('butt'); // Set the line cap style to butt
+  doc.moveTo(0, doc.y).lineTo(doc.page.width, doc.y).stroke(); // Draw a line from left to right
+  doc.moveDown();
+
+  result.MedicineNames.forEach((medicine, index) => {
+    doc.text(`Medicine ${index + 1}: ${medicine.name} | Dosage: ${medicine.dosage} | Price: ${medicine.price}`);
+    doc.moveDown();
+    doc.lineWidth(1); // Set the line width to the width of the page
+  doc.strokeColor('#3B82F6'); // Set the line color to blue
+  doc.lineCap('butt'); // Set the line cap style to butt
+  doc.moveTo(0, doc.y).lineTo(doc.page.width, doc.y).stroke(); // Draw a line from left to right
+  doc.moveDown();
+  });
+
+  // Add blue borders to the PDF
+  doc.lineWidth(12); // Set the line width to 2 (or adjust as needed)
+  doc.rect(0, 0, doc.page.width, doc.page.height).stroke('#3B82F6');
+
+  // End the PDF document
+  doc.end();
+  
 }
 
 module.exports = {
@@ -665,5 +731,6 @@ module.exports = {
   ShowRequests,
   AcceptFollowupRequest,
   RejectFollowupRequest,
+  downloadPresc,
   getNotificationsDoctor,
 };

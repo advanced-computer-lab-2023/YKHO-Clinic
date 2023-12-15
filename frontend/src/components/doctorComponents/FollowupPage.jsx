@@ -8,24 +8,19 @@ import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { DialogTitle, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import FollowUpCard from "./FollowUpCard";
 import Button from "@mui/material/Button";
 import LoadingComponent from "../LoadingComponent";
 import { motion, AnimatePresence } from "framer-motion";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import PlaceHolder from "../PlaceHolder";
 
-export default function DoctorFollowUp(){
+export default function FollowupPage(){
     const [followUp, setFollowUp] = useState([]);
-    const [result, setResult] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [id, setId] = useState("");
-    const [type, setType] = useState("");
+
+
     useEffect(() => {
-      check();  loadRequests();
+      check();, loadRequests();
     }, []);
     async function check() {
       await axios
@@ -65,8 +60,10 @@ export default function DoctorFollowUp(){
     }
 
     async function loadRequests() {
-      await axios.get("http://localhost:3000/doctor/showRequests",{withCredentials:true}).then((res)=>{
-        setFollowUp(res.data.result);
+      await axios.get("http://localhost:3000/doctor/upcomingAppointments",{withCredentials:true}).then((res)=>{
+        const temp = res.data.result.slice(0,2);
+        console.log(temp)
+        setFollowUp(temp);
       }).catch((err)=>{
         console.log(err);
       })
@@ -82,7 +79,8 @@ export default function DoctorFollowUp(){
             withCredentials: true,
           })
           .then((res) => {
-            setFollowUp(res.data.result);
+            const temp = res.data.result.slice(0,2);
+            setFollowUp(temp)
           })
           .catch((err) => {
             console.log(err);
@@ -99,62 +97,35 @@ export default function DoctorFollowUp(){
             withCredentials: true,
           })
           .then((res) => {
-            setFollowUp(res.data.result);
+            const temp = res.data.result.slice(0,2);
+            setFollowUp(temp)
           })
           .catch((err) => {
             console.log(err);
           });
       }
-      async function confirm(id, type) {
-        setId(id);
-        setConfirmOpen(true);
-        setType(type);
-      }
-      async function confirmAction() {
-        if (type == "accept") {
-          await acceptRequest(id);
-        } else {
-          await rejectRequest(id);
-        }
-        setConfirmOpen(false);
-      }
+
     return(
       result && <>
         <div>
             <Navbar />
-            <Dialog
-            open={confirmOpen}
-            keepMounted
-            onClose={()=>{setConfirmOpen(false);}}
-            aria-describedby="alert-dialog-slide-description"
-            maxWidth="lg"
-            sx={{width:"100%"}}
-            >
-                <DialogTitle>
-                    <Typography> Are you sure </Typography>
-                </DialogTitle>
-                <DialogContent>
-                    <Typography>This action cannot be undone</Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={()=>{setConfirmOpen(false);}} >No</Button>
-                    <Button onClick={confirmAction}>Yes</Button>
-                </DialogActions>
-            </Dialog>
-            <div style={{display:"flex",justifyContent:"center",alignItems:"center"}}>
-            <Card sx={{ display: 'flex', width: '80vw', height: '80vh',marginTop:6}}>    
+            <Card sx={{ display: 'flex', width: '80vw', height: '80vh' }}>    
               <CardContent sx={{ width: '100%', overflowY: 'auto' }}>
                 <div  style={{position: 'sticky', backgroundColor:"white",height:60,top: 0, zIndex: 1}} >
                 <Typography sx={{ fontSize: 24 }} gutterBottom>
-                  Your Follow up requests
+                  Your Folllow up requests
                 </Typography>
                 </div>
                 <Grid container sx={{ display: 'flex', marginTop: 2 }} justifyContent="center" alignItems="center" columnSpacing={3} rowSpacing={3}>
+                  {appointments.length === 0 && !appLoading && (
+                    <PlaceHolder message="No appointments" description="You have no appointments" width="390" height="320" />
+                  )}
+                  
                   {followUp.length != 0 && 
                       followUp.map(follow => {
                         return(
                         <Grid item>
-                          <FollowUpCard id={follow._id} name={follow.patientID.name} date={follow.date.split("T")[0]} time={follow.date.split("T")[1].split(":")[0]+":"+follow.date.split("T")[1].split(":")[1]} accept={confirm} reject={confirm} />
+                          <FollowUpCard id={follow._id} name={follow.patientID.name} date={follow.date.split("T")[0]} accept={acceptRequest} reject={rejectRequest} />
                         </Grid>
                         );
                       })
@@ -164,7 +135,7 @@ export default function DoctorFollowUp(){
                         <PlaceHolder
                         message="No follow up requests"
                         description="You have no follow up requests"
-                        width="300"
+                        width="250"
                         height="190"
                         />
                       }
@@ -173,7 +144,6 @@ export default function DoctorFollowUp(){
               </CardContent>
               
             </Card>
-            </div>
         </div>
       </>
     )

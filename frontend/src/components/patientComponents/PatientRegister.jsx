@@ -49,13 +49,13 @@ const patientRegister = () => {
         const name = document.getElementById("name").value;
         let DOB = selectedDate;
         const email = document.getElementById("email").value;
-        const mobile = document.getElementById("mobile").value;
+        const mobileNumber = document.getElementById("mobile").value;
         const genderChoice = gender;
         const emergencyName = document.getElementById("emergencyName").value;
         const emergencyMobile = document.getElementById("emergencyMobile").value;
 
 
-        let bodyJson = { username, password, name, DOB, email, mobile, gender: genderChoice, emergencyName, emergencyMobile };
+        let bodyJson = { username, password, name, DOB, email, mobileNumber, gender: genderChoice, emergencyName, emergencyMobile };
         console.log(bodyJson)
         try {
             const response = await axios.post("http://localhost:3000/patient/createPatient", bodyJson);

@@ -54,7 +54,7 @@ const createPatient = async (req, res) => {
     DOB,
     gender,
     email,
-    mobile,
+    mobileNumber,
     emergencyName,
     emergencyMobile,
   } = req.body;
@@ -65,7 +65,7 @@ const createPatient = async (req, res) => {
     DOB: Joi.date().iso().required(),
     gender: Joi.string().valid("male", "female", "other").required(),
     email: Joi.string().email().required(),
-    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+    mobileNumber: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
     emergencyName: Joi.string().required(),
     emergencyMobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
   });
@@ -88,10 +88,10 @@ const createPatient = async (req, res) => {
     return res.status(201).json({ message: "username already exists" });
   }
   if (
-    (await admin.find({ mobile: mobile })).length > 0 ||
-    (await doctorModel.find({ mobile: mobile })).length > 0 ||
-    (await patientModel.find({ mobile: mobile })).length > 0 ||
-    (await requestModel.find({ mobile: mobile })).length > 0
+    (await admin.find({ mobile: mobileNumber })).length > 0 ||
+    (await doctorModel.find({ mobile: mobileNumber })).length > 0 ||
+    (await patientModel.find({ mobileNumber: mobileNumber })).length > 0 ||
+    (await requestModel.find({ mobile: mobileNumber })).length > 0
   ) {
     return res.status(201).json({ message: "mobile already exists" });
   }
@@ -107,6 +107,7 @@ const createPatient = async (req, res) => {
   const emergency = {
     name: emergencyName,
     mobile: emergencyMobile,
+    relation: "emergency",
   };
 
   const salt = await bcrypt.genSalt();
@@ -119,7 +120,7 @@ const createPatient = async (req, res) => {
     DOB,
     gender,
     email,
-    mobile,
+    mobileNumber,
     emergency,
   });
 
@@ -1278,7 +1279,7 @@ const LinkFamilyMemeber = async (req, res) => {
     relate = await patientModel.find({ email: req.query.searchvalue });
   }
   if (req.query.filter1 == "MobileNumber") {
-    relate = await patientModel.find({ mobile: req.query.searchvalue });
+    relate = await patientModel.find({ mobileNumber: req.query.searchvalue });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
@@ -1434,7 +1435,8 @@ const PayPresc = async (req, res) => {
 
   }
   console.log(patient.shoppingCart);
-  let updatepatient = await patientModel.findByIdAndUpdate(pres.patientID, { $set: { shoppingCart: patient.shoppingCart } }, { new: 1 });
+  let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
+  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });
 
 }

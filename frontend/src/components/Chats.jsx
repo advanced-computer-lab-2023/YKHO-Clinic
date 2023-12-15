@@ -90,7 +90,7 @@ function Chats() {
 
         await socket.emit("declined", data)
     }
-
+    
     useEffect(() => {
         chatsRef.current = chats;
         indexRef.current = index;
@@ -295,6 +295,7 @@ function Chats() {
     }
 
 
+
     const send = async () => {
         if (message != "" && index != null) {
             const data = {
@@ -303,6 +304,7 @@ function Chats() {
                 isPatient,
                 time: new Date(Date.now())
             }
+
             await socket.emit("send_message", data)
 
             delete data.room;
@@ -366,7 +368,6 @@ function Chats() {
     const handleOpen = async () => {
         setOpen(true);
     }
-
 
 
     const start = async (room) => {

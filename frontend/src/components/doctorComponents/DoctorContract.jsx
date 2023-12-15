@@ -1,23 +1,21 @@
-import {React,useState,useEffect} from 'react';
+import React from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-
+import Navbar from './Navbar';
+import Typography from '@mui/material/Typography';
+import { Button, Card, CardActions, Checkbox, Snackbar } from '@mui/material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Box from '@mui/material/Box';
+import MuiAlert from '@mui/material/Alert';
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
 const DoctorContract = () => {
+    
     const [result,setResult]=useState(false);
     const [message, setMessage] = useState("");
-    async function acceptContract() {
-        if(document.getElementById("accept").checked){
-        const res = await axios.get("http://localhost:3000/doctor/contract?accept=accept", {
-            withCredentials: true
-        }).then((res) => {
-            window.location.href = "/doctor/home"
-        }).catch((err) => {
-            console.log(err);
-        })
-        }
-    else{
-        setMessage("Please accept the contract to continue")
-    }
-    }
+    const [isChecked, setIsChecked] = useState(false);
     useEffect(() => {
         check();
     }, []);
@@ -59,16 +57,52 @@ const DoctorContract = () => {
         }
             )
     }
+    function changeCheck(){
+        setIsChecked(!isChecked);
+    }
+    async function acceptContract() {
+        if(isChecked){
+        const res = await axios.get("http://localhost:3000/doctor/contract?accept=accept", {
+            withCredentials: true
+        }).then((res) => {
+            window.location.href = "/doctor/home"
+        }).catch((err) => {
+            console.log(err);
+        })
+        }
+    else{
+        setMessage("Please accept the contract to continue")
+    }
+    }
             return (
-                <div>
-                {result&&<div>
-                    <h1>Contract</h1>
-                    <p>By checking the box below, you agree to the terms and conditions of this contract:</p>
-                    <p style={{ overflowY: 'scroll', height: '300px', backgroundColor: '#D3D3D3' }}>
+                result&&<>  
+                <Snackbar
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }} 
+                open={message != ""}
+                autoHideDuration={6000}
+                onClose={() => {
+                    setMessage("");
+                }}
+                message={message}>
+                    <Alert severity="error">{message}</Alert>
+                </Snackbar>  
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <Card  sx={{display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",width:"80%",marginTop:"3%"}}>
+                <Box bgcolor={"primary.main"} sx={{width:"100%", py:3}}>
+                <Typography  variant="h4" sx={{textAlign:"center",color:"white"}}>
+                    Welcome to El7a2ny
+                </Typography>
+                <Typography  variant="h6" sx={{textAlign:"center",color:"white"}}>
+                    In order to use our services you have to sign a contract with us
+                </Typography>
+                </Box>
+                <div style={{height:"60vh",overflowY: 'scroll', marginBottom:10}}>
+                <Typography>By checking the box below, you agree to the terms and conditions of this contract:</Typography>
+                    <Typography style={{ }}>
                         DOCTOR EMPLOYMENT AGREEMENT
                         <br />
                         <br />
-                        This Employment Agreement ("Agreement") is entered into on Today's date between YKHO (hereinafter referred to as the
+                        This Employment Agreement ("Agreement") is entered into on Today's date between El7a2ny (hereinafter referred to as the
                         "Clinic") and Yourself (hereinafter referred to as the "Doctor").
                         <br />
                         <br />
@@ -81,11 +115,7 @@ const DoctorContract = () => {
                         2. COMPENSATION
                         <br />
                         <br />
-                        2.1. The Doctor's base compensation shall be a fixed annual salary of [Salary Amount], payable in accordance with
-                        the Clinic's standard payroll schedule.
-                        <br />
-                        <br />
-                        2.2. The Clinic may add a markup on medical services and products provided by the Doctor, which shall be determined
+                        2.1. The Clinic may add a markup on medical services and products provided by the Doctor, which shall be determined
                         by the Clinic and disclosed to the Doctor. The markup is intended to cover clinic operating expenses and generate a
                         reasonable profit.
                         <br />
@@ -157,14 +187,17 @@ const DoctorContract = () => {
                         <br />
                         IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first above written.
                         <br />
-                    </p>
-                    <input type="checkbox" id="accept" name="accept" value="accept" required />
-                    <label htmlFor="accept">I accept the terms and conditions of this contract.</label>
-                    <br />
-                    <input onClick={acceptContract} type="submit" value="Submit" />
-                    <p>{message}</p>
-                </div>}
+                    </Typography>
                 </div>
+                        
+                <FormControlLabel control={<Checkbox onChange={changeCheck} />} label="I agree to the terms and conditions of this contract." />
+                <CardActions>
+                    <Button variant="contained" onClick={acceptContract}>submit</Button>
+                </CardActions>
+                </Card>
+                
+                </div>
+                </> 
             );
         };
 
