@@ -45,7 +45,7 @@ const {
   PatientFilterAppointments,
   DocFilterAppointments,
   PatientShowAppointments,
-  DocShowAppointments,
+  DocShowAppointments,rooms, getRoom
 } = require("./controller/appointmentController");
 const {
   goToAdminLogin,
@@ -162,7 +162,7 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
-app.get("/doctor/getNotifications", requireAuthPatient, getNotificationsDoctor);
+app.get("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -322,6 +322,7 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
+    console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);
   })
@@ -340,20 +341,28 @@ io.on('connection', (socket) => {
     socket.in(data.room).emit("declined")
   })
 
+  // notifications
+  socket.on("update", async (data) => {
+    let room = await getRoom(data);
+    //
+    socket.in(room).emit("update")
+  })
+  
+
   socket.on("disconnect", (data) => {
     console.log("disconnected", socket.id)
   })
 });
 
 // chat
-const {chats, send, read, start, save, contacts} = require("./controller/chatController.js");
+const {chats, send, read, start, save, contacts, unread} = require("./controller/chatController.js");
 
 app.get("/chats", requireAuth, chats);
 app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
+app.get("/unread", requireAuth, unread);
 
 // notification
-const {rooms} = require("./controller/appointmentController");
 app.get("/rooms", requireAuth, rooms)

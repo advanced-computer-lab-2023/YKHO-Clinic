@@ -37,7 +37,31 @@ import dayjs from 'dayjs';
 import CircularProgress from '@mui/material/CircularProgress';
 
 
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+const init = async () => {
+  await axios.get("http://localhost:3000/rooms", {
+    withCredentials: true
+  }).then((res) =>{
+    let rooms = res.data;
+    for(let i = 0; i < rooms.length; i++){
+      joinRoom(rooms[i])
+    }
+  })
+}
+
+const joinRoom = (room) => {
+  socket.emit("join_room", room)
+}
+
+
 function DoctorAppointments() {
+  // socket
+  useEffect(() => {init()}, [])
+
+
   const [searchvalue, setSearchValue] = useState('upcoming');
   const [result, setResult] = useState(false);
   useEffect(() => {
@@ -55,6 +79,9 @@ function DoctorAppointments() {
   const [isScheduleFollowUp, setIsScheduleFollowUp] = useState(false);
   const [isOpen2, setIsOpen2] = useState(false);
   const [appointmentId2, setAppointmentId2] = useState('');
+
+  
+
   useEffect(() => {
     // Trigger the searchAppointments function when searchValue changes
     searchAppointments();
@@ -106,8 +133,11 @@ function DoctorAppointments() {
     setAppointmentId2(e);
   }
   async function cancelAppointment() {
+    
+
     setRescheduleLoading(true);
     await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then(() => {
+      socket.emit("update", appointmentId2);
       window.location.href = '/doctor/appointments';
     }).catch((err) => {
       console.log(err);
@@ -115,9 +145,8 @@ function DoctorAppointments() {
       setRescheduleLoading(false);
       setIsOpen2(false);
     });
+
   }
-
-
 
   function changeRadioValue(event) {
     status = event.target.value;
@@ -210,6 +239,7 @@ function DoctorAppointments() {
       }
       else{
         await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
+          socket.emit("update", appointmentId);
           window.location.href = '/doctor/appointments';
         }).catch((err) => {
           console.log(err);
@@ -220,6 +250,8 @@ function DoctorAppointments() {
           setOpen(false);
           setRescheduleLoading(false);
         });
+
+
       }
     }
     const today = dayjs();

@@ -13,7 +13,30 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useParams } from 'react-router-dom';
 import AppointmentCard from './AppointmentsCard';
 
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+const init = async () => {
+    await axios.get("http://localhost:3000/rooms", {
+        withCredentials: true
+    }).then((res) => {
+        let rooms = res.data;
+        for (let i = 0; i < rooms.length; i++) {
+            joinRoom(rooms[i])
+        }
+    })
+}
+
+const joinRoom = (room) => {
+    socket.emit("join_room", room)
+}
+
+
 const PatientAppointments = () => {
+    // socket
+    useEffect(() => { init() }, [])
+
     const [result, setResult] = useState(false);
     useEffect(() => { check(), loadAppointments(), handlePaymentSnack() }, []);
     useEffect(() => { setSearchBox(); }, [result]);
@@ -86,7 +109,7 @@ const PatientAppointments = () => {
         await axios.post(`http://localhost:3000/patient/cancelAppointment`, { id: id }, {
             withCredentials: true
         }).then((res) => {
-
+            socket.emit("update", id);
             console.log(res);
             loadAppointments();
         }).catch((err) => {
@@ -146,12 +169,20 @@ const PatientAppointments = () => {
         }).catch((err) => {
             console.log(err);
         });
+        await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
+            withCredentials: true,
+        }).then((res) => {
+            setTimeSlots(res.data.result);
+        }).catch((err) => {
+            console.log(err);
+        });
     }
 
     async function rescheduleAppointment(id, date, time) {
         await axios.post(`http://localhost:3000/patient/rescheduleAppointment`, { appointmentId: id, date: date, time: time }, {
             withCredentials: true
         }).then((res) => {
+            socket.emit("update", id);
             console.log(res);
             loadAppointments();
         }).catch((err) => {
