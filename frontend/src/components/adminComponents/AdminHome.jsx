@@ -103,7 +103,6 @@ function handleBreadcrumbClick(event, breadcrumb) {
     // Slice the array up to the clicked breadcrumb (inclusive)
       updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
     }
-    console.log(index);
     // Set the updated breadcrumbs
     setBreadcrumbs(updatedBreadcrumbs);
 

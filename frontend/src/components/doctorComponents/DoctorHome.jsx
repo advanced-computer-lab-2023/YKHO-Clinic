@@ -104,7 +104,6 @@ function DoctorHome() {
     // Save updated breadcrumbs to localStorage
     localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
 
-    console.log(updatedBreadcrumbs)
     // Navigate to the new page
     window.location.href = breadcrumb.href;
   }
@@ -127,7 +126,6 @@ function DoctorHome() {
       });
   }
   async function loadRequests() {
-    console.log("here")
     await axios.get("http://localhost:3000/doctor/showRequests",{withCredentials:true}).then((res)=>{
       const temp = res.data.result.slice(0,2);
       console.log(temp)

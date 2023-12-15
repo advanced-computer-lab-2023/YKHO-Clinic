@@ -69,11 +69,14 @@ const DoctorPatients = () => {
           } else {
             setResult(true);
             // Check if breadcrumbs contain the "Home" breadcrumb
+            let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+            setBreadcrumbs(savedBreadcrumbs);
+
             const homeBreadcrumb = { label: "patients", href: "/doctor/patients" };
-            const hasHomeBreadcrumb = breadcrumbs.some(
+            const hasHomeBreadcrumb = savedBreadcrumbs.some(
               (item) => item.label == homeBreadcrumb.label
             );
-            
+            console.log(hasHomeBreadcrumb)
             // If not, add it to the breadcrumbs
             if (!hasHomeBreadcrumb) {
               const updatedBreadcrumbs = [homeBreadcrumb];

@@ -19,7 +19,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 export default function ChangePassword() {
   const [error, setError] = useState("");
-  const [healthPackages, setHealthPackages] = useState([]);
   const [message, setMessage] = useState("");
 
   const [result,setResult]=useState(false);
@@ -33,7 +32,7 @@ export default function ChangePassword() {
   
       if (res.data.type === "admin") {
         setResult(true);
-  
+
         // Check if breadcrumbs contain the "Home" breadcrumb
         let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
         setBreadcrumbs(savedBreadcrumbs);

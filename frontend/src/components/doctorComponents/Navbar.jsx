@@ -145,37 +145,18 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
     }//a3ml7a ezay deh lel doc
   }
 
-
-
   const [error, setError] = useState('');
   async function LogoutButton() {
     try {
       const res = await axios.get("http://localhost:3000/logout", {
         withCredentials: true
       });
+      localStorage.removeItem('breadcrumbs');
       window.location.href = "/";
 
     } catch (err) {
       setError(err.message);
     }
-  }
-  function goHome() {
-    window.location.href = '/doctor/home'
-  }
-  function goPatients() {
-    window.location.href = '/doctor/patients'
-  }
-  function goAppointments() {
-    window.location.href = '/doctor/appointments'
-  }
-  function goTimeSlots() {
-    window.location.href = '/doctor/timeslots'
-  }
-  function goFollowUp() {
-    window.location.href = '/doctor/followup'
-  }
-  function editDoctorInfo() {
-    window.location.href = '/doctor/edit'
   }
 
   const handleProfileMenuOpen = (event) => {

@@ -17,6 +17,8 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import PlaceHolder from "../PlaceHolder";
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 export default function DoctorFollowUp(){
     const [followUp, setFollowUp] = useState([]);
@@ -27,6 +29,8 @@ export default function DoctorFollowUp(){
     useEffect(() => {
       check();  loadRequests();
     }, []);
+
+    const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
       await axios
         .get("http://localhost:3000/doctor/contract", {
@@ -37,6 +41,21 @@ export default function DoctorFollowUp(){
             window.location.href = "/doctor/contract";
           } else {
             setResult(true);
+            // Check if breadcrumbs contain the "Home" breadcrumb
+            let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+            setBreadcrumbs(savedBreadcrumbs);
+  
+            const homeBreadcrumb = { label: "followUp", href: "/doctor/followup" };
+            const hasHomeBreadcrumb = savedBreadcrumbs.some(
+              (item) => item.label == homeBreadcrumb.label
+            );
+            console.log(hasHomeBreadcrumb)
+            // If not, add it to the breadcrumbs
+            if (!hasHomeBreadcrumb) {
+              const updatedBreadcrumbs = [homeBreadcrumb];
+              setBreadcrumbs(updatedBreadcrumbs);
+              localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+            }
           }
         })
         .catch((err) => {
@@ -63,7 +82,59 @@ export default function DoctorFollowUp(){
           }
         });
     }
-
+  
+    function handleBreadcrumbClick(event, breadcrumb) {
+        event.preventDefault();
+        // Find the index of the clicked breadcrumb in the array
+        const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+        let updatedBreadcrumbs;
+        if(index == -1){
+          updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+        }else{
+        // Slice the array up to the clicked breadcrumb (inclusive)
+          updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+        }
+        console.log(index);
+        // Set the updated breadcrumbs
+        setBreadcrumbs(updatedBreadcrumbs);
+    
+        // Save updated breadcrumbs to localStorage
+        localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+    
+        console.log(updatedBreadcrumbs)
+        // Navigate to the new page
+        window.location.href = breadcrumb.href;
+      }
+  
+      function allAppointments() {
+        const breadcrumb = { label: "appointments", href: "/doctor/appointments" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+    
+      function toFollowUp() {
+        const breadcrumb = { label: "followUp", href: "/doctor/followup" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+    
+      function goHome(){
+        const breadcrumb = { label: "home", href: "/doctor/home" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+    
+      function goPatients(){
+        const breadcrumb = { label: "patients", href: "/doctor/patients" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      
+      function goTimeSlots(){
+        const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots"};
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      
+      function editDoctorInfo(){
+        const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
     async function loadRequests() {
       await axios.get("http://localhost:3000/doctor/showRequests",{withCredentials:true}).then((res)=>{
         setFollowUp(res.data.result);
@@ -121,7 +192,20 @@ export default function DoctorFollowUp(){
     return(
       result && <>
         <div>
-            <Navbar />
+        <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+          <Breadcrumbs separator="›" aria-label="breadcrumb">
+                        {breadcrumbs.map((breadcrumb, index) => (
+                        <Link
+                            key={index}
+                            underline="hover"
+                            color="inherit"
+                            href={breadcrumb.href}
+                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                        >
+                            {breadcrumb.label}
+                        </Link>
+                        ))}
+            </Breadcrumbs>
             <Dialog
             open={confirmOpen}
             keepMounted
