@@ -114,6 +114,7 @@ const {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
+  getPatient
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -279,6 +280,7 @@ app.get("/patient/getTimeSlotOnDate", requireAuthPatient, getTimeSlotOnDate);
 app.post("/patient/rescheduleAppointment",requireAuthPatient,rescheduleAppointment);
 app.post("/patient/addFollowUpRequest",requireAuthPatient,addFollowUpRequest);
 app.get("/patient/getMyID",requireAuthPatient,getMyID);
+app.get("/patient",requireAuthPatient,getPatient);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;

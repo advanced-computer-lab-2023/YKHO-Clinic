@@ -1545,7 +1545,10 @@ async function getTimeSlotOnDate(req, res) {
 async function getMyID(req, res) {
   res.status(200).json({ result: req.user._id });
 }
-
+async function getPatient(req, res) {
+  const patient = await patientModel.findById(req.user._id,"-healthRecords.data");
+  res.status(200).json({ result: patient });
+}
 module.exports = {
   showSlots,
   reserveSlot,
@@ -1588,6 +1591,7 @@ module.exports = {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
+  getPatient
 };
 
 module.exports.readSubscription = readSubscription;
