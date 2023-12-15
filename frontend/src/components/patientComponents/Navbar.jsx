@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -35,6 +34,29 @@ import { useNavigate,useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 // Inside your component
+
+// axios
+import axios from 'axios';
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+
+
+const init = async () => {
+  await axios.get("http://localhost:3000/rooms", {
+    withCredentials: true
+  }).then((res) =>{
+    let rooms = res.data;
+    for(let i = 0; i < rooms.length; i++){
+      joinRoom(rooms[i])
+    }
+  })
+}
+
+const joinRoom = (room) => {
+  socket.emit("join_room", room)
+}
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -77,6 +99,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function PrimarySearchAppBar({content, openHelp}) {
+  
+
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
@@ -85,6 +109,16 @@ export default function PrimarySearchAppBar({content, openHelp}) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   useEffect(()=>{getNotifications()},[]);
   const { searchvalue } = useParams();
+
+  useEffect(() => {init()}, [])
+
+  useEffect(() => {
+    socket.on("cancel", (data) => {
+      
+    })
+
+}, [socket])
+
 
   function toggleFilter() {
     setIsOpen(!isOpen);
@@ -440,17 +474,7 @@ const list = (anchor) => (
               <NotificationsIcon />
             </Badge>
             </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
+
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton

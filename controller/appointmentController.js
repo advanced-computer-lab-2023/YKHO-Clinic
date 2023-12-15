@@ -3,6 +3,8 @@ const {appointment,validateAppointments} = require('../model/appointments.js');
 let id;
 
 
+
+
 async function createAppointment(req,res){
     const result=validateAppointments(req.body);
     if(result.error){
@@ -236,4 +238,17 @@ async function DocFilterAppointments(req,res){
     }
 }
 
-module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments};  
+async function rooms(req,res){
+    let results;
+    if (req.user.type == 'patient'){
+        results = await appointment.find({patientID:req.user._id})
+    }
+    else {
+        results = await appointment.find({doctorID:req.user._id})
+    }
+    results = results.map(({patientID, doctorID})=> (String(patientID) + String(doctorID)))
+    
+    res.status(200).json(results); 
+}
+
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments,rooms};  

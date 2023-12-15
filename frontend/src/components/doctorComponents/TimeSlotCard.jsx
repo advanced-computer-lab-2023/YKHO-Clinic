@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 function TimeSlotCard(props) {
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: -50 }}

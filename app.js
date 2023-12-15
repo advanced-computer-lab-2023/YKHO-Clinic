@@ -32,7 +32,9 @@ const {
   getMedicine,
   ShowRequests,
   AcceptFollowupRequest,
-  RejectFollowupRequest
+  RejectFollowupRequest,
+  downloadPresc,
+  getNotificationsDoctor,
 } = require("./controller/doctorController");
 const {
 
@@ -109,6 +111,7 @@ const {
   getDoctorSpeciality,
   cancelAppointmentPatient,
   deleteNotification,
+  getTimeSlotOnDate,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -158,6 +161,7 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
+app.get("/doctor/getNotifications", requireAuthPatient, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -184,6 +188,7 @@ app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
+app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
@@ -248,7 +253,6 @@ app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
 app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
-//app.get("/patient/home", requireAuthPatient, readDoctors);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -269,6 +273,8 @@ app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescr
 app.get("/patient/prescriptionPDF/:id", requireAuthPatient, viewPrescriptionPDF);
 app.get("/patient/doctorSpecialities", requireAuthPatient, getDoctorSpeciality);
 app.post("/patient/cancelAppointment", requireAuthPatient, cancelAppointmentPatient);
+app.get("/patient/getTimeSlotOnDate", requireAuthPatient, getTimeSlotOnDate);
+app.post("/patient/rescheduleAppointment",requireAuthPatient,rescheduleAppointment);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;
@@ -299,25 +305,23 @@ const {Server} = require("socket.io");
 
 const io = new Server(server,{
   cors:{
-      origin: "http://localhost:5173",
-      credentials:true
+    origin: "http://localhost:5173",
+    credentials:true
   }
 });
 
 io.on('connection', (socket) => {
   console.log('connected', socket.id);
 
-
   socket.on("join_room", (data) => {
-      console.log("joined room "+ data)
-      socket.join(data);
+    console.log("joined room "+ data)
+    socket.join(data);
   })    
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
-      socket.in(data.room).emit("receive_message", data);
-      save(data);
+    socket.in(data.room).emit("receive_message", data);
+    save(data);
   })
 
   // video
@@ -334,12 +338,8 @@ io.on('connection', (socket) => {
     socket.in(data.room).emit("declined")
   })
 
-  
-
-
-
   socket.on("disconnect", (data) => {
-      console.log("disconnected", socket.id)
+    console.log("disconnected", socket.id)
   })
 });
 
@@ -351,3 +351,7 @@ app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
+
+// notification
+const {rooms} = require("./controller/appointmentController");
+app.get("/rooms", requireAuth, rooms)
