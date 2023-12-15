@@ -881,17 +881,18 @@ async function sendEmail(email, message ) {
 }
 
 //TODO: check if the dates' format in the new appointment are valid
-async function cancelAppointment(req, res) {
-  const appointmentID = req.params.appointmentId;
+async function cancelAppointmentPatient(req, res) {
+  const appointmentID = req.body.id;
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
-  const patient = await patientModel.findById(deletedAppointment.patientID);
-  const doctore= await doctor.findById(deletedAppointment.doctorID);
-  if(deleteAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
+  const patient = await patientModel.findById(deletedAppointment.patientID,"Wallet name email _id");
+  const doctore= await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
+  var message = "";
+  if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
     if(deletedAppointment.paid == true){
-    let wallet = patient.wallet + deletedAppointment.price;
-    let doctorWallet = doctore.wallet - deletedAppointment.price;
-    const patientUpdate = await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
-    const doctorUpdate = await findByIdAndUpdate(doctor._id, {Wallet: doctorWallet}).exec();
+    let wallet = patient.Wallet + deletedAppointment.price;
+    let doctorWallet = doctore.Wallet - deletedAppointment.price;
+    await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
+    await findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
     }
@@ -920,9 +921,9 @@ async function cancelAppointment(req, res) {
   await newNotification2.save();
 
   await sendEmail(patient.email, message);
-  await sendEmail(doctor.email, `Your appointment with ${patient.name} on ${deleteAppointment.date} is cancelled`);
-
-  res.redirect(`patient/Appointments`);
+  await sendEmail(doctore.email, `Your appointment with ${patient.name} on ${deletedAppointment.date} is cancelled`);
+  res.status(200).send("Appointment cancelled successfully");
+  // res.redirect(`patient/Appointments`);
 }
 
 
@@ -1612,6 +1613,7 @@ module.exports = {
   getNotifications,
   viewPrescriptionPDF,
   getDoctorSpeciality,
+  cancelAppointmentPatient,
 };
 
 module.exports.readSubscription = readSubscription;
