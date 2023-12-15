@@ -28,8 +28,13 @@ import ListItemText from '@mui/material/ListItemText';
 import DeleteIcon from '@mui/icons-material/DeleteForever';
 import { Button, Stack } from '@mui/material';
 import { useNavigate,useParams } from 'react-router-dom';
- 
-
+import HomeIcon from '@mui/icons-material/Home';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
+import EditIcon from '@mui/icons-material/Edit';
+import LogoutIcon from '@mui/icons-material/Logout';
 // Inside your component
 
 const Search = styled('div')(({ theme }) => ({
@@ -224,62 +229,68 @@ const toggleDrawer = (anchor, open) => (event) => {
 
 const list = (anchor) => (
   <Box
-    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250}}
-    role="presentation"
-    onClick={toggleDrawer(anchor, false)}
-    onKeyDown={toggleDrawer(anchor, false)}
-  >
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHome}>
-            <ListItemText primary={'Home'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goPatients}>
-            <ListItemText primary={'Your Patients'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goAppointments}>
-            <ListItemText primary={'Your appointments'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goTimeSlots}>
-            <ListItemText primary={'Your time slots'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goFollowUp}>
-            <ListItemText primary={'follow up requests'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
+  sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 280 }}
+  role="presentation"
+  onClick={toggleDrawer(anchor, false)}
+  onKeyDown={toggleDrawer(anchor, false)}
+>
+  <List>
+  <ListItem disablePadding>
+      <ListItemButton onClick={()=>{}} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><MenuIcon/></ListItemIcon>
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goHome} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><HomeIcon/></ListItemIcon>
+        <ListItemText primary={'Home'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goPatients} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><AccountBoxIcon/></ListItemIcon>
+        <ListItemText primary={'Your Patients'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goAppointments} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><CalendarMonthIcon/></ListItemIcon>
+        <ListItemText primary={'Your appointments'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goTimeSlots} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><AccessTimeIcon/></ListItemIcon>
+        <ListItemText primary={'Your time slots'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goFollowUp} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><ScheduleSendIcon/></ListItemIcon>
+        <ListItemText primary={'Follow up requests'} />
+      </ListItemButton>
+    </ListItem>
     <Divider />
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={editDoctorInfo}>
-            <ListItemText primary={'edit your info'} style={{textAlign:'center'}}/>
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={LogoutButton}>
-            <ListItemText primary={'Logout'} style={{textAlign:'center'}} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-  </Box>
+  </List>
+  
+  {/* Separate List for bottom items */}
+  <List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+    <ListItem disablePadding>
+      <ListItemButton onClick={editDoctorInfo} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><EditIcon/></ListItemIcon>
+        <ListItemText primary={'Edit your info'} style={{ textAlign: 'center' }} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={LogoutButton}>
+      <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
+        <ListItemText sx={{color:"#FAF5FF"}} primary={'Logout'} style={{ textAlign: 'center' }} />
+      </ListItemButton>
+    </ListItem>
+  </List>
+</Box>
+
+
 )
 
   const menuId = 'primary-search-account-menu';
@@ -359,13 +370,15 @@ const list = (anchor) => (
 
   return (
     <div>
-          <Drawer
-            anchor={'left'}
-            open={state['left']}
-            onClose={toggleDrawer('left', false)}
-          >
-            {list('left')}
-          </Drawer>
+            <Drawer
+  anchor={'left'}
+  open={state['left']}
+  onClose={toggleDrawer('left', false)}
+>
+  <Box sx={{ backgroundColor: 'primary.main',height:"100%" }}>
+    {list('left')}
+  </Box>
+</Drawer>
           <Drawer
             anchor={'right'}
             open={notificationsState['right']}

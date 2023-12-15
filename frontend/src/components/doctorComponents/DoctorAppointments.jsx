@@ -307,8 +307,8 @@ function DoctorAppointments() {
               {/* Filter Box */}
               <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                 <motion.div
-                  initial={{ width: isOpen ? '310px' : '70px' }}
-                  animate={{ width: isOpen ? '310px' : '70px' }}
+                  initial={{ width: isOpen ? '270px' : '70px' }}
+                  animate={{ width: isOpen ? '270px' : '70px' }}
                   transition={{ duration: 0.3 }}
                   style={{ backgroundColor: 'secondary', overflow: 'hidden' }}
                 >
@@ -317,7 +317,7 @@ function DoctorAppointments() {
                       <FilterAltIcon sx={{ fontSize: 40 }} />
                     </IconButton>
                     <FormControl>
-                      <br />
+                      
                       <RadioGroup
                         aria-labelledby="demo-radio-buttons-group-label"
                         defaultValue=""
