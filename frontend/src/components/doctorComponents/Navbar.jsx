@@ -125,6 +125,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [read, setRead] = React.useState(false);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
@@ -178,7 +179,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   async function getNotifications() {
     try {
-      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {
+      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {read:read}, {
         withCredentials: true,
       });
       setNotifications(res.data.result);
@@ -194,11 +195,12 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
     right: false,
   });
 
+
   const toggleNotifications = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-
+    setRead(true);
     setNotificationsState({ ...notificationsState, [anchor]: open });
   }
 

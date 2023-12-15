@@ -38,7 +38,7 @@ const DoctorInfo = () => {
             let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
             setBreadcrumbs(savedBreadcrumbs);
   
-            const homeBreadcrumb = { label: "followUp", href: "/doctor/followup" };
+            const homeBreadcrumb = { label: "editInfo", href: "/doctor/edit" };
             const hasHomeBreadcrumb = savedBreadcrumbs.some(
               (item) => item.label == homeBreadcrumb.label
             );
