@@ -22,6 +22,7 @@ function DoctorHome() {
   const [appLoading, setAppLoading] = useState(true);
   const [name, setName] = useState("");
   const [wallet, setWallet] = useState(0);
+  const [followUp, setFollowUp] = useState([]);
   useEffect(() => {
     check(), loadAppointments(), loadRequests(), getName(), getWallet();
   }, []);
@@ -80,7 +81,40 @@ function DoctorHome() {
       });
   }
   async function loadRequests() {
-    // get the follow up requests
+    console.log("here")
+    await axios.get("http://localhost:3000/doctor/showRequests",{withCredentials:true}).then((res)=>{
+      const temp = res.data.result.slice(0,2);
+      console.log(temp)
+      setFollowUp(temp);
+    }).catch((err)=>{
+      console.log(err);
+    })
+  }
+  async function acceptRequest() {
+    await axios
+      .post("http://localhost:3000/doctor/acceptFollowup", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        const temp = res.data.result.slice(0,2);
+        setFollowUp(temp)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  async function rejectRequest() {
+    await axios
+      .post("http://localhost:3000/doctor/rejectFollowup", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        const temp = res.data.result.slice(0,2);
+        setFollowUp(temp)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
   async function getName() {
     await axios
@@ -225,12 +259,24 @@ function DoctorHome() {
                       alignItems="center"
                       rowSpacing={1}
                     >
-                      <Grid item>
-                        <FollowUpCard name="ahmed" date="12/12/2021" />
-                      </Grid>
-                      <Grid item>
-                        <FollowUpCard name="ahmed" date="12/12/2021" />
-                      </Grid>
+                      {followUp.length != 0 && 
+                      followUp.map(follow => {
+                        return(
+                        <Grid item>
+                          <FollowUpCard name={follow.patientID.name} date={follow.date.split("T")[0]} accept={acceptRequest} reject={rejectRequest} />
+                        </Grid>
+                        );
+                      })
+                      }
+                      {
+                        followUp.length == 0 &&
+                        <PlaceHolder
+                        message="No follow up requests"
+                        description="You have no follow up requests"
+                        width="250"
+                        height="190"
+                        />
+                      }
                     </Grid>
                   </CardContent>
                   <CardActions>

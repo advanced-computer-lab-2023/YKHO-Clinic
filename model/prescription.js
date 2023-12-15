@@ -7,7 +7,6 @@ const medicineSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true,
     },
     dosage: {
         type: String,
@@ -37,8 +36,6 @@ const prescriptionSchema = new mongoose.Schema({
     {
         type: String,
         required: true,
-        minlength: 5,
-        maxlength: 50,
     },
     patientID:
     {
@@ -57,8 +54,6 @@ const prescriptionSchema = new mongoose.Schema({
     {
         type: String,
         required: true,
-        minlength: 5,
-        maxlength: 20,
     },
     date:
     {
@@ -78,7 +73,6 @@ const prescriptionSchema = new mongoose.Schema({
         default: 0,
     },
     MedicineNames: [medicineSchema],
-    prescriptionPDF: prescriptionPDF,
     paid:
     {
         type: Boolean,
@@ -88,13 +82,13 @@ const prescriptionSchema = new mongoose.Schema({
 });
 function validatePrescription(newPrescription) {
     const schema = Joi.object({
-        prescriptionName: Joi.string().required().min(5).max(50),
+        prescriptionName: Joi.string().required(),
         patientID: Joi.objectId().required(),
         doctorID: Joi.objectId().required(),
-        doctorName: Joi.string().required().min(5).max(20),
+        doctorName: Joi.string().required(),
         date: Joi.date().required(),
         filled: Joi.boolean().required(),
-        price: Joi.Number().required(),
+        price: Joi.number().required(),
     });
     return schema.validate(newPrescription);
 }

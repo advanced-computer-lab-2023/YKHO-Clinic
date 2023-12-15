@@ -6,14 +6,18 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 export default function ReservationTimeSlot(props) {
     const currentDate = new Date();
-    const dayTimeSlots = props.timeSlots.filter(slot => slot.day.toLowerCase() === props.day.toLowerCase() && !(currentDate.getHours() == parseInt(slot.from.split(':')[0]) && currentDate.getMinutes() >  parseInt(slot.from.split(':')[1])) || currentDate.getHours() > parseInt(slot.from.split(':')[0]));
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const dayTimeSlots = props.timeSlots.filter(slot => {
+        return (slot.day.toLowerCase() === props.day.toLowerCase()) && ((props.day.toLowerCase() != (days[currentDate.getDay()].toLowerCase())) || (!(currentDate.getHours() == parseInt(slot.from.split(':')[0]) && currentDate.getMinutes() > parseInt(slot.from.split(':')[1])) && currentDate.getHours() < parseInt(slot.from.split(':')[0])));
+    });
     dayTimeSlots.sort((a, b) => {
         const timeA = new Date(`2000-01-01T${a.from}`);
         const timeB = new Date(`2000-01-01T${b.from}`);
         return timeA - timeB;
     });
     const [openDialog, setOpenDialog] = useState({}); // State to manage open/close state of dialogs
-
+    console.log(dayTimeSlots)
     // Function to handle opening a dialog for a specific slot
     const handleOpenDialog = (slotId) => {
         setOpenDialog(prevState => ({
@@ -29,20 +33,11 @@ export default function ReservationTimeSlot(props) {
             [slotId]: false, // Set the specific slot's dialog to close
         }));
     };
-    // let appointmentsOfToday = props.appointments.filter(appointment => appointment.date === props.todayDate);
-    // let appointmentsOfTomorrow = props.appointments.filter(appointment => appointment.date === props.TomorrowDate);
-    // let appointmentsOfAfterTomorrow = props.appointments.filter(appointment => appointment.date === props.AfterTomorrowDate);
+
     return (
-        // <Stack direction='column' spacing={2} sx={{ width: "100%" }}>
-        //     {dayTimeSlots.map(slot => (
-        //         <Button key={slot._id} variant="test" sx={{fontSize:"14px"}}>
-        //             {`${slot.from} - ${slot.to}`}
-        //         </Button>
-        //     ))}
-        // </Stack>
         <Stack direction='column' spacing={2} sx={{ width: "100%", height: "100%" }} justifyContent="flex-start" alignItems="center">
             {dayTimeSlots.map(slot => {
-                
+
                 const isSlotBooked = props.appointmentOfTheDay.some(appointment => {
                     const appointmentTime = new Date(appointment.date);
                     const [hours, minutes] = slot.from.split(':');
