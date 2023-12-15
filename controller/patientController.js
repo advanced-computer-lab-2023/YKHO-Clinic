@@ -834,6 +834,7 @@ async function reserveSlot(req, res) {
   const existingAppointment = await appointment.findOne({
     doctorID: doctorID,
     date: date,
+    status: { $in: ["upcoming", "rescheduled"] },
   });
   if (existingAppointment) {
     return res
@@ -908,7 +909,8 @@ async function cancelAppointmentPatient(req, res) {
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID,"Wallet name email _id");
   const doctore= await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
-  const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
+  console.log(deletedAppointment.date.toISOString());
+  const date = `${(deletedAppointment.date.toISOString()).split("T")[0]} at ${parseInt((deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[0])+2}:${(deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[1]}`
   var message = "";
   if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
     if(deletedAppointment.paid == true){
@@ -919,13 +921,13 @@ async function cancelAppointmentPatient(req, res) {
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
     }
-    message = `Your appointment with ${doctor.name} on ${deletedAppointment.date} has been cancelled and the amount has been refunded to your wallet`;
+    message = `Your appointment with ${doctore.name} on ${deletedAppointment.date} has been cancelled and the amount has been refunded to your wallet`;
   }
   }else{//usability: if appointment is cancelled more than 24 hours before
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled";
     }
-    message = `Your appointment with ${doctor.name} on ${date} has been cancelled`;
+    message = `Your appointment with ${doctore.name} on ${date} has been cancelled`;
   }
   let newNotification = new notificationModel({
     patientID: patient._id,
