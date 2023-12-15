@@ -1,7 +1,11 @@
+import { CardContent, Typography } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
 import { useState } from 'react'
 import {useEffect} from 'react'
+import { Card } from '@mui/material';
+import {InputLabel,MenuItem,Select,FormControl} from '@mui/material'
+
 const DoctorInfo = () => {
     const [error,setError]= useState("")
     const updateDoctor= async()=>{
@@ -53,21 +57,41 @@ const DoctorInfo = () => {
             }
          })
     }
+    function handleChange(event){
+        setUpdateTerm(event.target.value);
+    }
+    const [updateTerm,setUpdateTerm]=useState("");
   return (
     <div>
       {result && <div>
-       <h1>Update my info</h1>
-    
-        <label htmlFor="updateTerm">i want</label>
-        <select id="updateTerm" name="updateTerm">
-            <option >email</option>
-            <option >rate</option>
-            <option >affiliation</option>
-        </select>
-        <label htmlFor="updateValue">to be updated to</label>
-        <input id="updateValue" input="text" name="updateValue" />
-        <button onClick={updateDoctor} type="submit" >Update</button>
-        <p>{error}</p>
+        <Card sx={{width:"70%",height:"60%"}}>
+        <CardContent>
+            <Typography variant="h4">Update your info</Typography>
+            <Card sx={{display:"flex"}}>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h5">Update term</Typography>
+                        <FormControl fullWidth>
+                        <InputLabel id="demo-simple-select-label">Update term</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={updateTerm}
+                            label="Age"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value={"email"}>email</MenuItem>
+                            <MenuItem value={"rate"}>rate</MenuItem>
+                            <MenuItem value={"affiliation"}>affiliation</MenuItem>
+                        </Select>
+                        </FormControl>
+                    </CardContent>
+                </Card>        
+            </Card>
+        </CardContent>
+        </Card>
+        
+
       </div>}
     </div>
   );
