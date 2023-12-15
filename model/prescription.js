@@ -69,7 +69,7 @@ const prescriptionSchema = new mongoose.Schema({
         required:true,
         default:0,
     },
-    MedicineNames: [MedicineScheme],
+    MedicineNames: [medicineSchema],
     paid:
     {
         type:Boolean,

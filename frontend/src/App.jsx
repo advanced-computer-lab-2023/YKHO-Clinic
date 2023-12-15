@@ -22,9 +22,10 @@ import PatientHealthRecords from './components/patientComponents/PatientHealthRe
 import PatinetHistory from './components/patientComponents/PatientHistory'
 import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
-
 import DoctorTimeSlots from './components/doctorComponents/DoctorTimeSlots'
 import DoctorContract from './components/doctorComponents/DoctorContract'
+import Chats from './components/Chats'
+
 function App() {
   let id=0;
   return (
@@ -44,6 +45,7 @@ function App() {
         <Route path="/admin/deleteUser" element={<AdminDeleteUser/>}/>
         <Route path="/admin/uploadedInfo" element={<DoctorUploadedInfo/>}/>
         <Route path="/patient/home" element={<PatientHome/>} />
+        <Route path="/chats" element={<Chats/>} />
         <Route path="/patient/Prescriptions" element={<PatientPrescriptions/>} />
         <Route path="/patient/Appointments" element={<PatientAppointment/>} />
         <Route path="/patient/HealthRecords" element={<PatientHealthRecords/>} />
