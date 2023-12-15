@@ -4,7 +4,7 @@ const appointmentModel = require('../model/appointments.js').appointment;
 const chats = async (req,res) => {
     let chats = [];
     if(req.user.type == "patient"){
-        chats = await chatModel.find({patientID: req.user._id}).populate("doctorID").sort({ "updatedAt": -1 });;
+        chats = await chatModel.find({patientID: req.user._id}).populate("doctorID").sort({ "updatedAt": -1 });
         chats = chats.map(({room,doctorID,patientID,messages}) => ({
             room,
             name: doctorID.name,
@@ -167,4 +167,41 @@ const start = async (req,res) => {
     res.status(200).json(chat);
 }
 
-module.exports = {chats, send, read, start, save, contacts}
+const unread = async (req,res) => {
+    let chats = [];
+    let sum = 0;
+    if(req.user.type == "patient"){
+        chats = await chatModel.find({patientID: req.user._id});
+        
+        chats.forEach(({messages}) => {
+                let count = 0;
+                for(let i = 1; i <= messages.length; i++){
+                    if(messages[messages.length - i].unread && !messages[messages.length - i].isPatient){
+                        count++;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                sum += count;
+        });
+    }
+    else {
+        chats = await chatModel.find({doctorID: req.user._id}).populate("patientID");
+        chats.forEach(({messages}) => {
+                let count = 0;
+                for(let i = 1; i <= messages.length; i++){
+                    if(messages[messages.length - i].unread && messages[messages.length - i].isPatient){
+                        count++;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                sum += count
+        });
+    }
+    res.status(200).json(sum);
+}
+
+module.exports = {chats, send, read, start, save, contacts, unread}

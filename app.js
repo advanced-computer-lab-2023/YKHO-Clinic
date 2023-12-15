@@ -322,6 +322,7 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
+    console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);
   })
@@ -354,13 +355,14 @@ io.on('connection', (socket) => {
 });
 
 // chat
-const {chats, send, read, start, save, contacts} = require("./controller/chatController.js");
+const {chats, send, read, start, save, contacts, unread} = require("./controller/chatController.js");
 
 app.get("/chats", requireAuth, chats);
 app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
+app.get("/unread", requireAuth, unread);
 
 // notification
 app.get("/rooms", requireAuth, rooms)
