@@ -105,6 +105,24 @@ export default function PrimarySearchAppBar({content, openHelp}) {
         setError(err.message);
     }
 }
+function goHome(){
+  window.location.href='/doctor/home'
+}
+function goPatients(){
+  window.location.href='/doctor/patients'
+}
+function goAppointments(){
+  window.location.href='/doctor/appointments'
+}
+function goTimeSlots(){
+  window.location.href='/doctor/timeslots'
+}
+function goFollowUp(){
+  window.location.href='/doctor/followup'
+}
+function editDoctorInfo(){
+  window.location.href='/doctor/edit'
+}
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -172,7 +190,7 @@ const notificationsList = (anchor) => (
         <Typography><b>Notifications</b></Typography>
             <List>
               {notifications.map((notification) => (
-                <Paper elevation={5} style={{margin:'0px 10px 13px 10px'}}>
+                <Paper elevation={5} key={notification.text} style={{margin:'0px 10px 13px 10px'}}>
                   <ListItem>
                       <ListItemIcon>
                         {<NotificationsIcon style={{color:'green'}} />}
@@ -211,6 +229,13 @@ const list = (anchor) => (
     onClick={toggleDrawer(anchor, false)}
     onKeyDown={toggleDrawer(anchor, false)}
   >
+    <List>
+        <ListItem disablePadding>
+          <ListItemButton onClick={goHome}>
+            <ListItemText primary={'Home'} />
+          </ListItemButton>
+        </ListItem>
+    </List>
     <List>
         <ListItem disablePadding>
           <ListItemButton onClick={goPatients}>
