@@ -111,7 +111,7 @@ const createPatient = async (req, res) => {
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
-
+  
   let entry = new patientModel({
     username,
     password: hashedPassword,
@@ -1417,7 +1417,7 @@ const PayByWallet = async (req, res) => {
 };
 const ViewWallet = async (req, res) => {
   patientID = req.user._id;
-  patient = await patientModel.findById(req.user._id, "Wallet");
+  patient = await patientModel.findById(req.user._id, "wallet");
   const Wallet = patient.wallet;
   // console.log(Wallett);
   // res.render("patient/Wallet", { Wallett: Wallett });
@@ -1444,90 +1444,24 @@ const success = async (req, res) => {
 const fail = async (req, res) => {
   res.render("fail");
 };
-const PayByCreditPresc = async (req, res) => {
-  const prescriptionid = req.params.id;
-  const prescriptions = await prescription
-    .findOne({ _id: prescriptionid })
-    .populate("doctorID");
-  const patient = await patientModel.findOne({ _id: prescriptions.patientID }).select(["subscription"]);
-  let totalPrice;
-  if (patient.subscription.healthPackage != "none") {
-    const healthpackage = await healthPackage.findOne({ packageName: patient.subscription.healthPackage });
-    const discount = healthpackage.pharmacyDiscount;
-    totalPrice = (prescriptions.price - (discount * prescriptions.price / 100));
+const PayPresc = async(req,res) =>{
+  let pres=await prescription.findOne({_id:req.params.id});
+  let patient= await patientModel.findOne({_id:req.user._id});
+  let temp;
+  for(let i=0;i<pres.MedicineNames.length;i++){
+    temp={medicineName:pres.MedicineNames[i].name,
+      quantity:1,
+      medicinePrice:pres.MedicineNames[i].price,
+    }
+    patient.shoppingCart.push(temp);
+    
+    
   }
-  else {
-    totalPrice = prescriptions.price;
-  }
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Prescription From Dr." + prescriptions.doctorID.name,
-            },
-            unit_amount: totalPrice * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      success_url: `http://localhost:3000/successPresc/${prescriptionid}`,
-      cancel_url: `http://localhost:3000/failPresc`,
-    });
-    // res.redirect(session.url);
-    res.status(201).json({ result: session.url });
-  } catch (e) {
-    console.error(e);
-    res.status(500).send("Internal Server Error");
-  }
-};
-const PayByWalletPresc = async (req, res) => {
-  const prescriptionid = req.params.id;
-  const prescriptions = await prescription.findOne({ _id: prescriptionid });
-  const prescriptionCost = prescriptions.price;
-  const patient = await patientModel.findOne({ _id: req.user._id }).select(["wallet", "subscription"]);
-  console.log(patient);
-  var Walletp;
-  if (patient.subscription.healthPackage != "none") {
-    const healthpackage = await healthPackage.findOne({ packageName: patient.subscription.healthPackage });
-    const discount = healthpackage.pharmacyDiscount;
-    Walletp = patient.wallet - (prescriptionCost - (discount * prescriptionCost / 100));
-  } else {
-    Walletp = patient.wallet - prescriptionCost;
-  }
-  console.log(Walletp);
-  if (Walletp >= 0) {
-    const updatedPatient2 = await patientModel.findByIdAndUpdate(
-      prescriptions.patientID,
-      { $set: { wallet: Walletp } },
-      { new: true }
-    );
-    const prescriptionupdated = await prescription.findByIdAndUpdate(
-      prescriptionid,
-      { $set: { paid: true } },
-      { new: true }
-    );
-  } else {
-    res.status(500).send("Insufficient funds");
-  }
-};
-const successPresc = async (req, res) => {
-  const prescriptionid = req.params.id;
-  const prescriptions = await prescription.findOne({ _id: prescriptionid });
-  const presc = await prescription.findByIdAndUpdate(
-    prescriptionid,
-    { $set: { paid: true } },
-    { new: true }
-  );
-  res.redirect("http://localhost:5173/patient/Prescriptions");
-};
-const failPresc = async (req, res) => {
-  res.redirect("http://localhost:5173/patient/Prescriptions");
-};
+  console.log(patient.shoppingCart);
+  let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
+  res.status(201).json({ result: process.env.PORTPHARMA });
+
+}
 
 const getPatientPlan = async (req, res) => {
   const patient = await patientModel.findById(req.user._id, "subscription");
@@ -1627,10 +1561,7 @@ module.exports = {
   LinkFamilyMemeber,
   showFile,
   deleteMedicalHistory,
-  PayByCreditPresc,
-  PayByWalletPresc,
-  successPresc,
-  failPresc,
+  PayPresc,
   readUserData,
   getPatientPlan,
   getFamilyMembersPlan,

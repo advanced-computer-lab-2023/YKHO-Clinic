@@ -102,7 +102,7 @@ const {
   getPatientPlan,
   getFamilyMembersPlan,
   getMyAppointments,
-  PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
+  PayPresc,
   viewAllDataOfPrescriptions,
   getNotifications,
   viewPrescriptionPDF,
@@ -283,10 +283,8 @@ app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
 
-app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayByCreditPresc);
-app.get("/patient/paymentWalletpresc/:id",requireAuthPatient,PayByWalletPresc);
-app.get("/successPresc/:id",requireAuth,successPresc);
-app.get("/failPresc",requireAuth,failPresc);
+app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
+
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)

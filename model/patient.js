@@ -148,8 +148,31 @@ const patientSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         required: true,
-        default: 0,
     },
+    shoppingCart: [
+        {
+          medicineName: {
+            type: String,
+            required: true,
+          },
+          quantity: {
+            type: Number,
+            required: true,
+            default: 1,
+          },
+          medicinePrice: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
+      deliveryAdd: [
+        {
+          address: {
+            type: String,
+          }
+        }
+      ],
 
 })
 
