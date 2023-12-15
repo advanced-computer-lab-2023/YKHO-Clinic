@@ -18,6 +18,8 @@ const PatientAppointments = () => {
     useEffect(() => { check(), loadAppointments() }, []);
     useEffect(() => { setSearchBox(); }, [result]);
     const [appointments, setAppointments] = useState([]);
+    const [timeSlots, setTimeSlots] = useState([]);
+
     async function check() {
 
         const res = await axios.get("http://localhost:3000/loggedIn", {
@@ -80,41 +82,76 @@ const PatientAppointments = () => {
             });
         }
     }
-    async function searchAppointments() {
-        const searchValueInput = document.getElementById('searchvalue');
-        const filterDropdown = document.getElementById('filter');
-        const radioButtons = document.querySelectorAll('input[type="radio"][name="filters"]');
+    async function cancelAppointment(id) {
+        await axios.post(`http://localhost:3000/patient/cancelAppointment`, { id: id }, {
+            withCredentials: true
+        }).then((res) => {
 
-        let searchvalue = searchValueInput.value;
-        let filter = filterDropdown.value;
-        let status;
-        radioButtons.forEach(function (radioButton) {
-            if (radioButton.checked) {
-                status = radioButton.value;
-            }
-        })
-
-            ;
-        await axios.get(`http://localhost:3000/patient/AppointmentsFilter/?filter=${filter}&searchvalue=${searchvalue}&filters=${status}`, { withCredentials: true }).then((res) => {
-            setAppointments(res.data.result);
-        }
-        ).catch((err) => {
+            console.log(res);
+            loadAppointments();
+        }).catch((err) => {
             console.log(err);
         });
     }
+    // async function searchAppointments() {
+    //     const searchValueInput = document.getElementById('searchvalue');
+    //     const filterDropdown = document.getElementById('filter');
+    //     const radioButtons = document.querySelectorAll('input[type="radio"][name="filters"]');
+
+    //     let searchvalue = searchValueInput.value;
+    //     let filter = filterDropdown.value;
+    //     let status;
+    //     radioButtons.forEach(function (radioButton) {
+    //         if (radioButton.checked) {
+    //             status = radioButton.value;
+    //         }
+    //     })
+
+    //         ;
+    //     await axios.get(`http://localhost:3000/patient/AppointmentsFilter/?filter=${filter}&searchvalue=${searchvalue}&filters=${status}`, { withCredentials: true }).then((res) => {
+    //         setAppointments(res.data.result);
+    //     }
+    //     ).catch((err) => {
+    //         console.log(err);
+    //     });
+    // }
+    async function getTimeSlots(id, date, day) {
+            await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
+                withCredentials: true,
+            }).then((res) => {
+                setTimeSlots(res.data.result);
+            }).catch((err) => {
+                console.log(err);
+            });
+    }
+
+    async function rescheduleAppointment(id, date, time) {
+        await axios.post(`http://localhost:3000/patient/rescheduleAppointment`, { appointmentId: id, date: date, time: time }, {
+            withCredentials: true
+        }).then((res) => {
+            console.log(res);
+            loadAppointments();
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+
     async function SchedFollow(e) {
         window.location.href = `/patient/followup/${e.target.id}`
     }
+
+
     return (
         <div>
             {result && <div>
                 <Navbar />
                 <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
-                    <Paper variant="elevation" elevation={4} sx={{ height: "800px", width: "80%", overflowY:"auto" }}>
-                        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
-                        {appointments.length > 0 && appointments.map((appointment) => {
-                           return <AppointmentCard doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status}/>
-                        })}
+                    <Paper variant="elevation" elevation={4} sx={{ height: "800px", width: "80%", overflowY: "auto" }}>
+                        <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ padding: "15px" }}>
+                            {appointments.length > 0 && appointments.map((appointment) => {
+                                return <AppointmentCard id={appointment._id} doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status} handleCancel={cancelAppointment} doctorID={appointment.doctorID._id} 
+                                getSlots={getTimeSlots} times={timeSlots} handleReschedule={rescheduleAppointment} />
+                            })}
                         </Stack>
                     </Paper>
                 </Stack>

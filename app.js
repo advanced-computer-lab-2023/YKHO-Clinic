@@ -32,7 +32,9 @@ const {
   getMedicine,
   ShowRequests,
   AcceptFollowupRequest,
-  RejectFollowupRequest
+  RejectFollowupRequest,
+  downloadPresc,
+  getNotificationsDoctor,
 } = require("./controller/doctorController");
 const {
 
@@ -102,12 +104,14 @@ const {
   getPatientPlan,
   getFamilyMembersPlan,
   getMyAppointments,
-  PayByCreditPresc,PayByWalletPresc,successPresc,failPresc,
+  PayPresc,
   viewAllDataOfPrescriptions,
   getNotifications,
   viewPrescriptionPDF,
   getDoctorSpeciality,
   cancelAppointmentPatient,
+  deleteNotification,
+  getTimeSlotOnDate,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -157,6 +161,7 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
+app.get("/doctor/getNotifications", requireAuthPatient, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -183,6 +188,7 @@ app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
+app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
@@ -241,12 +247,12 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
 app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
 app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
-//app.get("/patient/home", requireAuthPatient, readDoctors);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -267,6 +273,8 @@ app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescr
 app.get("/patient/prescriptionPDF/:id", requireAuthPatient, viewPrescriptionPDF);
 app.get("/patient/doctorSpecialities", requireAuthPatient, getDoctorSpeciality);
 app.post("/patient/cancelAppointment", requireAuthPatient, cancelAppointmentPatient);
+app.get("/patient/getTimeSlotOnDate", requireAuthPatient, getTimeSlotOnDate);
+app.post("/patient/rescheduleAppointment",requireAuthPatient,rescheduleAppointment);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;
@@ -286,10 +294,8 @@ app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
 
-app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayByCreditPresc);
-app.get("/patient/paymentWalletpresc/:id",requireAuthPatient,PayByWalletPresc);
-app.get("/successPresc/:id",requireAuth,successPresc);
-app.get("/failPresc",requireAuth,failPresc);
+app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
+
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)

@@ -9,6 +9,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import PrescriptionCard from './PrescriptionCard';
 import PlaceHolder from '../PlaceHolder';
 import { set } from 'mongoose';
+
+
 const PatientPrescriptions = () => {
     const [result, setResult] = useState(false);
     const [prescriptions, setPrescriptions] = useState([]);
@@ -89,10 +91,12 @@ const PatientPrescriptions = () => {
         await axios.get(`http://localhost:3000/patient/paymentcreditpresc/${id}`, {
             withCredentials: true
         }).then((res) => {
-            window.location.href = res.data.result;
+            window.location.href = "http://localhost:"+res.data.result+"/";
+
         }).catch((err) => {
             console.log(err);
         })
+
     }
     async function handleDownload(id) {
         await axios.get(`http://localhost:3000/patient/prescriptionPDF/${id}`, {
