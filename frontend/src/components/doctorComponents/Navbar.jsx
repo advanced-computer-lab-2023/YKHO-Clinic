@@ -26,9 +26,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DeleteIcon from '@mui/icons-material/DeleteForever';
 import { Button, Stack } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
-
-
+import { useNavigate,useParams } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
+import EditIcon from '@mui/icons-material/Edit';
+import LogoutIcon from '@mui/icons-material/Logout';
 // Inside your component
 // axios
 import axios from 'axios';
@@ -259,65 +264,71 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
     setState({ ...state, [anchor]: open });
   };
 
-  const list = (anchor) => (
-    <Box
-      sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250 }}
-      role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
-    >
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHome}>
-            <ListItemText primary={'Home'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goPatients}>
-            <ListItemText primary={'Your Patients'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goAppointments}>
-            <ListItemText primary={'Your appointments'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goTimeSlots}>
-            <ListItemText primary={'Your time slots'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goFollowUp}>
-            <ListItemText primary={'follow up requests'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <Divider />
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={editDoctorInfo}>
-            <ListItemText primary={'edit your info'} style={{ textAlign: 'center' }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={LogoutButton}>
-            <ListItemText primary={'Logout'} style={{ textAlign: 'center' }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
-  )
+const list = (anchor) => (
+  <Box
+  sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 280 }}
+  role="presentation"
+  onClick={toggleDrawer(anchor, false)}
+  onKeyDown={toggleDrawer(anchor, false)}
+>
+  <List>
+  <ListItem disablePadding>
+      <ListItemButton onClick={()=>{}} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><MenuIcon/></ListItemIcon>
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goHome} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><HomeIcon/></ListItemIcon>
+        <ListItemText primary={'Home'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goPatients} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><AccountBoxIcon/></ListItemIcon>
+        <ListItemText primary={'Your Patients'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goAppointments} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><CalendarMonthIcon/></ListItemIcon>
+        <ListItemText primary={'Your appointments'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goTimeSlots} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><AccessTimeIcon/></ListItemIcon>
+        <ListItemText primary={'Your time slots'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goFollowUp} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><ScheduleSendIcon/></ListItemIcon>
+        <ListItemText primary={'Follow up requests'} />
+      </ListItemButton>
+    </ListItem>
+    <Divider />
+  </List>
+  
+  {/* Separate List for bottom items */}
+  <List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+    <ListItem disablePadding>
+      <ListItemButton onClick={editDoctorInfo} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><EditIcon/></ListItemIcon>
+        <ListItemText primary={'Edit your info'} style={{ textAlign: 'center' }} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={LogoutButton}>
+      <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
+        <ListItemText sx={{color:"#FAF5FF"}} primary={'Logout'} style={{ textAlign: 'center' }} />
+      </ListItemButton>
+    </ListItem>
+  </List>
+</Box>
+
+
+)
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -396,86 +407,84 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   return (
     <div>
-      <Drawer
-        anchor={'left'}
-        open={state['left']}
-        onClose={toggleDrawer('left', false)}
-      >
-        {list('left')}
-      </Drawer>
-      <Drawer
-        anchor={'right'}
-        open={notificationsState['right']}
-        onClose={toggleNotifications('right', false)}
-      >
-        {notificationsList('right')}
-      </Drawer>
-
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
+            <Drawer
+  anchor={'left'}
+  open={state['left']}
+  onClose={toggleDrawer('left', false)}
+>
+  <Box sx={{ backgroundColor: 'primary.main',height:"100%" }}>
+    {list('left')}
+  </Box>
+</Drawer>
+          <Drawer
+            anchor={'right'}
+            open={notificationsState['right']}
+            onClose={toggleNotifications('right', false)}
+          >
+            {notificationsList('right')}
+          </Drawer>
+       
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
+            sx={{ mr: 2 }}
+            onClick={toggleDrawer('left', true)}
+          >
+          <MenuIcon />
+          </IconButton>
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
+            El7a2ny
+          </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <IconButton
               size="large"
-              edge="start"
+              edge="end"
               color="inherit"
-              aria-label="open drawer"
-              sx={{ mr: 2 }}
-              onClick={toggleDrawer('left', true)}
+              aria-label="menu"
+              sx={{ mr: 0 }}
+              onClick={() => { window.location.href = "/chats" }}
             >
-              <MenuIcon />
+              <ChatBubbleIcon />
             </IconButton>
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{ display: { xs: 'none', sm: 'block' } }}
+            <IconButton
+              size="large"
+              aria-label="13"
+              color="inherit"
+              onClick={toggleNotifications('right', true)}
             >
-              El7a2ny
-            </Typography>
-            <Box sx={{ flexGrow: 1 }} />
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            {isChat == undefined &&
-              <IconButton
-                size="large"
-                edge="end"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 0 }}
-                onClick={() => { window.location.href = "/chats" }}
-              >
-              <Badge badgeContent={unread} color="error">
-                <ChatBubbleIcon />
-              </Badge>
-              </IconButton>
-            }
-              <IconButton
-                size="large"
-                aria-label="13"
-                color="inherit"
-                onClick={toggleNotifications('right', true)}
-              >
-                <Badge badgeContent={notifications.length} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Box>
-            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-              <IconButton
-                size="large"
-                aria-label="show more"
-                aria-controls={mobileMenuId}
-                aria-haspopup="true"
-                onClick={handleMobileMenuOpen}
-                color="inherit"
-              >
-                <MoreIcon />
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </AppBar>
-        {renderMobileMenu}
-        {renderMenu}
-      </Box>
+            <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon />
+            </Badge>
+            </IconButton>
+          </Box>
+          <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="show more"
+              aria-controls={mobileMenuId}
+              aria-haspopup="true"
+              onClick={handleMobileMenuOpen}
+              color="inherit"
+            >
+              <MoreIcon />
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </AppBar>
+      {renderMobileMenu}
+      {renderMenu}
+    </Box>
     </div>
   );
 }

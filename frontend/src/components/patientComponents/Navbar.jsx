@@ -171,8 +171,8 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
   function goSeeFamilyOrDie(){
     window.location.href='/patient/readFamilyMembers';
   }
-  function goHealthRecords(){
-    window.location.href = '/patient/HealthRecords'
+  function goFiles(){
+    window.location.href = '/patient/files'
   }
   function goPackages(){
     window.location.href='/patient/healthPackages'
@@ -293,62 +293,50 @@ const toggleDrawer = (anchor, open) => (event) => {
 
 const list = (anchor) => (
   <Box
-    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250}}
-    role="presentation"
-    onClick={toggleDrawer(anchor, false)}
-    onKeyDown={toggleDrawer(anchor, false)}
-  >
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHome}>
-            <ListItemText primary={'Home'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goAllApointments}>
-            <ListItemText primary={'Appointments'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goPrescriptions}>
-            <ListItemText primary={'Prescriptions'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goSeeFamilyOrDie}>
-            <ListItemText primary={'Family Members'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHealthRecords}>
-            <ListItemText primary={'Health Records'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goMedicalHistory}>
-            <ListItemText primary={'Medical History'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    <Divider />
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={LogoutButton}>
-            <ListItemText primary={'Logout'} style={{textAlign:'center'}} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-  </Box>
+  sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250, height: '100%' }}
+  role="presentation"
+  onClick={toggleDrawer(anchor, false)}
+  onKeyDown={toggleDrawer(anchor, false)}
+>
+  <List>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goHome}>
+        <ListItemText primary={'Home'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goAllApointments}>
+        <ListItemText primary={'Appointments'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goPrescriptions}>
+        <ListItemText primary={'Prescriptions'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goSeeFamilyOrDie}>
+        <ListItemText primary={'Family Members'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goFiles}>
+        <ListItemText primary={'Your files'} />
+      </ListItemButton>
+    </ListItem>
+  </List>
+  <Divider />
+
+
+<List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+  <ListItem disablePadding>
+    <ListItemButton onClick={LogoutButton}>
+      <ListItemText primary={'Logout'} style={{ textAlign: 'center' }} />
+    </ListItemButton>
+  </ListItem>
+</List>
+</Box>
+
 )
 
   const menuId = 'primary-search-account-menu';
@@ -433,7 +421,9 @@ const list = (anchor) => (
             open={state['left']}
             onClose={toggleDrawer('left', false)}
           >
+            <Box sx={{bgcolor: 'primary.main',height:"100%"}}>
             {list('left')}
+            </Box>
           </Drawer>
           <Drawer
             anchor={'right'}
