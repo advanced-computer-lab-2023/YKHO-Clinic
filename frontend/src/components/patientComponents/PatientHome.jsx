@@ -178,7 +178,7 @@ const PatientHome = () => {
                         <Grid item xs={6} >
                             <Paper variant="elevation" elevation={4}>
                                 <Typography variant="h4" sx={{ font: "bold", marginLeft: "3%", paddingTop: "3%" }} gutterBottom>
-                                    Family Members<Button variant="outlined" sx={{ marginLeft: "55%" }}>View All</Button>
+                                    Family Members<Button variant="outlined" sx={{ marginLeft: "55%" }} onClick={handleManageFamily}>View All</Button>
                                 </Typography>
                                 <AnimatePresence>
                                     <div style={{ marginLeft: "3%", paddingRight: "30%", paddingBottom: "1%" }}>
