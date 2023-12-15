@@ -338,7 +338,7 @@ async function cancelAppointment(req, res) {
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
-  let dateConverted = deletedAppointment.date.ToISOString();
+  let dateConverted = (new Date(deletedAppointment.date)).toISOString();
   const date = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
@@ -566,7 +566,7 @@ async function rescheduleAppointment(req, res) {
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
-  let dateConverted = date.ToISOString();
+  let dateConverted = date.toISOString();
   let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
@@ -623,11 +623,13 @@ async function rescheduleAppointment(req, res) {
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
+
 async function getMedicine(req, res) {
   let result = await medicine.find({}, "name price -_id");
   result = result.map(item => ({ price:item.price, label: item.name }));
   res.status(200).json({ result });
 }
+
 module.exports = {
   updatePresc,updateMedicine,
   deleteMedicine,
