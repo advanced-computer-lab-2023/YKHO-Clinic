@@ -32,7 +32,8 @@ const {
   getMedicine,
   ShowRequests,
   AcceptFollowupRequest,
-  RejectFollowupRequest
+  RejectFollowupRequest,
+  downloadPresc,
 } = require("./controller/doctorController");
 const {
 
@@ -179,6 +180,7 @@ app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
 app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
+app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);

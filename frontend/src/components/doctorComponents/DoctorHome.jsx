@@ -13,7 +13,10 @@ import Button from "@mui/material/Button";
 import LoadingComponent from "../LoadingComponent";
 import { motion, AnimatePresence } from "framer-motion";
 import PlaceHolder from "../PlaceHolder";
-
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import DialogTitle from "@mui/material/DialogTitle";
 function DoctorHome() {
   const [result, setResult] = useState(false);
   const [appointments, setAppointments] = useState([]);
@@ -23,6 +26,9 @@ function DoctorHome() {
   const [name, setName] = useState("");
   const [wallet, setWallet] = useState(0);
   const [followUp, setFollowUp] = useState([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [id, setId] = useState("");
+  const [type, setType] = useState("");
   useEffect(() => {
     check(), loadAppointments(), loadRequests(), getName(), getWallet();
   }, []);
@@ -90,9 +96,14 @@ function DoctorHome() {
       console.log(err);
     })
   }
-  async function acceptRequest() {
+  async function acceptRequest(id) {
     await axios
-      .post("http://localhost:3000/doctor/acceptFollowup", {
+      .post("http://localhost:3000/doctor/acceptFollowUp",
+      {
+        id:id
+      }
+      ,
+      {
         withCredentials: true,
       })
       .then((res) => {
@@ -103,9 +114,14 @@ function DoctorHome() {
         console.log(err);
       });
   }
-  async function rejectRequest() {
+  async function rejectRequest(id) {
     await axios
-      .post("http://localhost:3000/doctor/rejectFollowup", {
+      .post("http://localhost:3000/doctor/rejectFollowUp",
+      {
+        id:id
+      }
+      ,
+      {
         withCredentials: true,
       })
       .then((res) => {
@@ -130,7 +146,7 @@ function DoctorHome() {
     await axios
       .get("http://localhost:3000/doctor/Wallet", { withCredentials: true })
       .then((res) => {
-        setWallet(res.data.Wallett);
+        setWallet(Math.floor(res.data.Wallett));
       })
       .catch((err) => {
         console.log(err);
@@ -139,12 +155,46 @@ function DoctorHome() {
   function allAppointments() {
     window.location.href = "/doctor/appointments";
   }
+  function toFollowUp() {
+    window.location.href = "/doctor/followup";
+  }
+  async function confirm(id, type) {
+    setId(id);
+    setConfirmOpen(true);
+    setType(type);
+  }
+  async function confirmAction() {
+    if (type == "accept") {
+      await acceptRequest(id);
+    } else {
+      await rejectRequest(id);
+    }
+    setConfirmOpen(false);
+  }
   return (
     <div>
       {result && (
         <div>
           <Navbar />
-
+          <Dialog
+            open={confirmOpen}
+            keepMounted
+            onClose={()=>{setConfirmOpen(false);}}
+            aria-describedby="alert-dialog-slide-description"
+            maxWidth="lg"
+            sx={{width:"100%"}}
+            >
+                <DialogTitle>
+                    <Typography> Are you sure </Typography>
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>This action cannot be undone</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={()=>{setConfirmOpen(false);}} >No</Button>
+                    <Button onClick={confirmAction}>Yes</Button>
+                </DialogActions>
+            </Dialog>
           <Typography
             variant="h4"
             sx={{ font: "bold", marginTop: "3%", marginLeft: "3%" }}
@@ -200,11 +250,8 @@ function DoctorHome() {
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.5, delay: index * 0.2 }} // Adjust the delay for staggered effect
                             >
-                              <AppointmentCard
-                                name={app.patientID.name}
-                                date={app.date.split("T")[0]}
-                                isFull={false}
-                              />
+                            <AppointmentCard name={app.patientID.name} date={app.date.split('T')[0]} time={(app.date.split('T')[1]).split('.')[0]} isFull={false} />
+
                             </motion.div>
                           </Grid>
                         ))}
@@ -263,7 +310,7 @@ function DoctorHome() {
                       followUp.map(follow => {
                         return(
                         <Grid item>
-                          <FollowUpCard name={follow.patientID.name} date={follow.date.split("T")[0]} accept={acceptRequest} reject={rejectRequest} />
+                                    <FollowUpCard id={follow._id} name={follow.patientID.name} date={follow.date.split("T")[0]} time={follow.date.split("T")[1].split(":")[0]+":"+follow.date.split("T")[1].split(":")[1]} accept={confirm} reject={confirm} />
                         </Grid>
                         );
                       })
@@ -280,7 +327,7 @@ function DoctorHome() {
                     </Grid>
                   </CardContent>
                   <CardActions>
-                    <Button variant="text">Show more follow ups</Button>
+                    <Button onClick={toFollowUp} variant="text">Show more follow ups</Button>
                   </CardActions>
                 </Card>
               </div>

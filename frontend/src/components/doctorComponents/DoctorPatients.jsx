@@ -19,6 +19,7 @@ import PrescriptionCards from './PrescriptionCards';
 import MedicineCards from './MedicineCards';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
@@ -184,9 +185,6 @@ const DoctorPatients = () => {
                 }
         
     }
-    async function uploadPrescription(){
-        const id = onePatient.patientID._id;
-    }
     let loading =[];
     for(let i=0;i<12;i++){
         loading.push(<Grid item><LoadingComponent width="300" height="150" /></Grid>)
@@ -211,6 +209,7 @@ const DoctorPatients = () => {
     function closeAlert2(){
         setOpen4(false);
     }
+    
     const [prescriptions, setPrescriptions] = useState([]);
     const [prescriptionsLoading, setPrescriptionsLoading] = useState(true);
     const [medicineNames, setMedicineNames] = useState([]);

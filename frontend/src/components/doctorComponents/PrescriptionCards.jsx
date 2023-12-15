@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { IconButton } from '@mui/material';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import DownloadIcon from '@mui/icons-material/Download';
 export default function PrescriptionCards(props) {
     return (
 <Card sx={{width:"450px",height:"130px"}}>
@@ -15,7 +16,11 @@ export default function PrescriptionCards(props) {
         <Typography ><b>status</b>:{props.filled ? "filled" : "not filled"}</Typography>
     </div>
     <div style={{display:"flex", marginTop:-60,marginLeft:"auto"}}>
-
+    <a href={`http://localhost:3000/downloadPresc/${props._id}`} download>
+    <IconButton >
+        <DownloadIcon/>
+    </IconButton>
+    </a>
     {!props.filled&&<IconButton onClick={()=>{props.retrieveNames(props.MedicineNames,props._id)}}>
         <EditNoteIcon/>
     </IconButton>}

@@ -7,9 +7,13 @@ import Typography from '@mui/material/Typography';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
+import dayjs from 'dayjs';
 function FollowUpCard(props){
+    const adjustedTime = props.time
+    ? dayjs(`2000-01-01T${props.time}`).add(2, 'hours').format('HH:mm')
+    : null;
     return (
-        <Card  sx={{ width: 275,height:100 }}>
+        <Card  sx={{ width: 275,height:120 }}>
             <CardContent sx={{display:'flex',alignItems:'center'}}>
                 <DomainVerificationIcon sx={{ fontSize: 61 ,marginRight:3}}/>
                 <div>
@@ -19,12 +23,15 @@ function FollowUpCard(props){
                 <Typography sx={{ fontSize: 18 ,whiteSpace:"nowrap"}}  gutterBottom>
                  date: {props.date}
                 </Typography> 
+                <Typography sx={{ fontSize: 18 ,whiteSpace:"nowrap"}}  gutterBottom>
+                 time: {adjustedTime}
+                </Typography>
                 </div>
                 <div>
-                    <IconButton aria-label="check" size="small">
+                    <IconButton aria-label="check" size="small" onClick={()=>{props.accept(props.id,"accept")}}>
                     <CheckIcon sx={{ fontSize: 24 }}/>
                     </IconButton>
-                    <IconButton aria-label="close" size="small">
+                    <IconButton aria-label="close" size="small" onClick={()=>{props.reject(props.id,"reject")}}>
                     <CloseIcon sx={{ fontSize: 24 }}/>
                     </IconButton>
                 </div>
