@@ -342,7 +342,7 @@ async function cancelAppointment(req, res) {
   const date = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
-  patient.Wallet += wallet;
+  patient.wallet += wallet;
   await patient.save();
   const doctore = await doctor.findById(deletedAppointment.doctorID);
   doctore.Wallet -= wallet;

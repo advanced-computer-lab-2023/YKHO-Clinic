@@ -11,6 +11,20 @@ const medicalHistorySchema = {
         type: String,
     }
 }
+const emergencyContactSchema = new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+    },
+    mobile: {
+      type: String,
+      required: true,
+    },
+    relation: {
+      type: String,
+      required: true,
+    },
+  });
 
 const familyMemberSchema = {
     patientID: {
@@ -129,7 +143,7 @@ const patientSchema = new mongoose.Schema({
         required: false,
         ref: 'Patient',
     },
-    Wallet:
+    wallet:
     {
         type: Number,
         default: 0,
