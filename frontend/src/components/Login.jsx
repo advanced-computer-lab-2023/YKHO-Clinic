@@ -4,6 +4,10 @@ import axios from 'axios'
 import { useState ,useEffect} from 'react'
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function Login(){
     const [error,setError]= useState("")
@@ -72,6 +76,9 @@ function Login(){
     function handlePatient(){
         window.location.href="/register/patient"
     }
+    function goToForgetPassword(){
+        window.location.href="/forgetPassword/enterUsername"  
+    }
     return(
         <div>
             {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -79,13 +86,13 @@ function Login(){
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />
                 <div style={{display:'flex', justifyContent:'space-around'}}>
-                    <Button variant='contained' style={{marginRight: '190px'}}>forget Password</Button>
+                    <Button variant='contained' style={{marginRight: '190px'}} onClick={goToForgetPassword}>forget Password</Button>
                     <Button variant='contained'  onClick={handleLogin}>Login</Button>
                 </div>
                 <br/>
                 <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
-                <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handlePatient}>register patient</Button>
-                {error && <p>{error}</p>}
+                <Button style={{...styles.input,marginBottom:'30px'}} variant='contained' onClick={handlePatient}>register patient</Button>
+                {error && <Alert severity="error"> {error} </Alert>}
             </div>}
         </div>
     )

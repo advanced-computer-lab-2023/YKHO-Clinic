@@ -60,7 +60,6 @@ const DoctorRegister = () => {
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
         const name = document.getElementById("name").value;
-        console.log(selectedDate)
         let DOB = selectedDate;
         const email = document.getElementById("email").value;
         const specialityChoice = speciality;
@@ -135,6 +134,7 @@ const DoctorRegister = () => {
             if (response.data.message === "request sent successfully") {
                 window.location.href = "/";
             } else {
+                console.log(response.data.message)
                 setMessage(response.data.message);
             }
         } catch (error) {

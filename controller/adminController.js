@@ -106,6 +106,7 @@ const Login = async (req, res) => {
           username: doctor.username,
           rate: doctor.rate,
           type: "doctor",
+          name: doctor.name,
         });
         res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
         const data = {
@@ -127,38 +128,41 @@ const Login = async (req, res) => {
 };
 
 const changePasswordAdmin = async (req, res) => {
+  console.log("AAAAAAAAAAAAAAA")
+  oldPassword = req.body.oldPassword;
+  newPassword = req.body.newPassword;
+  confirmationPassword = req.body.confirmationPassword;
   if (
-    req.body.oldPassword === "" ||
-    req.body.newPassword === "" ||
-    req.body.confirmationPassword === ""
+    oldPassword === "" ||
+    newPassword === "" ||
+    confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(200).json({ message: "Fill the empty fields" });
   }
 
   const user = await adminsTable.findOne({
-    username: req.user.username,
+    username: req.user.admin.username,
   });
-
-  if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
-    if (req.body.newPassword != req.body.confirmationPassword) {
-      return res.status(404).json({ message: "Passwords dont not match" });
+  if (user && (await bcrypt.compare(oldPassword, user.password))) {
+    if (newPassword != confirmationPassword) {
+      return res.status(200).json({ message: "Passwords dont not match" });
     }
 
-    if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(404).json({ message: "Password is weak" });
+    if (isStrongPassword(newPassword) === false) {
+      return res.status(200).json({ message: "Password is weak" });
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
     await adminsTable.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.admin.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });
   } else {
     return res
-      .status(404)
-      .json({ message: "Password not changed successfully" });
+      .status(200)
+      .json({ message: "Old Password is wrong" });
   }
 };
 
@@ -170,112 +174,126 @@ const goToNewPassword = (req, res) => {
 };
 
 const sendOTP = async (req, res) => {
-  console.log(req.query.username);
   let OTP = generateOTP();
+  let username = req.query.username;
   let email = "";
-  if (req.query.username == "") {
-    res.render("forgetPassword/enterUsername", {
-      message: "please enter your username",
-    });
+  if (username == "") {
+    return res.status(200).json( { message: "please enter your username"});
   }
+
   let patient = await patientsTable.findOne({
     username: req.query.username,
   });
-  if (patient) email = patient.email;
 
+  if (patient) email = patient.email;
   let doctor = await doctorsTable.findOne({
     username: req.query.username,
   });
-  if (doctor) email = doctor.email;
 
+  if (doctor) email = doctor.email;
   let admin = await adminsTable.findOne({
     username: req.query.username,
   });
-  if (admin) email = admin.email;
 
+  if (admin) email = admin.email;
   if (email != "") {
-    sendOTPByEmail(email, OTP);
-    res.render("forgetPassword/enterOTP", {
+    sendEmail(email, OTP);
+    return res.status(201).json( {
       OTP: OTP,
-      message: "",
-      username: req.query.username,
+      message: "otp sent",
+      username: username,
     });
   } else {
-    res.render("forgetPassword/enterUsername", {
-      message: "Username not found",
-    });
+        return res.status(201).json( { message: "User not found"});
   }
 };
 
 function generateOTP() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
-
-async function sendOTPByEmail(email, OTP) {
+async function sendEmail(email, OTP ) {
   const transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
+    service: 'gmail',
     auth: {
-      user: "784ac0344ac54c",
-      pass: "b21deaba2fab04",
+      user: process.env.EMAIL_ADDRESS,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
-  const mailOptions = {
-    from: "ACLTESTING@inbox.mailtrap.io",
-    to: "yousseftyoh@gmail.com",
+  let mailOptions = {
+    from: "yousseftyoh@gmail.com",
+    to: "aclclinictest@gmail.com",
     subject: "Password Reset OTP",
     text: `Your OTP for password reset is: ${OTP}`,
   };
 
-  await transporter.sendMail(mailOptions);
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
 }
+
+const checkOTP = async (req, res) => {
+  if (req.body.OTP === "") {
+    return res.status(404).json({ message: "Fill the empty fields" });
+  }
+  if (req.body.OTP === req.query.OTP) {
+    return res.status(200).json({ message: "OTP is correct" });
+  } else {
+    return res.status(404).json({ message: "OTP is incorrect" });
+  }
+};
 
 const forgetPassword = async (req, res) => {
   if (req.body.newPassword === "" || req.body.confirmationPassword === "") {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(200).json({ message: "Fill the empty fields" });
   }
-  let admin = await adminsTable.findOne({
-    username: req.query.username,
-  });
-
-  let patient = await patientsTable.findOne({
-    username: req.query.username,
-  });
-
-  let doctor = await adminsTable.findOne({
-    username: req.query.username,
-  });
 
   if (req.body.newPassword != req.body.confirmationPassword) {
-    return res.status(404).json({ message: "Passwords dont not match" });
+    return res.status(200).json({ message: "Passwords dont not match" });
   }
 
   if (isStrongPassword(req.body.newPassword) === false) {
-    return res.status(404).json({ message: "Password is weak" });
+    return res.status(200).json({ message: "Password is weak" });
   }
+
+  let admin = await adminsTable.findOne({
+    username: req.body.username,
+  });
+
+  let patient = await patientsTable.findOne({
+    username: req.body.username,
+  });
+
+  let doctor = await adminsTable.findOne({
+    username: req.body.username,
+  });
+
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
   if (admin) {
     admin = await adminsTable.findOneAndUpdate(
-      { username: req.query.username },
+      { username: req.body.username },
       { password: hashedPassword }
     );
   }
   if (patient) {
     patient = await patientsTable.findOneAndUpdate(
-      { username: req.query.username },
+      { username: req.body.username },
       { password: hashedPassword }
     );
   }
   if (doctor) {
     doctor = await doctorsTable.findOneAndUpdate(
-      { username: req.query.username },
+      { username: req.body.username },
       { password: hashedPassword }
     );
   }
 
-  res.render("home", { message: "Password changed" });
+    return res.status(200).json({ message: "Password Changed" });
 };
 
 function generateOTP() {
@@ -313,17 +331,15 @@ function sendOTPByEmail(email, OTP) {
 }
 
 const logout = (req, res) => {
-  res.clearCookie("jwt");
-  res.render("home", { message: "logged out" });
+    res.clearCookie("jwt");
+    return res.status(200).json({ message: "Logged out successfully" });
 };
 
 const createAdmin = async (req, res) => {
-  const { username, password, email } = req.body;
-  if (
-    req.body.password === "" ||
-    req.body.username === "" ||
-    req.body.email === ""
-  ) {
+  username = req.body.username;
+  password = req.body.password; 
+  email = req.body.email;
+  if (username === "" || password === "" || email === "") {
     //look for any missing fields
     return res.status(200).json({ message: "Insert missing fields" });
   }
@@ -350,7 +366,7 @@ const createAdmin = async (req, res) => {
     return res.status(200).json({ message: "password is weak" });
   }
 
-  try {
+
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const adminUser = new adminsTable({
@@ -361,10 +377,8 @@ const createAdmin = async (req, res) => {
     });
     const result = await adminUser.save(); //save into DB
 
-    return res.status(200).json({ message: "Admin Created" });
-  } catch (ex) {
-    return res.status(200).json({ message: ex.message });
-  }
+    return res.status(200).json({ message: "Admin created successfully" });
+  
 };
 
 
@@ -402,6 +416,18 @@ const goToHealthPackages = async (req, res) => {
 };
 
 const addHealthPackages = async (req, res) => {
+  const validated = validateHealthPackage(req.body);
+  if (validated.error) {
+    return res.status(200).json({ message: validated.error.message });
+  }
+  // let packageName = req.body.packageName;
+  // let price = req.body.price;
+  // let doctorDiscount = req.body.doctorDiscount;
+  // let pharmacyDiscount = req.body.pharmacyDiscount;
+  // let familyDiscount = req.body.familyDiscount;
+  // if (packageName === "" || price === "" || doctorDiscount === "" || pharmacyDiscount === "" || familyDiscount === "") {
+  //   return res.status(200).json({ message: "Input missing fields" });
+  // }
   const healthPackage = new healthPackageTable({
     packageName: req.body.packageName,
     price: req.body.price,
@@ -417,48 +443,25 @@ const addHealthPackages = async (req, res) => {
       //law mal2ash package bel esm el maktob by add it
       const result = await healthPackage.save();
       healthPackages = await healthPackageTable.find();
-      res.render("admin/healthPackages", {
-        healthPackages,
-        createErrorMessage: "Health package created successfully",
-        updateErrorMessage: "",
-        deleteErrorMessage: "",
-      });
+      return res.status(200).json({ message: "package created successfully" });
     } else {
-      healthPackages = await healthPackageTable.find();
-      res.render("admin/healthPackages", {
-        healthPackages, //law la2a package
-        createErrorMessage: "Health package already exists",
-        updateErrorMessage: "",
-        deleteErrorMessage: "",
-      });
+      return res.status(200).json({ message: "package already exists" });
     }
   } catch (ex) {
     //law feh missing fields/out of bounds/wrong type inputs
-    healthPackages = await healthPackageTable.find();
-    res.render("admin/healthPackages", {
-      healthPackages,
-      createErrorMessage: ex.message,
-      updateErrorMessage: "",
-      deleteErrorMessage: "",
-    });
-    return;
+    return res.status(200).json({ message: ex.message });
   }
-  // }
 };
 const callUpdateHealthPackage = async (req, res) => {
   updateHealthPackages(req, res);
 };
 const updateHealthPackages = async (req, res) => {
   //if not given any variable to update, it wont return an error and just leave it blank in DB
+  console.log(req.body)
   const healthPackages = await healthPackageTable.find();
   const validated = validateHealthPackage(req.body);
   if (validated.error)
-    res.render("admin/healthPackages", {
-      healthPackages,
-      updateErrorMessage: validated.error.message,
-      createErrorMessage: "",
-      deleteErrorMessage: "",
-    });
+    return res.status(200).json({ message: validated.error.message });
   else {
     try {
       const healthPackage = await healthPackageTable.findOneAndUpdate(
@@ -473,26 +476,11 @@ const updateHealthPackages = async (req, res) => {
       );
       const healthPackages = await healthPackageTable.find();
       if (healthPackage != null)
-        res.render("admin/healthPackages", {
-          healthPackages,
-          updateErrorMessage: "Health package updated successfully",
-          createErrorMessage: "",
-          deleteErrorMessage: "",
-        });
+        return res.status(200).json({ message: "package Edited successfully" });
       else
-        res.render("admin/healthPackages", {
-          healthPackages,
-          updateErrorMessage: "Health package not found",
-          createErrorMessage: "",
-          deleteErrorMessage: "",
-        });
+        return res.status(200).json({message: "package not found"});
     } catch (ex) {
-      res.render("admin/healthPackages", {
-        healthPackages,
-        updateErrorMessage: ex.message,
-        createErrorMessage: "",
-        deleteErrorMessage: "",
-      });
+      res.status(200).json({ message: ex.message });
     }
   }
 };
@@ -542,16 +530,26 @@ const goToDeleteUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   let deletedUser;
+  let type;
   if (req.body.username === "")
     return res.status(200).json({ message: "Fill the empty fields" });
-  if (req.body.userType == "admin") {
-    //check the user and delete using its username which is unique
-    deletedUser = await adminsTable.deleteOne({ username: req.body.username });
-  } else if (req.body.userType == "patient") {
-    deletedUser = await patientsTable.findOneAndDelete({
-      username: req.body.username,
-    });
 
+    deletedUser = await adminsTable.findOneAndDelete({ username: req.body.username }).exec();
+    if(deletedUser)
+      type="admin";
+    else{
+      deletedUser = await patientsTable.findOneAndDelete({username: req.body.username,}).exec();
+      if(deletedUser)
+        type="patient";
+      if(!deletedUser){
+        deletedUser = await doctorsTable.findOneAndDelete({username: req.body.username,}).exec();
+        if(deletedUser)
+          type="doctor";
+      }
+    }
+
+  
+  if (type == "patient") {
     await appointmentsTable.deleteMany({
       patientID: deletedUser._id,
     });
@@ -584,7 +582,7 @@ const deleteUser = async (req, res) => {
       patient.agentID = undefined;
       patient.save();
     }
-  } else {
+  } else if(type == "doctor") {
     deletedUser = await doctorsTable.findOneAndDelete({ username: req.body.username });
     const removeTimeSlots = await timeSlotsTable.deleteMany({
       doctorID: deletedUser._id,
@@ -598,7 +596,9 @@ const deleteUser = async (req, res) => {
   }
   if (deletedUser)
     return res.status(200).json({ message: "User deleted successfully" });
-  else return res.status(200).json({ message: "User Not found" });
+  else{ 
+    return res.status(200).json({ message: "User Not found" })
+  };
 };
 
 const goToUploadedInfo = async (req, res) => {

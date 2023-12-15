@@ -22,12 +22,12 @@ async function createAppointment(req,res){
             }
     }
     
-}
+} 
 async function showMyPatients(req,res){
     let result
     id=req.user._id;
     if(req.query.name){
-         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name mobile').select(["patientID","-_id","date"])
          result=result.filter((c)=>{
             
             return c.patientID.name.substring(0,req.query.name.length)==req.query.name
@@ -36,7 +36,7 @@ async function showMyPatients(req,res){
     }
     else{
         
-         result = await appointment.find({doctorID:id}).populate("patientID",'name').select(["patientID","-_id","date"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name mobile').select(["patientID","-_id","date"])
         
     }
     for(i in result){
@@ -45,7 +45,7 @@ async function showMyPatients(req,res){
                 if(result[i]&& result[j])
                 if(result[i].patientID._id==result[j].patientID._id){
                     result.splice(j,1)
-                    j--;
+                    j--; 
                 }
             }
         } 
@@ -68,7 +68,7 @@ async function showMyPatients(req,res){
 async function showMyPatientInfo(req,res){
     id=req.user._id;
     try{
-        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","name DOB gender mobile emergency healthPackage healthRecords.name").select(["patientID","-_id"])
+        const result = await appointment.find({doctorID:id,patientID:req.params.id}).populate("patientID","name DOB gender mobile emergency healthPackage email healthRecords.name").select(["patientID","-_id"])
         res.status(200).json({result:result[0]})
     }
     catch(error){
@@ -93,26 +93,26 @@ async function showUpcomingAppointments(req, res) {
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
-
+ 
    async function PatientShowAppointments(req,res){
     id=req.user._id;
     
-    const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid"]);
-    let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th> <th>Pay By Credit</th> <th>Pay By Wallet</th> </tr>';
+    const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid","price"]);
+    // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th> <th>Pay By Credit</th> <th>Pay By Wallet</th> </tr>';
     
-    for(appointmentl in result){
-        appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].doctorID.name} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td>`
-        if(!result[appointmentl].paid&&result[appointmentl].status=='upcoming'){
-            appointmentrows+=  `<td> <button onClick="reserveTHIS(this)" id="${result[appointmentl]._id}"> Pay By Credit </button></td> `
-            appointmentrows+=  `<td> <button onClick="kimo(this)" id="${result[appointmentl]._id}"> Pay By Wallet </button></td> `
-          }
-          appointmentrows+= `</tr>`
+    // for(appointmentl in result){
+    //     appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].doctorID.name} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
+    //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td>`
+    //     if(!result[appointmentl].paid&&result[appointmentl].status=='upcoming'){
+    //         appointmentrows+=  `<td> <button onClick="reserveTHIS(this)" id="${result[appointmentl]._id}"> Pay By Credit </button></td> `
+    //         appointmentrows+=  `<td> <button onClick="kimo(this)" id="${result[appointmentl]._id}"> Pay By Wallet </button></td> `
+    //       }
+    //       appointmentrows+= `</tr>`
           
-    }
-    res.render("patient/Appointments",{appointmentrows:appointmentrows,onepatient:true});
-    //res.status(200).json({result:result});
+    // }
+    // res.render("patient/Appointments",{appointmentrows:appointmentrows,onepatient:true});
+    res.status(200).json({result:result});
 }
 async function DocShowAppointments(req,res){
     id=req.user._id;
@@ -203,7 +203,7 @@ async function DocFilterAppointments(req,res){
         }
         if(req.query.searchvalue!=""){
             result = result.filter((x) => {
-                if (x.patientID.name.substring(0,req.query.searchvalue.length) == req.query.searchvalue)
+                if (x.status==req.query.searchvalue)
                     return true;
                 return false;
             })

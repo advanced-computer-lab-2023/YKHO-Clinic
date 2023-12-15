@@ -10,10 +10,7 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-function AppointmentCard(props) {
-  const adjustedTime = props.time
-    ? dayjs(`2000-01-01T${props.time}`).add(2, 'hours').format('HH:mm')
-    : null;
+function TimeSlotCard(props) {
 
   return (
     <motion.div
@@ -27,39 +24,25 @@ function AppointmentCard(props) {
             <TodayIcon sx={{ fontSize: 71, marginRight: 3 }} />
             <div>
               <Typography sx={{ fontSize: 18, whiteSpace: 'nowrap' }} gutterBottom>
-                name: {props.name}
+                From: {props.from}
               </Typography>
               <Typography sx={{ fontSize: 18, whiteSpace: 'nowrap' }} gutterBottom>
-                date: {props.date}
+                To: {props.to}
               </Typography>
-              {adjustedTime && (
-                <Typography sx={{ fontSize: 18, whiteSpace: 'nowrap' }} gutterBottom>
-                  time: {adjustedTime}
-                </Typography>
-              )}
+              
             </div>
-            {props.isFull && (
+            
               <div>
-              {props.status!="completed" &&< IconButton sx={{ marginTop: '-60px' }} id={props.ids} onClick={() => props.whenClicked(props.ids)}>
-                <EditCalendarIcon sx={{ fontSize: 24 }} />
-              </IconButton>}
-              {props.status!="cancelled"&&props.status!="completed"&&<IconButton sx={{ marginBottom: '-80px' }} color="error" id={props.ids} onClick={() => props.cancel(props.ids)}>
+              <IconButton sx={{ marginBottom: '-80px' }} color="error" id={props.ids} onClick={() => props.cancel(props._id)}>
               <DeleteForeverIcon sx={{ fontSize: 24 }} />
-            </IconButton>}
+            </IconButton>
             </div>
-            )}
+            
           </CardContent>
         </div>
-        {props.isFull && props.status=="completed" && (
-          <CardActions sx={{ marginTop: -6 }}>
-            <Button size="small" variant="text" onClick={()=>props.schedFollowup(props.ids)}>
-              schedule follow up
-            </Button>
-          </CardActions>
-        )}
       </Card>
     </motion.div>
   );
 }
 
-export default AppointmentCard;
+export default TimeSlotCard;

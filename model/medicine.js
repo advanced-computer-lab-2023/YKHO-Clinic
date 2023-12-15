@@ -56,5 +56,5 @@ const medicineSchema = new mongoose.Schema({
       });
     return schema.validate(newPrescription);
 }
-const medicine = mongoose.model('medincine', medicineSchema);
+const medicine = mongoose.model('medincines', medicineSchema);
 module.exports={medicine,validateMedicine};
