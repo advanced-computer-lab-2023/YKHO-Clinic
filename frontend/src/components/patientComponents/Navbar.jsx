@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -40,8 +40,6 @@ import axios from 'axios';
 // socket
 import io from 'socket.io-client';
 const socket = io.connect("http://localhost:3000");
-
-
 
 const init = async () => {
   await axios.get("http://localhost:3000/rooms", {
@@ -98,8 +96,42 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp}) {
+export default function PrimarySearchAppBar({content, openHelp, isChat}) {
+  const [unread, setUnread] = useState(0);
+  const unreadRef = useRef(unread);
   
+  useEffect(() => {
+    unreadRef.current = unread;
+  }, [unread])
+
+  const getUnread = async () => {
+    await axios.get("http://localhost:3000/unread", {
+      withCredentials: true
+    }).then((res) =>{
+      setUnread(res.data);
+    })
+  }
+
+  // socket notiffications
+  useEffect(() => {init(), getUnread()}, [])
+
+  useEffect(() => {
+    socket.on("update", () => {
+      getNotifications()
+    })
+
+    socket.on("receive_message", (data) => {
+      if (!data.isPatient)
+        setUnread(unreadRef.current + 1);
+    })
+
+    socket.on("read", (data) => {
+      if (data.isPatient)
+        setUnread(unreadRef.current - data.read);
+    })
+
+
+  }, [socket])
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -110,14 +142,7 @@ export default function PrimarySearchAppBar({content, openHelp}) {
   useEffect(()=>{getNotifications()},[]);
   const { searchvalue } = useParams();
 
-  useEffect(() => {init()}, [])
-
-  useEffect(() => {
-    socket.on("cancel", (data) => {
-      
-    })
-
-}, [socket])
+  
 
 
   function toggleFilter() {
@@ -146,8 +171,8 @@ export default function PrimarySearchAppBar({content, openHelp}) {
   function goSeeFamilyOrDie(){
     window.location.href='/patient/readFamilyMembers';
   }
-  function goHealthRecords(){
-    window.location.href = '/patient/HealthRecords'
+  function goFiles(){
+    window.location.href = '/patient/files'
   }
   function goPackages(){
     window.location.href='/patient/healthPackages'
@@ -268,62 +293,50 @@ const toggleDrawer = (anchor, open) => (event) => {
 
 const list = (anchor) => (
   <Box
-    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250}}
-    role="presentation"
-    onClick={toggleDrawer(anchor, false)}
-    onKeyDown={toggleDrawer(anchor, false)}
-  >
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHome}>
-            <ListItemText primary={'Home'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goAllApointments}>
-            <ListItemText primary={'Appointments'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goPrescriptions}>
-            <ListItemText primary={'Prescriptions'} />
-          </ListItemButton>
-        </ListItem>
-    </List>
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goSeeFamilyOrDie}>
-            <ListItemText primary={'Family Members'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goHealthRecords}>
-            <ListItemText primary={'Health Records'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={goMedicalHistory}>
-            <ListItemText primary={'Medical History'} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    <Divider />
-    <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={LogoutButton}>
-            <ListItemText primary={'Logout'} style={{textAlign:'center'}} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-  </Box>
+  sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250, height: '100%' }}
+  role="presentation"
+  onClick={toggleDrawer(anchor, false)}
+  onKeyDown={toggleDrawer(anchor, false)}
+>
+  <List>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goHome}>
+        <ListItemText primary={'Home'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goAllApointments}>
+        <ListItemText primary={'Appointments'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goPrescriptions}>
+        <ListItemText primary={'Prescriptions'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goSeeFamilyOrDie}>
+        <ListItemText primary={'Family Members'} />
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goFiles}>
+        <ListItemText primary={'Your files'} />
+      </ListItemButton>
+    </ListItem>
+  </List>
+  <Divider />
+
+
+<List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+  <ListItem disablePadding>
+    <ListItemButton onClick={LogoutButton}>
+      <ListItemText primary={'Logout'} style={{ textAlign: 'center' }} />
+    </ListItemButton>
+  </ListItem>
+</List>
+</Box>
+
 )
 
   const menuId = 'primary-search-account-menu';
@@ -408,7 +421,9 @@ const list = (anchor) => (
             open={state['left']}
             onClose={toggleDrawer('left', false)}
           >
+            <Box sx={{bgcolor: 'primary.main',height:"100%"}}>
             {list('left')}
+            </Box>
           </Drawer>
           <Drawer
             anchor={'right'}
@@ -454,16 +469,20 @@ const list = (anchor) => (
           <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch}> Search </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 0 }}
-              onClick={() => { window.location.href = "/chats" }}
-            >
-              <ChatBubbleIcon />
-            </IconButton>
+            {isChat == undefined &&
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 0 }}
+                onClick={() => { window.location.href = "/chats" }}
+              >
+              <Badge badgeContent={unread} color="error">
+                <ChatBubbleIcon />
+              </Badge>
+              </IconButton>
+            }
             <IconButton
               size="large"
               aria-label="13"

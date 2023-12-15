@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-import Navbar from './patientComponents/Navbar'
-
+import NavbarPatient from './patientComponents/Navbar'
+import NavbarDoctor from './doctorComponents/Navbar'
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -355,13 +355,18 @@ function Chats() {
             await axios.post("http://localhost:3000/read", {
                 room
             },
-                { withCredentials: true })
-                .then(function (res) {
-
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+            { withCredentials: true })
+            .then(function (res) {
+                let data = {
+                    room,
+                    read: unread,
+                    isPatient
+                }
+                socket.emit("read", data)
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
         }
     }
 
@@ -412,8 +417,13 @@ function Chats() {
     return (
         <>
             {result &&
-                <>
-                    <Navbar />
+                <>  
+                    {isPatient &&
+                    <NavbarPatient isChat = {true}/>
+                    }
+                    {!isPatient &&
+                    <NavbarDoctor isChat = {true} />
+                    }
                     <Grid container spacing={0} sx={{ minHeight: 'calc(100vh - 64px)' }}>
                         <Grid item xs={4} sx={{ borderRight: 2, borderColor: 'primary.main' }}>
                             <List sx={{ overflowY: 'auto', padding: 0 }}>

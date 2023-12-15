@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Typography } from '@mui/material';
 
-const PatientHealthRecords = () => {
+const PatientFile = () => {
     const [result, setResult] = useState(false);
     useEffect(() => { check() }, []);
     async function check() {
@@ -25,12 +26,12 @@ const PatientHealthRecords = () => {
         })
     }
     return (
-        <div>
-            {result && <div>
-                <h1>Health Records</h1>
-            </div>}
-        </div>
+        <>
+            {result && <>
+                
+            </>}
+        </>
     )
 }
 
-export default PatientHealthRecords;
+export default PatientFile;
