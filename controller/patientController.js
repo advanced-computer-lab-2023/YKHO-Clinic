@@ -8,7 +8,7 @@ const { appointment } = require("../model/appointments");
 const { healthPackage } = require("../model/healthPackage");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-
+const FollowUpRequest = require("../model/followUpRequests");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const admin = require("../model/admin.js");
@@ -187,6 +187,29 @@ const createFamilyMember = async (req, res) => {
   res.status(201).render("patient/family", { results });
 };
 
+const addFollowUpRequest = async (req, res) => {
+  const { doctorID, date, time } = req.body;
+  const patientID = req.user._id;
+  const doc = await doctorModel.findById(doctorID);
+  const pat = await patientModel.findById(patientID,"-healthRecords");
+  const price = doctor.rate * 1.1 - (doctor.rate * 1.1 * healthPack.doctorDiscount) / 100;
+  startTimeHours= time.split("-")[0].split(":")[0];
+  startTimeMinutes= time.split("-")[0].split(":")[1];
+  endTimeHours= time.split("-")[1].split(":")[0];
+  endTimeMinutes= time.split("-")[1].split(":")[1];
+  const duration = (endTimeHours - startTimeHours) * 60 + (endTimeMinutes - startTimeMinutes);
+  date.setHours(startTimeHours);
+  date.setMinutes(startTimeMinutes);
+  const newFollowUpRequest = new FollowUpRequest({
+    doctorID,
+    patientID,
+    date,
+    duration,
+    price,
+  })
+  await newFollowUpRequest.save();
+  res.status(201).json({ message: "Follow up request sent successfully" });
+  };
 const readFamilyMembers = async (req, res) => {
   patient = await patientModel.findOne({ _id: req.user._id });
   let results = patient.familyMembers;

@@ -17,6 +17,7 @@ import MuiAlert from '@mui/material/Alert';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import PrescriptionCards from './PrescriptionCards';
 import MedicineCards from './MedicineCards';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -48,7 +49,6 @@ const DoctorPatients = () => {
     const [loading2, setLoading2] = useState(false);
     const [prescriptionsOpen, setPrescriptionsOpen] = useState(false);
     const [availableMedicine, setAvailableMedicine] = useState([]);
-    const [unit, setUnit] = useState('mg');
     useEffect(() => {
         check(); 
         getMedicine();
@@ -218,9 +218,7 @@ const DoctorPatients = () => {
     const [prescription,setPrescription] = useState("");
     const [uploadingMedicine, setUploadingMedicine] = useState(false);
 
-    function handleUnitChange(event) {
-        setUnit(event.target.value);
-        }
+
     async function openPrescriptions(){
         setPrescriptionsLoading(true);
         const id = onePatient.patientID._id;
@@ -262,7 +260,7 @@ const DoctorPatients = () => {
         setDos(e.target.value);
     }
     async function addMedicine() {
-        if (selectedMedicine && selectedMedicine.label && dos && unit) {
+        if (selectedMedicine && selectedMedicine.label && dos) {
             console.log(medicineNames)
             const medicineLabelExists = medicineNames.some(
                 (medicine) => medicine.name === selectedMedicine.label
@@ -273,7 +271,7 @@ const DoctorPatients = () => {
                         `http://localhost:3000/doctor/addMedicine/${prescription}`,
                         {
                             name: selectedMedicine.label,
-                            dosage: dos + unit,
+                            dosage: dos,
                             id: prescription,
                             price: selectedMedicine.price,
                         },
@@ -305,7 +303,7 @@ const DoctorPatients = () => {
     }
     async function updateMedicine(){
         const id= prescription;
-        const dosage= dos+unit;
+        const dosage= dos;
         const name=medicineName;
         if(!dos){
             setErrorMessage("Please fill all the fields");
@@ -329,7 +327,32 @@ const DoctorPatients = () => {
     }
     const [medicineName,setMedicineName] = React.useState("");
     const [updateMedicineOpen,setUpdateMedicineOpen]= React.useState(false);
-
+    const [addPrescriptionOpen,setAddPrescriptionOpen]= React.useState(false);
+    const [prescriptionName,setPrescriptionName]= React.useState("");
+    async function addPrescription(){
+        const name = prescriptionName;
+        const id = onePatient.patientID._id;
+        if(!name){
+            setErrorMessage("Please fill all the fields");
+            setOpen3(true);
+            return;
+        }
+       await axios.post("http://localhost:3000/doctor/addPrescription",{
+            id:id,
+            name:name
+        }
+        ,
+        {
+            withCredentials: true,
+        }).then((res)=>{
+            console.log(res.data.result)
+            setPrescriptions(res.data.result);
+            setAddPrescriptionOpen(false);
+        })
+    }
+    function handlePrescriptionChange(e){
+        setPrescriptionName(e.target.value);
+    }
     return (
         <div>
             {result && (
@@ -361,23 +384,28 @@ const DoctorPatients = () => {
                     >
                     {prescriptionsOpen&& <>
                     <div style={{display:"flex"}}>
+                    <IconButton onClick={()=>{setPrescriptionsOpen(false);setOpen(true);}}>
+                        <ArrowBackIcon />
+                    </IconButton>
                     <DialogTitle>{onePatient.patientID.name}'s Prescriptions</DialogTitle>
-                    <IconButton  onClick={()=>{uploadPrescription();}}>
+                    <IconButton  onClick={()=>{setAddPrescriptionOpen(true)}}>
                         <NoteAddIcon />
                     </IconButton>
                     
                     </div>
-                    <div style={{overflowY:"auto",height:400}}>
-                    <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center",marginBottom:5}}>
+                    <div style={{overflowY:"auto",width:1200,height:400}}>
+                    <Grid container columnSpacing={3} rowSpacing={3} sx={{display:"flex",justifyContent:"center",alignItems:"center",padding:5}}>
                     {
-                                !prescriptionsLoading&& prescriptions.map((prescription) =>{ return (
+                                !prescriptionsLoading&& prescriptions.length>0&& prescriptions.map((prescription) =>{ return (
                                     <Grid item key={prescription._id}>
-                                        <PrescriptionCards prescriptionName={prescription.prescriptionName} MedicineNames={prescription.MedicineNames} filled={prescription.filled} _id={prescription._id} retrieveNames={showMedicine}/>
+                                        <PrescriptionCards prescriptionName={prescription.prescriptionName} MedicineNames={prescription.MedicineNames} filled={prescription.filled} _id={prescription._id} retrieveNames={showMedicine} />
                                     </Grid>
                                     
                                 )})
                             }
-                           
+                           {
+                                 !prescriptionsLoading&&prescriptions.length==0&&<PlaceHolder title="No Prescriptions Found" description="There are no prescriptions available." width="300" height="100" />
+                           }
                             
                     </Grid>
                     </div>
@@ -393,13 +421,16 @@ const DoctorPatients = () => {
                     >
                     {medicineOpen&& <>
                     <div style={{display:"flex",width:700}}>
+                    <IconButton onClick={()=>{setMedicineOpen(false);setPrescriptionsOpen(true);}}>
+                        <ArrowBackIcon />
+                    </IconButton>
                     <DialogTitle>{onePatient.patientID.name}'s medicine</DialogTitle>
                     <IconButton  onClick={()=>{uploadMedicine();}}>
                         <NoteAddIcon />
                     </IconButton>
                     </div>
                     <div style={{overflowY:"auto",height:400}}>
-                    <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center",marginBottom:5}}>
+                    <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center",marginBottom:5,padding:4}}>
                             {
                                 medicineNames.map((medicine) =>{ return (
                                     <Grid item>
@@ -441,21 +472,7 @@ const DoctorPatients = () => {
       getOptionLabel={(option) => option.label}
     />
                         <div style={{display:"flex"}}>
-                        <TextField type="number" id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
-                        
-                        <InputLabel id="demo-simple-select-label">unit
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={unit}
-                                label="unit"
-                                onChange={handleUnitChange}
-                                sx={{width:100}}
-                            >
-                                <MenuItem value={"mg"}>mg</MenuItem>
-                                <MenuItem value={"ml"}>ml</MenuItem>
-                            </Select>
-                        </InputLabel>
+                        <TextField  id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
                         </div>
                     </DialogContent>
                     <DialogActions>
@@ -509,7 +526,12 @@ const DoctorPatients = () => {
                     >
                         {open2 && (
                             <>
+                                <div style={{display:"flex"}}>
+                                <IconButton onClick={()=>{setOpen2(false); setOpen(true)}}>
+                                    <ArrowBackIcon  />
+                                </IconButton>
                                 <DialogTitle>{onePatient.patientID.name}'s Health Records</DialogTitle>
+                                </div>
                                 <DialogContent sx={{display:"flex"}}>
                                     <Card sx={{height:200, width:400}}>
                                     <CardContent>
@@ -556,19 +578,7 @@ const DoctorPatients = () => {
                         <DialogTitle>Update {medicineName}'s Dosage</DialogTitle>
                         <DialogContent>
                             <div style={{display:"flex"}}>
-                            <TextField type="number" id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
-                            <InputLabel id="demo-simple-select-label">unit</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={unit}
-                                label="unit"
-                                onChange={handleUnitChange}
-                                sx={{width:100}}
-                            >
-                                <MenuItem value={"mg"}>mg</MenuItem>
-                                <MenuItem value={"ml"}>ml</MenuItem>
-                            </Select>
+                            <TextField id="dosage" label="dosage"  onChange={setDosage} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
                             </div>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
                             <Button sx={{marginTop:4}} variant="contained"onClick={updateMedicine}> 
@@ -576,6 +586,28 @@ const DoctorPatients = () => {
                             </Button>
                             </div>
                         </DialogContent>
+                        </>}
+                    </Dialog>
+                    <Dialog
+                    open={addPrescriptionOpen}
+                    keepMounted
+                    onClose={()=>{setAddPrescriptionOpen(false);}}
+                    aria-describedby="alert-dialog-slide-description"
+                    maxWidth="lg"
+                    sx={{width:"100%"}}
+                    >
+                        {addPrescriptionOpen&&<>
+                        <DialogTitle>Add Prescription</DialogTitle>
+                        <DialogContent>
+                            <div style={{display:"flex"}}>
+                            <TextField id="prescriptionName" label="prescription name"  onChange={handlePrescriptionChange} variant="standard" sx={{ width: 300,marginTop: 2 }} >  </TextField>
+                            </div>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button variant="contained" onClick={addPrescription}>
+                                Submit
+                            </Button>
+                        </DialogActions>
                         </>}
                     </Dialog>
                     <Navbar />

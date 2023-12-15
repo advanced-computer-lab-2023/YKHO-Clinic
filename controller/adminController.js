@@ -106,6 +106,7 @@ const Login = async (req, res) => {
           username: doctor.username,
           rate: doctor.rate,
           type: "doctor",
+          name: doctor.name,
         });
         res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
         const data = {

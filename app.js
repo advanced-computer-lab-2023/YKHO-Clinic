@@ -29,7 +29,10 @@ const {
   deleteMedicine,
   updateMedicine,
   updatePresc,
-  getMedicine
+  getMedicine,
+  ShowRequests,
+  AcceptFollowupRequest,
+  RejectFollowupRequest
 } = require("./controller/doctorController");
 const {
 
@@ -108,7 +111,7 @@ const {
 const cors=require('cors')
 
 const port = 3000;
-const MONGO_URI = "mongodb://127.0.0.1:27017";
+const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 app.use(cookieParser());
 app.listen(port, () => {
@@ -173,6 +176,9 @@ app.get("/loggedIn",requireAuth,loggedIn);
 app.get("/doctor/name",requireAuthDoctor,getName);
 app.post("/rescheduleAppointment",requireAuthDoctor,rescheduleAppointment);
 app.get("/doctor/getMedicine",requireAuthDoctor,getMedicine);
+app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
+app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
+app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);

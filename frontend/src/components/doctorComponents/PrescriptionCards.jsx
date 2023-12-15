@@ -16,9 +16,9 @@ export default function PrescriptionCards(props) {
     </div>
     <div style={{display:"flex", marginTop:-60,marginLeft:"auto"}}>
 
-    <IconButton onClick={()=>{props.retrieveNames(props.MedicineNames,props._id)}}>
+    {!props.filled&&<IconButton onClick={()=>{props.retrieveNames(props.MedicineNames,props._id)}}>
         <EditNoteIcon/>
-    </IconButton>
+    </IconButton>}
     </div>
     </div>
     </CardContent>
