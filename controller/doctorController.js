@@ -626,6 +626,7 @@ async function rescheduleAppointment(req, res) {
 async function getMedicine(req, res) {
   let result = await medicine.find({}, "name price -_id");
   result = result.map(item => ({ price:item.price, label: item.name }));
+  
   res.status(200).json({ result });
 }
 module.exports = {
