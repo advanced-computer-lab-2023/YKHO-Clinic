@@ -39,10 +39,10 @@ export default function PrescriptionCard(props) {
                         
                     <Button variant="contained" size="small" href={`http://localhost:3000/patient/prescriptionPDF/${props.id}`} target="_blank"> Download PDF</Button>
                 </Stack>
-                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
+                <Stack direction="row" spacing={3} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
                     {props.medicines.map((medicine) => {
                         return (
-                            <Paper sx={{ height: "65%", width: "100px", paddingTop: "10px" }} >
+                            <Paper sx={{ height: "65%", minWidth: "100px", paddingTop: "10px" }} >
                                 <Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
                                     <MedicationLiquidIcon sx={{ fontSize: 40 }} />
                                     <Typography sx={{ fontSize: 18, whiteSpace: "nowrap", marginLeft: "1%" }} gutterBottom>

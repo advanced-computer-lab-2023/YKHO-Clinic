@@ -338,6 +338,7 @@ async function cancelAppointment(req, res) {
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
+  const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
   patient.wallet += wallet;
@@ -347,7 +348,7 @@ async function cancelAppointment(req, res) {
   await doctore.save();
   let newNotification = new notificationModel({
     patientID: patient._id,
-    text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
+    text: `Your appointment on ${date} has been cancelled by the doctor and the amount has been refunded to your wallet`,
     read: false,
     date: Date.now(),
   });
@@ -355,18 +356,18 @@ async function cancelAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient.name} is cancelled`,
+    text: `Your appointment on ${date} with ${patient.name} is cancelled`,
     read: false,
     date: Date.now(),
   });
   await newNotification2.save();
   await sendEmail(
     patient.email,
-    "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet"
+    `Your appointment on ${date} has been cancelled by the doctor and the amount has been refunded to your wallet`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${patient.name} is cancelled`
+    `Your appointment on ${date} with ${patient.name} is cancelled`
   );
   res.status(200).json({ message: "Appointment cancelled successfully." });
 }
@@ -558,13 +559,14 @@ async function sendEmail(email, message) {
 
 async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
-  const date = new Date(req.body.date);
+  let date = new Date(req.body.date);
   const time = req.body.time;
 
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
+  let dateText = `${date.split("T")[0]} at ${parseInt(date.split("T")[1].split(".")[0].split(":")[0])+2}:${date.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);
@@ -596,7 +598,7 @@ async function rescheduleAppointment(req, res) {
   
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
-    text: `Appointment on ${thisAppointment.date} rescheduled to ${req.body.date}`,
+    text: `Your Appointment with ${doctore.name} on ${thisAppointment.date} rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -604,7 +606,7 @@ async function rescheduleAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
-    text: `Your appointment with ${pat.name} is rescheduled to ${req.body.date}`,
+    text: `Your appointment with ${pat.name} on ${thisAppointment.date} is rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -612,11 +614,11 @@ async function rescheduleAppointment(req, res) {
 
   await sendEmail(
     pat.email,
-    `Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduleAppointment.date}`
+    `Your Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduledAppointment.date}`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${pat.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`
+    `Your appointment with ${pat.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduledAppointment.date}`
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }

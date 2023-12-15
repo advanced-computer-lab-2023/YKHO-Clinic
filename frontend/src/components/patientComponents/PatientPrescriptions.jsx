@@ -3,7 +3,6 @@ import axios from 'axios';
 import Navbar from './Navbar'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton, Box, Paper, Button, Typography, Grid, Stack, Autocomplete, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
