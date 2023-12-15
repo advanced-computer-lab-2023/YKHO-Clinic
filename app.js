@@ -109,6 +109,7 @@ const {
   getDoctorSpeciality,
   cancelAppointmentPatient,
   deleteNotification,
+  getTimeSlotOnDate,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -269,6 +270,8 @@ app.get("/patient/AllPresecrptionsInfo", requireAuthPatient, viewAllDataOfPrescr
 app.get("/patient/prescriptionPDF/:id", requireAuthPatient, viewPrescriptionPDF);
 app.get("/patient/doctorSpecialities", requireAuthPatient, getDoctorSpeciality);
 app.post("/patient/cancelAppointment", requireAuthPatient, cancelAppointmentPatient);
+app.get("/patient/getTimeSlotOnDate", requireAuthPatient, getTimeSlotOnDate);
+app.post("/patient/rescheduleAppointment",requireAuthPatient,rescheduleAppointment);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;

@@ -1503,6 +1503,21 @@ const viewPrescriptionPDF = async (req, res) => {
   }
 }
 
+async function getTimeSlotOnDate(req, res) {
+  const date = new Date(req.query.date);
+  const day = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][req.query.day];
+  const appointment = await appointmentModel.find({ doctorID: req.params.id, date: date });
+  let timeSlots = await timeSlot.find({ doctorID: req.query.id , day: day});
+  timeSlots = timeSlots.filter((timeSlot) => {
+    for (let i = 0; i < appointment.length; i++) {
+      if (timeSlot.from == ((appointment[i].date.getHours()+2) + ":" + appointment[i].date.getMinutes()))
+        return false;
+    }
+    return true;
+  });
+  res.status(200).json({ result: timeSlots });
+}
+
 module.exports = {
   showSlots,
   reserveSlot,
@@ -1542,6 +1557,7 @@ module.exports = {
   getDoctorSpeciality,
   cancelAppointmentPatient,
   deleteNotification,
+  getTimeSlotOnDate,
 };
 
 module.exports.readSubscription = readSubscription;
