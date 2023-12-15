@@ -11,20 +11,6 @@ const medicalHistorySchema = {
         type: String,
     }
 }
-const emergencyContactSchema = new mongoose.Schema({
-    name: {
-      type: String,
-      required: true,
-    },
-    mobile: {
-      type: String,
-      required: true,
-    },
-    relation: {
-      type: String,
-      required: true,
-    },
-  });
 
 const familyMemberSchema = {
     patientID: {
@@ -80,6 +66,7 @@ const patientSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        unique:true,
     },
     password: {
         type: String,
@@ -107,13 +94,14 @@ const patientSchema = new mongoose.Schema({
         required: true,
 
     },
-    mobile: {
+    mobileNumber: {
         type: String,
         required: true,
     },
     emergency: {
         name: String,
-        mobile: String
+        mobile: String,
+        relation: String,
     },
     familyMembers: [familyMemberSchema],
     subscription: {

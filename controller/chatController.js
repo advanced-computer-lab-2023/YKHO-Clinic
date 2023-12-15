@@ -150,7 +150,6 @@ const contacts = async (req, res) => {
         results = results.filter(
             (obj, index, self) => index === self.findIndex((o) => o.room === obj.room)
         );
-
     }
     res.status(200).json(results); 
 }

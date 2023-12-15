@@ -54,7 +54,7 @@ const createPatient = async (req, res) => {
     DOB,
     gender,
     email,
-    mobile,
+    mobileNumber,
     emergencyName,
     emergencyMobile,
   } = req.body;
@@ -65,7 +65,7 @@ const createPatient = async (req, res) => {
     DOB: Joi.date().iso().required(),
     gender: Joi.string().valid("male", "female", "other").required(),
     email: Joi.string().email().required(),
-    mobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
+    mobileNumber: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
     emergencyName: Joi.string().required(),
     emergencyMobile: Joi.string().pattern(new RegExp("^\\d{11}$")).required(),
   });
@@ -84,14 +84,13 @@ const createPatient = async (req, res) => {
     (await patientModel.find({ username: username })).length > 0 ||
     (await requestModel.find({ username: username })).length > 0
   ) {
-    console.log(username);
     return res.status(201).json({ message: "username already exists" });
   }
   if (
-    (await admin.find({ mobile: mobile })).length > 0 ||
-    (await doctorModel.find({ mobile: mobile })).length > 0 ||
-    (await patientModel.find({ mobile: mobile })).length > 0 ||
-    (await requestModel.find({ mobile: mobile })).length > 0
+    (await admin.find({ mobile: mobileNumber })).length > 0 ||
+    (await doctorModel.find({ mobile: mobileNumber })).length > 0 ||
+    (await patientModel.find({ mobileNumber: mobileNumber })).length > 0 ||
+    (await requestModel.find({ mobile: mobileNumber })).length > 0
   ) {
     return res.status(201).json({ message: "mobile already exists" });
   }
@@ -107,6 +106,7 @@ const createPatient = async (req, res) => {
   const emergency = {
     name: emergencyName,
     mobile: emergencyMobile,
+    relation: "emergency",
   };
 
   const salt = await bcrypt.genSalt();
@@ -119,7 +119,7 @@ const createPatient = async (req, res) => {
     DOB,
     gender,
     email,
-    mobile,
+    mobileNumber,
     emergency,
   });
 
@@ -190,22 +190,24 @@ const createFamilyMember = async (req, res) => {
 const addFollowUpRequest = async (req, res) => {
   const { doctorID, date, time } = req.body;
   const patientID = req.user._id;
-  const doc = await doctorModel.findById(doctorID);
+  let dates = new Date(date);
+  const doc = await doctorModel.findById(doctorID,"-id -medicalLicense -medicalDegree");
   const pat = await patientModel.findById(patientID, "-healthRecords");
-  const price = doctor.rate * 1.1 - (doctor.rate * 1.1 * healthPack.doctorDiscount) / 100;
+
+
   startTimeHours = time.split("-")[0].split(":")[0];
   startTimeMinutes = time.split("-")[0].split(":")[1];
   endTimeHours = time.split("-")[1].split(":")[0];
   endTimeMinutes = time.split("-")[1].split(":")[1];
-  const duration = (endTimeHours - startTimeHours) * 60 + (endTimeMinutes - startTimeMinutes);
-  date.setHours(startTimeHours);
-  date.setMinutes(startTimeMinutes);
+  const duration = (endTimeHours - startTimeHours);
+  dates.setHours(startTimeHours);
+  dates.setMinutes(startTimeMinutes);
   const newFollowUpRequest = new FollowUpRequest({
-    doctorID,
-    patientID,
-    date,
-    duration,
-    price,
+    doctorID: doctorID,
+    patientID: patientID,
+    date: dates,
+    duration: duration,
+    price: 0,
   })
   await newFollowUpRequest.save();
   res.status(201).json({ message: "Follow up request sent successfully" });
@@ -1276,7 +1278,7 @@ const LinkFamilyMemeber = async (req, res) => {
     relate = await patientModel.find({ email: req.query.searchvalue });
   }
   if (req.query.filter1 == "MobileNumber") {
-    relate = await patientModel.find({ mobile: req.query.searchvalue });
+    relate = await patientModel.find({ mobileNumber: req.query.searchvalue });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
@@ -1347,10 +1349,11 @@ const PayByCredit = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `http://localhost:${process.env.PORT}/success/${appoitmentid}`,
-      cancel_url: `http://localhost:${process.env.PORT}/fail`,
+      success_url: `http://localhost:3000/success/${appoitmentid}`,
+      cancel_url: `http://localhost:3000/fail`,
     });
-    res.redirect(session.url);
+    // res.redirect(session.url);
+    res.status(200).json({ result: session.url});
   } catch (e) {
     console.error(e);
     res.status(500).send("Internal Server Error");
@@ -1409,10 +1412,12 @@ const success = async (req, res) => {
     { $set: { paid: true } },
     { new: true }
   );
-  res.render("success");
+  
+  res.redirect("http://localhost:5173/patient/Appointments?success=true");
 };
 const fail = async (req, res) => {
-  res.render("fail");
+  res.status(200).redirect("http://localhost:5173/patient/Appointments?success=false");
+  //res.redirect("http://localhost:5173/patient/Appointments");
 };
 const PayPresc = async (req, res) => {
   let pres = await prescription.findOne({ _id: req.params.id });
@@ -1429,7 +1434,8 @@ const PayPresc = async (req, res) => {
 
   }
   console.log(patient.shoppingCart);
-  let updatepatient = await patientModel.findByIdAndUpdate(pres.patientID, { $set: { shoppingCart: patient.shoppingCart } }, { new: 1 });
+  let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
+  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });
 
 }
@@ -1515,7 +1521,6 @@ async function getTimeSlotOnDate(req, res) {
       // console.log(date.toISOString().split("T")[0] == appointment[i].date.toISOString().split("T")[0])
       // console.log(timeSlot.from == ((appointment[i].date.getHours()) + ":" + appointment[i].date.getMinutes()))
       if (timeSlot.from == ((appointment[i].date.getHours()) + ":" + appointment[i].date.getMinutes()) && date.toISOString().split("T")[0] == appointment[i].date.toISOString().split("T")[0]) {
-        console.log("here");
         return false;
       }
     }
@@ -1564,6 +1569,7 @@ module.exports = {
   cancelAppointmentPatient,
   deleteNotification,
   getTimeSlotOnDate,
+  addFollowUpRequest,
 };
 
 module.exports.readSubscription = readSubscription;
