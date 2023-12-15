@@ -802,7 +802,8 @@ async function reserveSlot(req, res) {
   const doctorID = req.params.id;
   const id = req.user._id;
   let date = new Date(req.query.date);
-  let dateText = `${date.split("T")[0]} at ${parseInt(date.split("T")[1].split(".")[0].split(":")[0])+2}:${date.split("T")[1].split(".")[0].split(":")[1]}`
+  let dateConverted = date.toISOString();
+  let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const time = req.query.time;
   const startTime = time.split(",")[0];
   const endTime = time.split(",")[1];
@@ -878,6 +879,12 @@ async function getNotifications(req, res){
   return res.status(200).json({result: notifications});
 }
 
+async function deleteNotification(req, res){
+  const notificationID = req.body.id;
+  const deleted = await notificationModel.findByIdAndDelete(notificationID);
+  return res.status(200).json({message:"Notification deleted successfully"});
+}
+
 async function sendEmail(email, message ) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -909,7 +916,6 @@ async function cancelAppointmentPatient(req, res) {
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID,"Wallet name email _id");
   const doctore= await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
-  console.log(deletedAppointment.date.toISOString());
   const date = `${(deletedAppointment.date.toISOString()).split("T")[0]} at ${parseInt((deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[0])+2}:${(deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[1]}`
   var message = "";
   if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
@@ -951,43 +957,6 @@ async function cancelAppointmentPatient(req, res) {
   await sendEmail(doctore.email, `Your appointment on ${date} with ${patient.name} is cancelled`);
   res.status(200).send("Appointment cancelled successfully");
 }
-
-
-// async function rescheduleAppointment(req, res) {
-//   const appointmentID = req.params.appointmentId;
-//   const checkForClash = await appointmentModel.find({date: req.body.date, doctorID: req.body.doctorID}).exec();
-//   const existingAppointment = await appointment.findOne({
-//     doctorID: req.body.doctorID,
-//     date: req.body.date,
-//   });
-//   if (existingAppointment) {
-//     return res
-//       .status(400)
-//       .send("There is already an appointment at the specified time.");
-//   }
-//   //TODO: calculate the new price of the appointment
-//   const rescheduledAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, {date: req.query.date}).exec();
-//   const patient = await patientModel.findById(rescheduledAppointment.patientID);
-//   let newNotification = new notificationModel({
-//     patientID: rescheduledAppointment.patientID,
-//     text: `Appointment rescheduled to ${req.body.date}`,
-//     date: Date.now(),
-//   });
-//   await newNotification.save();
-
-//   let newNotification2 = new notificationModel({
-//     doctorID: deletedAppointment.doctorID,
-//     text: `Your appointment with ${patient[0].name} is rescheduled to ${req.query.date}`,
-//     date: Date.now(),
-//   });
-//   await newNotification2.save();
-
-
-//   await sendEmail(patient[0].email, `Appointment rescheduled to ${req.body.date}`);
-//   await sendEmail(doctor[0].email, `Your appointment with ${patient[0].name} is rescheduled to ${req.body.date}`);
-
-//   res.redirect(`patient/Appointments`);
-// }
 
 async function showSlotsFam(req, res) {
   const doctorID = req.params.id;
@@ -1641,6 +1610,7 @@ module.exports = {
   viewPrescriptionPDF,
   getDoctorSpeciality,
   cancelAppointmentPatient,
+  deleteNotification,
 };
 
 module.exports.readSubscription = readSubscription;

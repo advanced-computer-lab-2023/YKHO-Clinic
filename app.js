@@ -108,6 +108,7 @@ const {
   viewPrescriptionPDF,
   getDoctorSpeciality,
   cancelAppointmentPatient,
+  deleteNotification,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -238,6 +239,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
 app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);

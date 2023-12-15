@@ -25,6 +25,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import DeleteIcon from '@mui/icons-material/DeleteForever';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -176,24 +177,42 @@ const toggleNotifications = (anchor, open) => (event) => {
   setNotificationsState({ ...notificationsState, [anchor]: open });
 }
 
+async function deleteNotification(id){
+  console.log(id)
+  axios.post("http://localhost:3000/patient/deleteNotification", {id: id}, {
+    withCredentials: true,
+  }).then((res) => {
+    if(res.data.message == "Notification deleted successfully"){
+      getNotifications();
+    }
+  }).catch((err) => {
+    console.log(err);
+  })
+}
+
 const notificationsList = (anchor) => (
   <Box
     sx={{ width: 350 }}
     role="presentation"
-    onClick={toggleNotifications(anchor, false)}
     onKeyDown={toggleNotifications(anchor, false)}
   >
     <List sx={{display:'flex', flexDirection:'column' , justifyContent:'center', alignItems:'center'}}>
         <Typography><b>Notifications</b></Typography>
-        {notifications.map((notification) => (
-          <Paper elevation={4} sx={{marginBottom:'10px'}}>
-            <ListItem>
-              {/* button to remove notification */}
-                <ListItemText primary={notification.text} />
-                <Typography></Typography>
-            </ListItem>
-          </Paper>
-        ))}
+            <List>
+              {notifications.map((notification) => (
+                <Paper elevation={5} style={{margin:'0px 10px 13px 10px'}}>
+                  <ListItem>
+                      <ListItemIcon>
+                        {<NotificationsIcon style={{color:'green'}} />}
+                      </ListItemIcon>
+                      <ListItemText primary={notification.text} />
+                      <ListItemIcon sx={{marginRight:'-30px', paddingTop:'60px'}}>
+                      {<DeleteIcon style={{color:'red'}} onClick={() => deleteNotification(notification._id)} />}
+                      </ListItemIcon>
+                  </ListItem>
+                </Paper>
+              ))}
+            </List>
     </List>
   </Box>
 )
@@ -215,7 +234,7 @@ const toggleDrawer = (anchor, open) => (event) => {
 
 const list = (anchor) => (
   <Box
-    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250 }}
+    sx={{ width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 250}}
     role="presentation"
     onClick={toggleDrawer(anchor, false)}
     onKeyDown={toggleDrawer(anchor, false)}
@@ -226,21 +245,21 @@ const list = (anchor) => (
             <ListItemText primary={'Home'} />
           </ListItemButton>
         </ListItem>
-      </List>
-      <List>
+    </List>
+    <List>
         <ListItem disablePadding>
           <ListItemButton onClick={goAllApointments}>
             <ListItemText primary={'Appointments'} />
           </ListItemButton>
         </ListItem>
-      </List>
-      <List>
+    </List>
+    <List>
         <ListItem disablePadding>
           <ListItemButton onClick={goPrescriptions}>
             <ListItemText primary={'Prescriptions'} />
           </ListItemButton>
         </ListItem>
-      </List>
+    </List>
     <List>
         <ListItem disablePadding>
           <ListItemButton onClick={goSeeFamilyOrDie}>

@@ -338,7 +338,8 @@ async function cancelAppointment(req, res) {
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
-  const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
+  let dateConverted = deletedAppointment.date.ToISOString();
+  const date = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
   patient.Wallet += wallet;
@@ -561,12 +562,12 @@ async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
   let date = new Date(req.body.date);
   const time = req.body.time;
-
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
-  let dateText = `${date.split("T")[0]} at ${parseInt(date.split("T")[1].split(".")[0].split(":")[0])+2}:${date.split("T")[1].split(".")[0].split(":")[1]}`;
+  let dateConverted = date.ToISOString();
+  let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);

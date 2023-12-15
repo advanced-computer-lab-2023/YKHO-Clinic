@@ -138,7 +138,9 @@ export default function AdminHome() {
     handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
   
+  function deletePackage(){
 
+  }
 
   async function LogoutButton() {
     try {
@@ -183,7 +185,7 @@ async function RejectButton(e) {
   return (
     (result && <div>
       <title>Home</title>
-    <div style={{}}>
+    <div style={{display:'flex'}}>
       <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 945}}>
         <div style={{ marginLeft: 8 }}>
           <IconButton onClick={toggleFilter}>
@@ -292,6 +294,7 @@ async function RejectButton(e) {
               <TableCell align="left">Pharmacy Discount</TableCell>
               <TableCell align="left">Family Discount</TableCell>
               <TableCell align='left'>Is Deleted</TableCell>
+              <TableCell align='left'>Delete Package</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -303,7 +306,7 @@ async function RejectButton(e) {
                 <TableCell align="left">{packagesTable.pharmacyDiscount}</TableCell>
                 <TableCell align="left">{packagesTable.familyDiscount}</TableCell>
                 <TableCell align='left'>{`${packagesTable.deleted}`}</TableCell>
-                
+                <TableCell align='left'><Button variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
               </TableRow>
             ))} 
           </TableBody>
