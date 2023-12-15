@@ -13,8 +13,8 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
+import typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
@@ -66,30 +66,9 @@ export default function AdminHome() {
     }
   }
 
-  function handleBreadcrumbClick(event, breadcrumb) {
-    event.preventDefault();
-    // Find the index of the clicked breadcrumb in the array
-    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
-    let updatedBreadcrumbs;
-    if(index == -1){
-      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
-    }else{
-    // Slice the array up to the clicked breadcrumb (inclusive)
-      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
-    }
-    console.log(index);
-    // Set the updated breadcrumbs
-    setBreadcrumbs(updatedBreadcrumbs);
+  
 
-    // Save updated breadcrumbs to localStorage
-    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
-
-    console.log(updatedBreadcrumbs)
-    // Navigate to the new page
-    window.location.href = breadcrumb.href;
-  }
-
-  async function getPackages() {
+async function getPackages() {
     try {
       const res = await axios.get("http://localhost:3000/getHealthPackages", {
         withCredentials: true,
@@ -101,7 +80,7 @@ export default function AdminHome() {
     }
   }
 
-  async function getRequests() {
+async function getRequests() {
     try {
       const res = await axios.get("http://localhost:3000/getRequests", {
         withCredentials: true,
@@ -111,6 +90,28 @@ export default function AdminHome() {
     } catch (err) {
       setError(err.message);
     }
+  }
+
+function handleBreadcrumbClick(event, breadcrumb) {
+    event.preventDefault();
+    // Find the index of the clicked breadcrumb in the array
+    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+    let updatedBreadcrumbs;
+    if(index == -1){
+      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+    }else{
+    // Slice the array up to the clicked breadcrumb (inclusive)
+      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+    }
+    // Set the updated breadcrumbs
+    setBreadcrumbs(updatedBreadcrumbs);
+
+    // Save updated breadcrumbs to localStorage
+    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+
+    console.log(updatedBreadcrumbs)
+    // Navigate to the new page
+    window.location.href = breadcrumb.href;
   }
 
   function goHome() {

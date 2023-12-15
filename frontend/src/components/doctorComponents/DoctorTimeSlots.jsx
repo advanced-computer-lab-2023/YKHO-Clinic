@@ -22,7 +22,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from 'dayjs';
 import Alert from '@mui/material/Alert';
-
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 const DoctorTimeSlots = () => {
     const [results, setResults] = useState(false);
@@ -40,42 +41,113 @@ const DoctorTimeSlots = () => {
     setAge(event.target.value);
   };
 
+  const [result, setResult] = useState(false);
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
+  async function check() {
+    await axios
+      .get("http://localhost:3000/doctor/contract", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        if (res.data.contract == "rej") {
+          window.location.href = "/doctor/contract";
+        } else {
+          setResult(true);
+          // Check if breadcrumbs contain the "Home" breadcrumb
+          let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+          setBreadcrumbs(savedBreadcrumbs);
 
-
-    async function check() {
-        await axios.get("http://localhost:3000/doctor/contract",{
-        withCredentials:true
-    }).then((res)=>{
-        if(res.data.contract=="rej"){
-            window.location.href="/doctor/contract"
+          const homeBreadcrumb = { label: "timeSlots", href: "/doctor/timeslots" };
+          const hasHomeBreadcrumb = savedBreadcrumbs.some(
+            (item) => item.label == homeBreadcrumb.label
+          );
+          console.log(hasHomeBreadcrumb)
+          // If not, add it to the breadcrumbs
+          if (!hasHomeBreadcrumb) {
+            const updatedBreadcrumbs = [homeBreadcrumb];
+            setBreadcrumbs(updatedBreadcrumbs);
+            localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+          }
         }
-        else{
-          setResults(true)
-        }
-    }).catch((err)=>{
+      })
+      .catch((err) => {
         console.log(err);
-    })
-        try {
-            const res = await axios.get("http://localhost:3000/loggedIn", {
-                withCredentials: true
-            });
-            if(res.data.type!="doctor" ){
-                if(res.data.type=="patient"){
-                    window.location.href="/patient/home"
-                }
-                else if(res.data.type=="admin"){
-                    window.location.href="/admin/home"
-                }
-                else{
-                 window.location.href="/"
-                }
-             } 
-        } catch (err) {
-            if (err.response.status === 401) {
-                window.location.href = "/";
-            }
+      });
+    await axios
+      .get("http://localhost:3000/loggedIn", {
+        withCredentials: true,
+      })
+      .then((res) => {
+        if (res.data.type != "doctor") {
+          if (res.data.type == "patient") {
+            window.location.href = "/patient/home";
+          } else if (res.data.type == "admin") {
+            window.location.href = "/admin/home";
+          } else {
+            window.location.href = "/";
+          }
         }
+      })
+      .catch((err) => {
+        if (err.response.status == 401) {
+          window.location.href = "/";
+        }
+      });
+  }
+
+  function handleBreadcrumbClick(event, breadcrumb) {
+      event.preventDefault();
+      // Find the index of the clicked breadcrumb in the array
+      const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+      let updatedBreadcrumbs;
+      if(index == -1){
+        updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+      }else{
+      // Slice the array up to the clicked breadcrumb (inclusive)
+        updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+      }
+      console.log(index);
+      // Set the updated breadcrumbs
+      setBreadcrumbs(updatedBreadcrumbs);
+  
+      // Save updated breadcrumbs to localStorage
+      localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+  
+      console.log(updatedBreadcrumbs)
+      // Navigate to the new page
+      window.location.href = breadcrumb.href;
     }
+
+    function allAppointments() {
+      const breadcrumb = { label: "appointments", href: "/doctor/appointments" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function toFollowUp() {
+      const breadcrumb = { label: "followUp", href: "/doctor/followup" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function goHome(){
+      const breadcrumb = { label: "home", href: "/doctor/home" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function goPatients(){
+      const breadcrumb = { label: "patients", href: "/doctor/patients" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function goTimeSlots(){
+      const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots"};
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function editDoctorInfo(){
+      const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    } 
+
     async function cancel(id){
         deleteTimeSlot(id);
     }
@@ -165,12 +237,24 @@ const DoctorTimeSlots = () => {
       console.log( dayjs(timefrom).hour() + ":"+dayjs(timefrom).minute() );
 
     
-    return (
+    return (result &&
         <div>
-        <Navbar/>
+          <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+          <Breadcrumbs separator="›" aria-label="breadcrumb">
+                        {breadcrumbs.map((breadcrumb, index) => (
+                        <Link
+                            key={index}
+                            underline="hover"
+                            color="inherit"
+                            href={breadcrumb.href}
+                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                        >
+                            {breadcrumb.label}
+                        </Link>
+                        ))}
+            </Breadcrumbs>
             <div>
             <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center"  }} columnSpacing={3} rowSpacing={3}>
-            
             <Paper sx={{ width: '40%', typography: 'body1',marginTop:"100px",marginLeft:"50px",justifyContent:"center" ,alignItems:"center"  }}>
                 <Typography sx={{ fontSize: 20,textAlign:"center",marginTop:"10px"}} > Current Time Slots </Typography>
                 <TabContext value={value} sx={{width:'100%'}}>

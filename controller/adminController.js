@@ -60,7 +60,6 @@ const Login = async (req, res) => {
         const data = {
           username: admin.username,
         };
-        //return res.status(200).json({ message: "Logged in successfully" });
         return res.status(200).json({ token: token, type: "admin" });
 
       }
@@ -147,11 +146,11 @@ const changePasswordAdmin = async (req, res) => {
     if (newPassword != confirmationPassword) {
       return res.status(200).json({ message: "Passwords dont not match" });
     }
-
+    
     if (isStrongPassword(newPassword) === false) {
       return res.status(200).json({ message: "Password is weak" });
     }
-
+  
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     await adminsTable.findOneAndUpdate(

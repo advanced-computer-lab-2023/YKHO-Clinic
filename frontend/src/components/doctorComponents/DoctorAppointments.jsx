@@ -34,10 +34,36 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import dayjs from 'dayjs';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import CircularProgress from '@mui/material/CircularProgress';
 
 
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+const init = async () => {
+  await axios.get("http://localhost:3000/rooms", {
+    withCredentials: true
+  }).then((res) =>{
+    let rooms = res.data;
+    for(let i = 0; i < rooms.length; i++){
+      joinRoom(rooms[i])
+    }
+  })
+}
+
+const joinRoom = (room) => {
+  socket.emit("join_room", room)
+}
+
+
 function DoctorAppointments() {
+  // socket
+  useEffect(() => {init()}, [])
+
+
   const [searchvalue, setSearchValue] = useState('upcoming');
   const [result, setResult] = useState(false);
   useEffect(() => {
@@ -55,6 +81,9 @@ function DoctorAppointments() {
   const [isScheduleFollowUp, setIsScheduleFollowUp] = useState(false);
   const [isOpen2, setIsOpen2] = useState(false);
   const [appointmentId2, setAppointmentId2] = useState('');
+
+  
+
   useEffect(() => {
     // Trigger the searchAppointments function when searchValue changes
     searchAppointments();
@@ -63,51 +92,124 @@ function DoctorAppointments() {
     setTime(event.target.value);
     setIsButtonDisabled(false);
   };
+
+  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
   async function check() {
     await axios
-      .get('http://localhost:3000/doctor/contract', {
+      .get("http://localhost:3000/doctor/contract", {
         withCredentials: true,
       })
       .then((res) => {
-        if (res.data.contract === 'rej') {
-          window.location.href = '/doctor/contract';
+        if (res.data.contract == "rej") {
+          window.location.href = "/doctor/contract";
         } else {
           setResult(true);
+          // Check if breadcrumbs contain the "Home" breadcrumb
+          let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+          setBreadcrumbs(savedBreadcrumbs);
+
+          const homeBreadcrumb = { label: "appointments", href: "/doctor/appointments" };
+          const hasHomeBreadcrumb = savedBreadcrumbs.some(
+            (item) => item.label == homeBreadcrumb.label
+          );
+          console.log(hasHomeBreadcrumb)
+          // If not, add it to the breadcrumbs
+          if (!hasHomeBreadcrumb) {
+            const updatedBreadcrumbs = [homeBreadcrumb];
+            setBreadcrumbs(updatedBreadcrumbs);
+            localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+          }
         }
       })
       .catch((err) => {
         console.log(err);
       });
-
-     await axios
-      .get('http://localhost:3000/loggedIn', {
+    await axios
+      .get("http://localhost:3000/loggedIn", {
         withCredentials: true,
       })
       .then((res) => {
-        if (res.data.type !== 'doctor') {
-          if (res.data.type === 'patient') {
-            window.location.href = '/patient/home';
-          } else if (res.data.type === 'admin') {
-            window.location.href = '/admin/home';
+        if (res.data.type != "doctor") {
+          if (res.data.type == "patient") {
+            window.location.href = "/patient/home";
+          } else if (res.data.type == "admin") {
+            window.location.href = "/admin/home";
           } else {
-            window.location.href = '/';
+            window.location.href = "/";
           }
         }
       })
       .catch((err) => {
-        if (err.response.status === 401) {
-          window.location.href = '/';
+        if (err.response.status == 401) {
+          window.location.href = "/";
         }
       });
   }
+
+  function handleBreadcrumbClick(event, breadcrumb) {
+      event.preventDefault();
+      // Find the index of the clicked breadcrumb in the array
+      const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+      let updatedBreadcrumbs;
+      if(index == -1){
+        updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+      }else{
+      // Slice the array up to the clicked breadcrumb (inclusive)
+        updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+      }
+      console.log(index);
+      // Set the updated breadcrumbs
+      setBreadcrumbs(updatedBreadcrumbs);
+  
+      // Save updated breadcrumbs to localStorage
+      localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+  
+      console.log(updatedBreadcrumbs)
+      // Navigate to the new page
+      window.location.href = breadcrumb.href;
+    }
+
+    function allAppointments() {
+      const breadcrumb = { label: "appointments", href: "/doctor/appointments" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function toFollowUp() {
+      const breadcrumb = { label: "followUp", href: "/doctor/followup" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function goHome(){
+      const breadcrumb = { label: "home", href: "/doctor/home" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+  
+    function goPatients(){
+      const breadcrumb = { label: "patients", href: "/doctor/patients" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function goTimeSlots(){
+      const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots"};
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
+    function editDoctorInfo(){
+      const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    
   async function cancel(e) {
     setIsOpen2(true);
     console.log(e);
     setAppointmentId2(e);
   }
   async function cancelAppointment() {
+    
+
     setRescheduleLoading(true);
     await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then(() => {
+      socket.emit("update", appointmentId2);
       window.location.href = '/doctor/appointments';
     }).catch((err) => {
       console.log(err);
@@ -115,9 +217,8 @@ function DoctorAppointments() {
       setRescheduleLoading(false);
       setIsOpen2(false);
     });
+
   }
-
-
 
   function changeRadioValue(event) {
     status = event.target.value;
@@ -210,6 +311,7 @@ function DoctorAppointments() {
       }
       else{
         await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
+          socket.emit("update", appointmentId);
           window.location.href = '/doctor/appointments';
         }).catch((err) => {
           console.log(err);
@@ -220,6 +322,8 @@ function DoctorAppointments() {
           setOpen(false);
           setRescheduleLoading(false);
         });
+
+
       }
     }
     const today = dayjs();
@@ -301,7 +405,20 @@ function DoctorAppointments() {
           <Button disabled={rescheduleLoading} onClick={cancelAppointment} color="error">Yes</Button>
         </DialogActions>
       </Dialog>
-          <Navbar />
+          <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+          <Breadcrumbs separator="›" aria-label="breadcrumb">
+            {breadcrumbs.map((breadcrumb, index) => (
+              <Link
+                key={index}
+                underline="hover"
+                color="inherit"
+                href={breadcrumb.href}
+                onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+              >
+                {breadcrumb.label}
+              </Link>
+            ))}
+          </Breadcrumbs>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '3%' }}>
             <Card sx={{ display: 'flex', width: '80vw', height: '80vh' }}>
               {/* Filter Box */}

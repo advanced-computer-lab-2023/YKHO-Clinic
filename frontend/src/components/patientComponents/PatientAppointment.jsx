@@ -13,13 +13,37 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useParams } from 'react-router-dom';
 import AppointmentCard from './AppointmentsCard';
 
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+const init = async () => {
+    await axios.get("http://localhost:3000/rooms", {
+        withCredentials: true
+    }).then((res) => {
+        let rooms = res.data;
+        for (let i = 0; i < rooms.length; i++) {
+            joinRoom(rooms[i])
+        }
+    })
+}
+
+const joinRoom = (room) => {
+    socket.emit("join_room", room)
+}
+
+
 const PatientAppointments = () => {
+    // socket
+    useEffect(() => { init() }, [])
+
     const [result, setResult] = useState(false);
-    useEffect(() => { check(), loadAppointments() }, []);
+    useEffect(() => { check(), loadAppointments(), handlePaymentSnack() }, []);
     useEffect(() => { setSearchBox(); }, [result]);
     const [appointments, setAppointments] = useState([]);
     const [timeSlots, setTimeSlots] = useState([]);
-
+    const [open, setOpen] = useState(false);
+    const [openErorr, setOpenError] = useState(false);
     async function check() {
 
         const res = await axios.get("http://localhost:3000/loggedIn", {
@@ -46,7 +70,6 @@ const PatientAppointments = () => {
         await axios.get("http://localhost:3000/Patient/Appointments", { withCredentials: true }).then((res) => {
             var app = res.data.result
             setAppointments(app);
-            console.log(app);
         }
         ).catch((err) => {
             console.log(err);
@@ -86,7 +109,7 @@ const PatientAppointments = () => {
         await axios.post(`http://localhost:3000/patient/cancelAppointment`, { id: id }, {
             withCredentials: true
         }).then((res) => {
-
+            socket.emit("update", id);
             console.log(res);
             loadAppointments();
         }).catch((err) => {
@@ -115,18 +138,8 @@ const PatientAppointments = () => {
     //         console.log(err);
     //     });
     // }
-    async function getTimeSlots(id, date, day) {
-            await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
-                withCredentials: true,
-            }).then((res) => {
-                setTimeSlots(res.data.result);
-            }).catch((err) => {
-                console.log(err);
-            });
-    }
-
-    async function rescheduleAppointment(id, date, time) {
-        await axios.post(`http://localhost:3000/patient/rescheduleAppointment`, { appointmentId: id, date: date, time: time }, {
+    async function payByWallet(id) {
+        await axios.get(`http://localhost:3000/patient/paymentWallet/${id}`, {
             withCredentials: true
         }).then((res) => {
             console.log(res);
@@ -136,21 +149,102 @@ const PatientAppointments = () => {
         });
     }
 
-    async function SchedFollow(e) {
-        window.location.href = `/patient/followup/${e.target.id}`
+    async function payByCredit(id) {
+        await axios.get(`http://localhost:3000/patient/paymentcredit/${id}`, {
+            withCredentials: true
+        }).then((res) => {
+            window.location.href = res.data.result;
+            console.log(res.status);
+        }).catch((err) => {
+            console.log(err);
+        })
+
     }
 
+    async function getTimeSlots(id, date, day) {
+        await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
+            withCredentials: true,
+        }).then((res) => {
+            setTimeSlots(res.data.result);
+        }).catch((err) => {
+            console.log(err);
+        });
+        await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
+            withCredentials: true,
+        }).then((res) => {
+            setTimeSlots(res.data.result);
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+
+    async function rescheduleAppointment(id, date, time) {
+        await axios.post(`http://localhost:3000/patient/rescheduleAppointment`, { appointmentId: id, date: date, time: time }, {
+            withCredentials: true
+        }).then((res) => {
+            socket.emit("update", id);
+            console.log(res);
+            loadAppointments();
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+
+    const handlePaymentSnack = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const successParam = urlParams.get('success');
+
+        if (successParam !== null) {
+            if (successParam === 'true')
+                setOpen(true);
+            else if (successParam === 'false')
+                setOpenError(true)
+
+            window.history.replaceState(null, '', '/patient/Appointments');
+        }
+
+    }
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpen(false);
+        setOpenError(false);
+    };
+
+    async function requestFollowUp(id, date, time) {
+        await axios.post(`http://localhost:3000/patient/addFollowUpRequest`, { doctorID: id, date: date, time: time }, {
+            withCredentials: true
+        }).then((res) => {
+            console.log(res);
+            loadAppointments();
+        }
+        ).catch((err) => {
+            console.log(err);
+        });
+    }
 
     return (
         <div>
             {result && <div>
                 <Navbar />
+                <Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "center" }} open={open} autoHideDuration={6000} onClose={handleClose}>
+                    <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                        Appoinment Payment Successful
+                    </Alert>
+                </Snackbar>
+                <Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "center" }} open={openErorr} autoHideDuration={6000} onClose={handleClose}>
+                    <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                        Appoinment Payment failed
+                    </Alert>
+                </Snackbar>
                 <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
                     <Paper variant="elevation" elevation={4} sx={{ height: "800px", width: "80%", overflowY: "auto" }}>
                         <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ padding: "15px" }}>
                             {appointments.length > 0 && appointments.map((appointment) => {
-                                return <AppointmentCard id={appointment._id} doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status} handleCancel={cancelAppointment} doctorID={appointment.doctorID._id} 
-                                getSlots={getTimeSlots} times={timeSlots} handleReschedule={rescheduleAppointment} />
+                                return <AppointmentCard id={appointment._id} doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status} handleCancel={cancelAppointment} doctorID={appointment.doctorID._id}
+                                    getSlots={getTimeSlots} times={timeSlots} handleReschedule={rescheduleAppointment} paid={appointment.paid} handlePayWallet={payByWallet} handlePayCredit={payByCredit} handleFollowUp={requestFollowUp}/>
                             })}
                         </Stack>
                     </Paper>

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -36,6 +35,26 @@ import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 // Inside your component
+// axios
+import axios from 'axios';
+// socket
+import io from 'socket.io-client';
+const socket = io.connect("http://localhost:3000");
+
+const init = async () => {
+  await axios.get("http://localhost:3000/rooms", {
+    withCredentials: true
+  }).then((res) => {
+    let rooms = res.data;
+    for (let i = 0; i < rooms.length; i++) {
+      joinRoom(rooms[i])
+    }
+  })
+}
+
+const joinRoom = (room) => {
+  socket.emit("join_room", room)
+}
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -77,57 +96,73 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp}) {
+export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
+  const [unread, setUnread] = useState(0);
+  const unreadRef = useRef(unread);
+
+  useEffect(() => {
+    unreadRef.current = unread;
+  }, [unread])
+
+  const getUnread = async () => {
+    await axios.get("http://localhost:3000/unread", {
+      withCredentials: true
+    }).then((res) => {
+      setUnread(res.data);
+    })
+  }
+
+  // socket
+  useEffect(() => { init(), getUnread() }, [])
+
+  useEffect(() => {
+    socket.on("update", () => {
+      console.log("update");
+      getNotifications()
+    })
+
+    socket.on("receive_message", (data) => {
+      if (data.isPatient)
+        setUnread(unreadRef.current + 1);
+    })
+
+  }, [socket])
+
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-  const [notifications, setNotifications] = useState([]);  const [values, setValues] = useState("");
+  const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(()=>{getNotifications()},[]);
+  useEffect(() => { getNotifications() }, []);
   const { searchvalue } = useParams();
+
+  useEffect(() => { init() }, [])
+
+
 
   function toggleFilter() {
     setIsOpen(!isOpen);
   }
   const handleSearch = () => {
-    if(values != "" && values != null){
+    if (values != "" && values != null) {
       window.location.href = `/patient/search/${values}`
     }//a3ml7a ezay deh lel doc
   }
 
-  
-
   const [error, setError] = useState('');
   async function LogoutButton() {
     try {
-        const res = await axios.get("http://localhost:3000/logout", {
-            withCredentials: true
-        });
-        window.location.href = "/";
-        
+      const res = await axios.get("http://localhost:3000/logout", {
+        withCredentials: true
+      });
+      localStorage.removeItem('breadcrumbs');
+      window.location.href = "/";
+
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
     }
-}
-function goHome(){
-  window.location.href='/doctor/home'
-}
-function goPatients(){
-  window.location.href='/doctor/patients'
-}
-function goAppointments(){
-  window.location.href='/doctor/appointments'
-}
-function goTimeSlots(){
-  window.location.href='/doctor/timeslots'
-}
-function goFollowUp(){
-  window.location.href='/doctor/followup'
-}
-function editDoctorInfo(){
-  window.location.href='/doctor/edit'
-}
+  }
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -146,86 +181,86 @@ function editDoctorInfo(){
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
-async function getNotifications(){
+  async function getNotifications() {
     try {
       const res = await axios.get("http://localhost:3000/doctor/getNotifications", {
         withCredentials: true,
       });
       setNotifications(res.data.result);
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-const [notificationsState, setNotificationsState] = React.useState({
-  top: false,
-  left: false,
-  bottom: false,
-  right: false,
-});
-
-const toggleNotifications = (anchor, open) => (event) => {
-  if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return;
-  }
-
-  setNotificationsState({ ...notificationsState, [anchor]: open });
-}
-
-async function deleteNotification(id){
-  console.log(id)
-  axios.post("http://localhost:3000/patient/deleteNotification", {id: id}, {
-    withCredentials: true,
-  }).then((res) => {
-    if(res.data.message == "Notification deleted successfully"){
-      getNotifications();
+    } catch (err) {
+      console.log(err);
     }
-  }).catch((err) => {
-    console.log(err);
-  })
-}
-
-const notificationsList = (anchor) => (
-  <Box
-    sx={{ width: 350 }}
-    role="presentation"
-    onKeyDown={toggleNotifications(anchor, false)}
-  >
-    <List sx={{display:'flex', flexDirection:'column' , justifyContent:'center', alignItems:'center'}}>
-        <Typography><b>Notifications</b></Typography>
-            <List>
-              {notifications.map((notification) => (
-                <Paper elevation={5} key={notification.text} style={{margin:'0px 10px 13px 10px'}}>
-                  <ListItem>
-                      <ListItemIcon>
-                        {<NotificationsIcon style={{color:'green'}} />}
-                      </ListItemIcon>
-                      <ListItemText primary={notification.text} />
-                      <ListItemIcon sx={{marginRight:'-30px', paddingTop:'60px'}}>
-                      {<DeleteIcon style={{color:'red'}} onClick={() => deleteNotification(notification._id)} />}
-                      </ListItemIcon>
-                  </ListItem>
-                </Paper>
-              ))}
-            </List>
-    </List>
-  </Box>
-)
-
-const [state, setState] = React.useState({
-  top: false,
-  left: false,
-  bottom: false,
-  right: false,
-});
-
-const toggleDrawer = (anchor, open) => (event) => {
-  if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-    return;
   }
 
-  setState({ ...state, [anchor]: open });
-};
+  const [notificationsState, setNotificationsState] = React.useState({
+    top: false,
+    left: false,
+    bottom: false,
+    right: false,
+  });
+
+  const toggleNotifications = (anchor, open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+
+    setNotificationsState({ ...notificationsState, [anchor]: open });
+  }
+
+  async function deleteNotification(id) {
+    console.log(id)
+    axios.post("http://localhost:3000/patient/deleteNotification", { id: id }, {
+      withCredentials: true,
+    }).then((res) => {
+      if (res.data.message == "Notification deleted successfully") {
+        getNotifications();
+      }
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
+  const notificationsList = (anchor) => (
+    <Box
+      sx={{ width: 350 }}
+      role="presentation"
+      onKeyDown={toggleNotifications(anchor, false)}
+    >
+      <List sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography><b>Notifications</b></Typography>
+        <List>
+          {notifications.map((notification) => (
+            <Paper elevation={5} key={notification.text} style={{ margin: '0px 10px 13px 10px' }}>
+              <ListItem>
+                <ListItemIcon>
+                  {<NotificationsIcon style={{ color: 'green' }} />}
+                </ListItemIcon>
+                <ListItemText primary={notification.text} />
+                <ListItemIcon sx={{ marginRight: '-30px', paddingTop: '60px' }}>
+                  {<DeleteIcon style={{ color: 'red' }} onClick={() => deleteNotification(notification._id)} />}
+                </ListItemIcon>
+              </ListItem>
+            </Paper>
+          ))}
+        </List>
+      </List>
+    </Box>
+  )
+
+  const [state, setState] = React.useState({
+    top: false,
+    left: false,
+    bottom: false,
+    right: false,
+  });
+
+  const toggleDrawer = (anchor, open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+
+    setState({ ...state, [anchor]: open });
+  };
 
 const list = (anchor) => (
   <Box

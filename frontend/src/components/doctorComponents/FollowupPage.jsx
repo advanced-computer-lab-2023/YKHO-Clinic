@@ -10,54 +10,17 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import { Grid } from "@mui/material";
 import FollowUpCard from "./FollowUpCard";
-import Button from "@mui/material/Button";
-import LoadingComponent from "../LoadingComponent";
-import { motion, AnimatePresence } from "framer-motion";
 import PlaceHolder from "../PlaceHolder";
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 export default function FollowupPage(){
     const [followUp, setFollowUp] = useState([]);
 
 
     useEffect(() => {
-      check();, loadRequests();
+      check(), loadRequests()
     }, []);
-    async function check() {
-      await axios
-        .get("http://localhost:3000/doctor/contract", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.contract == "rej") {
-            window.location.href = "/doctor/contract";
-          } else {
-            setResult(true);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      await axios
-        .get("http://localhost:3000/loggedIn", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.type != "doctor") {
-            if (res.data.type == "patient") {
-              window.location.href = "/patient/home";
-            } else if (res.data.type == "admin") {
-              window.location.href = "/admin/home";
-            } else {
-              window.location.href = "/";
-            }
-          }
-        })
-        .catch((err) => {
-          if (err.response.status == 401) {
-            window.location.href = "/";
-          }
-        });
-    }
 
     async function loadRequests() {
       await axios.get("http://localhost:3000/doctor/upcomingAppointments",{withCredentials:true}).then((res)=>{
@@ -108,12 +71,25 @@ export default function FollowupPage(){
     return(
       result && <>
         <div>
-            <Navbar />
+            <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+            <Breadcrumbs separator="›" aria-label="breadcrumb">
+                        {breadcrumbs.map((breadcrumb, index) => (
+                        <Link
+                            key={index}
+                            underline="hover"
+                            color="inherit"
+                            href={breadcrumb.href}
+                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                        >
+                            {breadcrumb.label}
+                        </Link>
+                        ))}
+            </Breadcrumbs>
             <Card sx={{ display: 'flex', width: '80vw', height: '80vh' }}>    
               <CardContent sx={{ width: '100%', overflowY: 'auto' }}>
                 <div  style={{position: 'sticky', backgroundColor:"white",height:60,top: 0, zIndex: 1}} >
                 <Typography sx={{ fontSize: 24 }} gutterBottom>
-                  Your Folllow up requests
+                  Your Folllow requests
                 </Typography>
                 </div>
                 <Grid container sx={{ display: 'flex', marginTop: 2 }} justifyContent="center" alignItems="center" columnSpacing={3} rowSpacing={3}>
