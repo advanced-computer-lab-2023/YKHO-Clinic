@@ -98,6 +98,11 @@ async function createMedicine(req, res){
   res.status(200).json({result:medicinesup})
 }
 
+async function getNotificationsDoctor(req, res) {
+  const notifications = await notificationModel.find({doctorID: req.user._id});
+  return res.status(200).json({result: notifications});
+}
+
 async function deleteMedicine(req,res){
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.body.id});
@@ -140,7 +145,6 @@ async function updatePresc(req,res){
     prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName}},{new:true});
   }
 }
-
 
 async function ShowRequests(req, res) {
   const drId= req.user._id;
@@ -561,12 +565,12 @@ async function sendEmail(email, message) {
 async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
   let date = new Date(req.body.date);
-  let dateConverted = date.toISOString();
   const time = req.body.time;
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
+  let dateConverted = date.toISOString();
   let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
@@ -661,4 +665,5 @@ module.exports = {
   ShowRequests,
   AcceptFollowupRequest,
   RejectFollowupRequest,
+  getNotificationsDoctor,
 };

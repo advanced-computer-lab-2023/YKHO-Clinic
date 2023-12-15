@@ -32,7 +32,8 @@ const {
   getMedicine,
   ShowRequests,
   AcceptFollowupRequest,
-  RejectFollowupRequest
+  RejectFollowupRequest,
+  getNotificationsDoctor,
 } = require("./controller/doctorController");
 const {
 
@@ -159,6 +160,7 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
+app.get("/doctor/getNotifications", requireAuthPatient, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -249,7 +251,6 @@ app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
 app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
-//app.get("/patient/home", requireAuthPatient, readDoctors);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
