@@ -340,7 +340,7 @@ async function cancelAppointment(req, res) {
     .exec();
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
-  patient.Wallet += wallet;
+  patient.wallet += wallet;
   await patient.save();
   const doctore = await doctor.findById(deletedAppointment.doctorID);
   doctore.Wallet -= wallet;

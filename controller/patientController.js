@@ -572,11 +572,11 @@ const subscribe = async (req, res) => {
     let total = healthPackage.price * ((100 - familyDiscount) / 100);
 
     if (req.body.paymentMethod == "wallet") {
-      if (patient.Wallet < total) {
+      if (patient.wallet < total) {
         throw new Error("insuficient balance, try another payment method");
       } else {
         // update wallet
-        patient.Wallet -= total;
+        patient.wallet -= total;
       }
     } else {
       // pay using card
@@ -652,11 +652,11 @@ const subscribeFamilyMember = async (req, res) => {
     let total = healthPackage.price * ((100 - familyDiscount) / 100);
 
     if (req.body.paymentMethod == "wallet") {
-      if (agent.Wallet < total) {
+      if (agent.wallet < total) {
         throw new Error("insuficient balance, try another payment method");
       } else {
         // update wallet
-        agent.Wallet -= total;
+        agent.wallet -= total;
       }
     } else {
       // pay using card
@@ -906,15 +906,15 @@ async function sendEmail(email, message ) {
 async function cancelAppointmentPatient(req, res) {
   const appointmentID = req.body.id;
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID,{status:"cancelled"},{new:1}).exec();
-  const patient = await patientModel.findById(deletedAppointment.patientID,"Wallet name email _id");
-  const doctore= await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
+  const patient = await patientModel.findById(deletedAppointment.patientID,"wallet name email _id");
+  const doctore= await doctorModel.findById(deletedAppointment.doctorID, "wallet name email _id");
   const date = `${deletedAppointment.date.split("T")[0]} at ${parseInt(deletedAppointment.date.split("T")[1].split(".")[0].split(":")[0])+2}:${deletedAppointment.date.split("T")[1].split(".")[0].split(":")[1]}`
   var message = "";
   if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
     if(deletedAppointment.paid == true){
-    let wallet = patient.Wallet + deletedAppointment.price;
+    let Wallet = patient.wallet + deletedAppointment.price;
     let doctorWallet = doctore.Wallet - deletedAppointment.price;
-    await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
+    await findByIdAndUpdate(patient._id, {wallet: Wallet}).exec();
     await findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
     if(deletedAppointment.patientID != req.user._id){
       message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
@@ -1389,12 +1389,12 @@ const PayByWallet = async (req, res) => {
   const appoitmentCost = appoitment.price;
   const doctor = await doctorModel.findOne({ _id: appoitment.doctorID });
   const patient = await patientModel.findOne({ _id: appoitment.patientID });
-  const Walletp = patient.Wallet - appoitmentCost;
+  const Walletp = patient.wallet - appoitmentCost;
   const doctorw = doctor.Wallet + appoitmentCost;
-  if (patient.Wallet >= appoitmentCost) {
+  if (patient.wallet >= appoitmentCost) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
       appoitment.patientID,
-      { $set: { Wallet: Walletp } },
+      { $set: { wallet: Walletp } },
       { new: true }
     );
     const updatedoctor = await doctorModel.findByIdAndUpdate(
@@ -1415,7 +1415,7 @@ const PayByWallet = async (req, res) => {
 const ViewWallet = async (req, res) => {
   patientID = req.user._id;
   patient = await patientModel.findById(req.user._id, "Wallet");
-  const Wallet = patient.Wallet;
+  const Wallet = patient.wallet;
   // console.log(Wallett);
   // res.render("patient/Wallet", { Wallett: Wallett });
   res.status(201).json({ result: Wallet });
@@ -1486,21 +1486,21 @@ const PayByWalletPresc = async (req, res) => {
   const prescriptionid = req.params.id;
   const prescriptions = await prescription.findOne({ _id: prescriptionid });
   const prescriptionCost = prescriptions.price;
-  const patient = await patientModel.findOne({ _id: req.user._id }).select(["Wallet", "subscription"]);
+  const patient = await patientModel.findOne({ _id: req.user._id }).select(["wallet", "subscription"]);
   console.log(patient);
   var Walletp;
   if (patient.subscription.healthPackage != "none") {
     const healthpackage = await healthPackage.findOne({ packageName: patient.subscription.healthPackage });
     const discount = healthpackage.pharmacyDiscount;
-    Walletp = patient.Wallet - (prescriptionCost - (discount * prescriptionCost / 100));
+    Walletp = patient.wallet - (prescriptionCost - (discount * prescriptionCost / 100));
   } else {
-    Walletp = patient.Wallet - prescriptionCost;
+    Walletp = patient.wallet - prescriptionCost;
   }
   console.log(Walletp);
   if (Walletp >= 0) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
       prescriptions.patientID,
-      { $set: { Wallet: Walletp } },
+      { $set: { wallet: Walletp } },
       { new: true }
     );
     const prescriptionupdated = await prescription.findByIdAndUpdate(
