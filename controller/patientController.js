@@ -778,7 +778,8 @@ async function showSlots(req, res) {
 async function reserveSlot(req, res) {
   const doctorID = req.params.id;
   const id = req.user._id;
-  const date = new Date(req.query.date);
+  let date = new Date(req.query.date);
+  let dateText = `${date.split("T")[0]} at ${parseInt(date.split("T")[1].split(".")[0].split(":")[0])+2}:${date.split("T")[1].split(".")[0].split(":")[1]}`
   const time = req.query.time;
   const startTime = time.split(",")[0];
   const endTime = time.split(",")[1];
@@ -817,7 +818,6 @@ async function reserveSlot(req, res) {
       .status(200)
       .send("There is already an appointment at the specified time.");
   }
-  console.log("succ");
   const newAppointment = new appointment({
     doctorID: doctorID,
     patientID: id,
@@ -830,22 +830,22 @@ async function reserveSlot(req, res) {
 
   let newNotification = new notificationModel({
     patientID: id,
-    text: `You have a new appointment on ${date} with doctor ${doctor[0].name}`,
+    text: `You have a new appointment on ${dateText} with doctor ${doctor[0].name}`,
     read: false,
     date: Date.now(),
   });
   await newNotification.save();
   let newNotification2 = new notificationModel({
     doctorID: doctorID,
-    text: `You have a new appointment with ${patient[0].name}`,
+    text: `You have a new appointment on ${dateText} with ${patient[0].name}`,
     read: false,
     date: Date.now(),
   });
   await newNotification2.save();
 
   res.status(201).send("Appointment reserved successfully");
-  await sendEmail(patient[0].email, `your appointment is confirmed on ${date} with doctor ${doctor[0].name}` );
-  await sendEmail(doctor[0].email, `your appointment with ${patient[0].name} is confirmed on ${date}`);
+  await sendEmail(patient[0].email, `your appointment is confirmed on ${dateText} with doctor ${doctor[0].name}` );
+  await sendEmail(doctor[0].email, `your appointment on ${dateText} with ${patient[0].name} is confirmed`);
 
 }
 
@@ -894,15 +894,15 @@ async function cancelAppointmentPatient(req, res) {
     await findByIdAndUpdate(patient._id, {Wallet: wallet}).exec();
     await findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
     if(deletedAppointment.patientID != req.user._id){
-      message = "Your family member appointment has been cancelled and the amount has been refunded to your wallet";
+      message = `Your family member appointment  on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
     }
-    message = `Your appointment with ${doctor.name} on ${deletedAppointment.date} has been cancelled and the amount has been refunded to your wallet`;
+    message = `Your appointment  on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
   }
   }else{//usability: if appointment is cancelled more than 24 hours before
     if(deletedAppointment.patientID != req.user._id){
-      message = "Your family member appointment has been cancelled";
+      message = `Your family member appointment on ${date} with ${doctore.name} has been cancelled`;
     }
-    message = `Your appointment with ${doctor.name} on ${date} has been cancelled`;
+    message = `Your appointment  on ${date} with ${doctore.name} has been cancelled`;
   }
   let newNotification = new notificationModel({
     patientID: patient._id,
@@ -914,14 +914,14 @@ async function cancelAppointmentPatient(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient.name} is cancelled`,
+    text: `Your appointment on ${date} with ${patient.name} is cancelled`,
     read: false,
     date: Date.now(),
   });
   await newNotification2.save();
 
   await sendEmail(patient.email, message);
-  await sendEmail(doctore.email, `Your appointment with ${patient.name} on ${date} is cancelled`);
+  await sendEmail(doctore.email, `Your appointment on ${date} with ${patient.name} is cancelled`);
   res.status(200).send("Appointment cancelled successfully");
 }
 
