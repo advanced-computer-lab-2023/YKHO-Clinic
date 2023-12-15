@@ -41,8 +41,6 @@ import axios from 'axios';
 import io from 'socket.io-client';
 const socket = io.connect("http://localhost:3000");
 
-
-
 const init = async () => {
   await axios.get("http://localhost:3000/rooms", {
     withCredentials: true
@@ -99,7 +97,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function PrimarySearchAppBar({content, openHelp}) {
-  
+  // socket
+  useEffect(() => {init()}, [])
+
+  useEffect(() => {
+    socket.on("update", () => {
+      getNotifications()
+    })
+  }, [socket])
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -110,14 +115,7 @@ export default function PrimarySearchAppBar({content, openHelp}) {
   useEffect(()=>{getNotifications()},[]);
   const { searchvalue } = useParams();
 
-  useEffect(() => {init()}, [])
-
-  useEffect(() => {
-    socket.on("cancel", (data) => {
-      
-    })
-
-}, [socket])
+  
 
 
   function toggleFilter() {

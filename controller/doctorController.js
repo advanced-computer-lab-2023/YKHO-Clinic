@@ -101,6 +101,7 @@ async function createMedicine(req, res){
 }
 
 async function getNotificationsDoctor(req, res) {
+  console.log("notif doc ----------------------------------------------------")
   const notifications = await notificationModel.find({doctorID: req.user._id});
   return res.status(200).json({result: notifications});
 }

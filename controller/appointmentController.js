@@ -247,8 +247,18 @@ async function rooms(req,res){
         results = await appointment.find({doctorID:req.user._id})
     }
     results = results.map(({patientID, doctorID})=> (String(patientID) + String(doctorID)))
-    
+
+    // remove duplicates
+    results = [...new Set(results)];
+
     res.status(200).json(results); 
 }
 
-module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments,rooms};  
+async function getRoom (id){
+    let result = await appointment.findById(id)
+    let room = String(result.patientID) + String(result.doctorID)
+    return room;
+}
+
+
+module.exports={createAppointment,showMyPatients,showMyPatientInfo,showUpcomingAppointments,PatientFilterAppointments,DocFilterAppointments,PatientShowAppointments,DocShowAppointments,rooms, getRoom};  
