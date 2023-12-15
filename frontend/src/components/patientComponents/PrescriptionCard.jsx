@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Skeleton, Paper, Button, Typography, Grid, Stack } from '@mui/material'
+import { Skeleton, Paper, Button, Typography, Grid, Stack, IconButton } from '@mui/material'
 import MedicationLiquidIcon from '@mui/icons-material/MedicationLiquid';
+import DownloadIcon from '@mui/icons-material/Download';
 export default function PrescriptionCard(props) {
     return (
         <Paper elevation={7} sx={{ padding: "20px", width: "100%", height: "80%" }}>
@@ -33,8 +34,12 @@ export default function PrescriptionCard(props) {
                     </Typography>
                     {props.paid ? <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)} disabled> Pay For Prescription </Button> :
                         <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)}> Pay for Prescription </Button>}
-                        
-                    <Button variant="contained" size="small" href={`http://localhost:3000/patient/prescriptionPDF/${props.id}`} target="_blank"> Download PDF</Button>
+                    <a href={`http://localhost:3000/downloadPresc/${props.id}`} download>
+                        <IconButton >
+                            <DownloadIcon />
+                        </IconButton>
+                    </a>
+                    {/* <Button variant="contained" size="small" onClick={}> Download PDF</Button> */}
                 </Stack>
                 <Stack direction="row" spacing={3} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
                     {props.medicines.map((medicine) => {
@@ -54,6 +59,6 @@ export default function PrescriptionCard(props) {
                     })}
                 </Stack>
             </Stack>
-        </Paper>
+        </Paper >
     )
 }

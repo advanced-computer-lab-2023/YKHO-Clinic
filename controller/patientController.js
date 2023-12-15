@@ -23,6 +23,7 @@ const { prescription } = require("../model/prescription");
 const { send } = require("express/lib/response.js");
 const maxAge = 3 * 24 * 60 * 60;
 const fs = require('fs');
+const doc = require("pdfkit");
 const createToken = (name) => {
   return jwt.sign({ name }, process.env.SECRET, {
     expiresIn: maxAge,
@@ -189,7 +190,7 @@ const createFamilyMember = async (req, res) => {
 
 const addFollowUpRequest = async (req, res) => {
   const { doctorID, date, time } = req.body;
-  const patientID = req.user._id;
+  const patientID = req.body.id;
   let dates = new Date(date);
   const doc = await doctorModel.findById(doctorID,"-id -medicalLicense -medicalDegree");
   const pat = await patientModel.findById(patientID, "-healthRecords");
@@ -218,8 +219,8 @@ const readFamilyMembers = async (req, res) => {
   if (results == null) {
     results = [];
   }
-
-  res.status(201).render("patient/family", { results });
+  res.status(200).json({ result: results });
+  // res.status(201).render("patient/family", { results });
 };
 
 // helper
@@ -917,28 +918,38 @@ async function cancelAppointmentPatient(req, res) {
   const appointmentID = req.body.id;
   const deletedAppointment = await appointmentModel.findByIdAndUpdate(appointmentID, { status: "cancelled" }, { new: 1 }).exec();
   const patient = await patientModel.findById(deletedAppointment.patientID, "wallet name email _id");
-  const doctore = await doctorModel.findById(deletedAppointment.doctorID, "wallet name email _id");
+  const doctore = await doctorModel.findById(deletedAppointment.doctorID, "Wallet name email _id");
   const date = `${(deletedAppointment.date.toISOString()).split("T")[0]} at ${parseInt((deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[0]) + 2}:${(deletedAppointment.date.toISOString()).split("T")[1].split(".")[0].split(":")[1]}`
-  var message = "";
-  if(deletedAppointment.date - Date.now() < 24*60*60*1000){ //if appointment is within 24 hours
+  let message = "";
+  deletedAppointment.date.setHours(deletedAppointment.date.getHours() + 2);
+  const dateNow = new Date();
+  dateNow.setHours(dateNow.getHours() + 24);
+  if(deletedAppointment.date > dateNow){ //if appointment is within 24 hours
     if(deletedAppointment.paid == true){
-    let Wallet = patient.wallet + deletedAppointment.price;
-    let doctorWallet = doctore.Wallet - deletedAppointment.price;
-    await findByIdAndUpdate(patient._id, {wallet: Wallet}).exec();
-    await findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
-    if(deletedAppointment.patientID != req.user._id){
-      message = `Your family member appointment  on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
+      let Wallet = patient.wallet + deletedAppointment.price;
+      let doctorWallet = doctore.Wallet - deletedAppointment.price;
+      await patientModel.findByIdAndUpdate(patient._id, {wallet: Wallet}).exec();
+      await doctorModel.findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
+      if(deletedAppointment.patientID != req.user._id){
+        message = `Your family member appointment  on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
+      }else{
+        message = `Your appointment on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
+      }
+    }else{
+      if(deletedAppointment.patientID != req.user._id){
+        message = `Your family member appointment on ${date} with ${doctore.name} has been cancelled`;
+      }else{
+        message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
+      }
     }
-    message = `Your appointment with ${doctore.name} on ${deletedAppointment.date} has been cancelled and the amount has been refunded to your wallet`;
-    message = `Your appointment on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
-  }
   }else{//usability: if appointment is cancelled more than 24 hours before
     if(deletedAppointment.patientID != req.user._id){
       message = `Your family member appointment on ${date} with ${doctore.name} has been cancelled`;
+    }else{
+      message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
     }
-    message = `Your appointment with ${doctore.name} on ${date} has been cancelled`;
-    message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
   }
+  console.log(message,"lol");
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: message,
@@ -1364,12 +1375,14 @@ const PayByWallet = async (req, res) => {
   const appoitment = await appointmentModel.findOne({ _id: appoitmentid });
   const appoitmentCost = appoitment.price;
   const doctor = await doctorModel.findOne({ _id: appoitment.doctorID });
-  const patient = await patientModel.findOne({ _id: appoitment.patientID });
+  const patient = await patientModel.findOne({ _id: req.user._id });
+  console.log(patient);
   const Walletp = patient.wallet - appoitmentCost;
+  console.log(Walletp);
   const doctorw = doctor.Wallet + appoitmentCost;
   if (patient.wallet >= appoitmentCost) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
-      appoitment.patientID,
+      req.user._id,
       { $set: { wallet: Walletp } },
       { new: true }
     );
@@ -1529,6 +1542,10 @@ async function getTimeSlotOnDate(req, res) {
   res.status(200).json({ result: timeSlots });
 }
 
+async function getMyID(req, res) {
+  res.status(200).json({ result: req.user._id });
+}
+
 module.exports = {
   showSlots,
   reserveSlot,
@@ -1570,6 +1587,7 @@ module.exports = {
   deleteNotification,
   getTimeSlotOnDate,
   addFollowUpRequest,
+  getMyID,
 };
 
 module.exports.readSubscription = readSubscription;
