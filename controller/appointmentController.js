@@ -97,7 +97,7 @@ async function showUpcomingAppointments(req, res) {
    async function PatientShowAppointments(req,res){
     id=req.user._id;
     
-    const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid"]);
+    const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid","price"]);
     // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th> <th>Pay By Credit</th> <th>Pay By Wallet</th> </tr>';
     
     // for(appointmentl in result){

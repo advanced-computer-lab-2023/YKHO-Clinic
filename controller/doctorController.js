@@ -83,10 +83,10 @@ async function createMedicine(req, res){
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
-  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:parseInt(req.body.price),medicineID:idmed}
+  let medicinetobe= { name:req.body.name,dosage:req.body.dosage,price:parseFloat(req.body.price),medicineID:idmed}
   let medicinesup=prescription1.MedicineNames;
   medicinesup.push(medicinetobe);
-  let pricenew = prescription1.price + parseInt(req.body.price);
+  let pricenew = prescription1.price + parseFloat(req.body.price);
   prescription1 = await prescription.findByIdAndUpdate(
     req.params.id,
     { $set: { MedicineNames: medicinesup } },
@@ -100,12 +100,17 @@ async function createMedicine(req, res){
   res.status(200).json({result:medicinesup})
 }
 
+async function getNotificationsDoctor(req, res) {
+  const notifications = await notificationModel.find({doctorID: req.user._id});
+  return res.status(200).json({result: notifications});
+}
+
 async function deleteMedicine(req,res){
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.body.id});
   let medicinesup=prescription1.MedicineNames; 
   medicinesup= medicinesup.filter(item =>item.name != req.body.name);
-  let pricenew = prescription1.price-req.body.price;
+  let pricenew = prescription1.price-parseFloat(req.body.price);
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {price: pricenew} },{ new: true });
   res.status(200).json({result:medicinesup})
@@ -142,7 +147,6 @@ async function updatePresc(req,res){
     prescription1=await prescription.findByIdAndUpdate(req.params.id,{$set: {prescriptionName:newPrescName}},{new:true});
   }
 }
-
 
 async function ShowRequests(req, res) {
   const drId= req.user._id;
@@ -344,16 +348,18 @@ async function cancelAppointment(req, res) {
   const deletedAppointment = await appointment
     .findByIdAndUpdate(id, { status: "cancelled" }, { new: 1 })
     .exec();
+  let dateConverted = (new Date(deletedAppointment.date)).toISOString();
+  const date = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   const wallet = deletedAppointment.price;
   const patient = await patientModel.findById(deletedAppointment.patientID,"-healthRecords");
-  patient.Wallet += wallet;
+  patient.wallet += wallet;
   await patient.save();
   const doctore = await doctor.findById(deletedAppointment.doctorID);
   doctore.Wallet -= wallet;
   await doctore.save();
   let newNotification = new notificationModel({
     patientID: patient._id,
-    text: "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet",
+    text: `Your appointment on ${date} has been cancelled by the doctor and the amount has been refunded to your wallet`,
     read: false,
     date: Date.now(),
   });
@@ -361,18 +367,18 @@ async function cancelAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: deletedAppointment.doctorID,
-    text: `Your appointment with ${patient.name} is cancelled`,
+    text: `Your appointment on ${date} with ${patient.name} is cancelled`,
     read: false,
     date: Date.now(),
   });
   await newNotification2.save();
   await sendEmail(
     patient.email,
-    "Your appointment has been cancelled by the doctor and the amount has been refunded to your wallet"
+    `Your appointment on ${date} has been cancelled by the doctor and the amount has been refunded to your wallet`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${patient.name} is cancelled`
+    `Your appointment on ${date} with ${patient.name} is cancelled`
   );
   res.status(200).json({ message: "Appointment cancelled successfully." });
 }
@@ -564,18 +570,23 @@ async function sendEmail(email, message) {
 
 async function rescheduleAppointment(req, res) {
   const appointmentID = req.body.appointmentId;
-  const date = new Date(req.body.date);
+  let date = new Date(req.body.date);
   const time = req.body.time;
-
   const startTime = time.split("-")[0];
   const endTime = time.split("-")[1];
   date.setHours(startTime.split(":")[0]);
   date.setMinutes(startTime.split(":")[1]);
+  let dateConverted = date.toISOString();
+  let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
   const startH = parseInt(startTime.split(":")[0]);
   const startM = parseInt(startTime.split(":")[1]);
   const endH = parseInt(endTime.split(":")[0]);
   const endM = parseInt(endTime.split(":")[1]);
   const thisAppointment = await appointment.findById(appointmentID);
+  let appointmentDate = new Date(thisAppointment.date);
+  let appointmentDateConverted = appointmentDate.toISOString();
+  let appointmentDateText = `${appointmentDateConverted.split("T")[0]} at ${parseInt(appointmentDateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${appointmentDateConverted.split("T")[1].split(".")[0].split(":")[1]}`;
+
   let duration = (endH - startH) * 60 + (endM - startM);
   duration = duration / 60;
   const pat = await patientModel.findById(thisAppointment.patientID,"-healthRecords -medicalHistory");
@@ -602,7 +613,7 @@ async function rescheduleAppointment(req, res) {
   
   let newNotification = new notificationModel({
     patientID: rescheduledAppointment.patientID,
-    text: `Appointment on ${thisAppointment.date} rescheduled to ${req.body.date}`,
+    text: `Your Appointment with ${doctore.name} on ${appointmentDateText} rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -610,7 +621,7 @@ async function rescheduleAppointment(req, res) {
 
   let newNotification2 = new notificationModel({
     doctorID: thisAppointment.doctorID,
-    text: `Your appointment with ${pat.name} is rescheduled to ${req.body.date}`,
+    text: `Your appointment with ${pat.name} on ${appointmentDateText} is rescheduled to ${dateText}`,
     read: false,
     date: Date.now(),
   });
@@ -618,14 +629,15 @@ async function rescheduleAppointment(req, res) {
 
   await sendEmail(
     pat.email,
-    `Appointment with Doctor ${doctore.name} on ${thisAppointment.date} rescheduled to ${rescheduleAppointment.date}`
+    `Your Appointment with Doctor ${doctore.name} on ${appointmentDateText} rescheduled to ${dateText}`
   );
   await sendEmail(
     doctore.email,
-    `Your appointment with ${pat.name} that was on ${thisAppointment.date}} is rescheduled to ${rescheduleAppointment.date}`
+    `Your appointment with ${pat.name} that was on ${appointmentDateText}} is rescheduled to ${dateText}`
   );
   res.status(200).json({ message: "Appointment rescheduled successfully." });
 }
+
 async function getMedicine(req, res) {
   let result = await medicine.find({}, "name price -_id");
   result = result.map(item => ({ price:item.price, label: item.name }));
@@ -690,6 +702,7 @@ async function downloadPresc(req, res) {
   doc.end();
   
 }
+
 module.exports = {
   updatePresc,updateMedicine,
   deleteMedicine,
@@ -718,4 +731,5 @@ module.exports = {
   AcceptFollowupRequest,
   RejectFollowupRequest,
   downloadPresc,
+  getNotificationsDoctor,
 };

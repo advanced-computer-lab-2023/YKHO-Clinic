@@ -3,13 +3,14 @@ import axios from 'axios';
 import Navbar from './Navbar'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton, Box, Paper, Button, Typography, Grid, Stack, Autocomplete, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import PrescriptionCard from './PrescriptionCard';
 import PlaceHolder from '../PlaceHolder';
 import { set } from 'mongoose';
+
+
 const PatientPrescriptions = () => {
     const [result, setResult] = useState(false);
     const [prescriptions, setPrescriptions] = useState([]);
@@ -90,10 +91,12 @@ const PatientPrescriptions = () => {
         await axios.get(`http://localhost:3000/patient/paymentcreditpresc/${id}`, {
             withCredentials: true
         }).then((res) => {
-            window.location.href = res.data.result;
+            window.location.href = "http://localhost:"+res.data.result+"/";
+
         }).catch((err) => {
             console.log(err);
         })
+
     }
     async function handleDownload(id) {
         await axios.get(`http://localhost:3000/patient/prescriptionPDF/${id}`, {

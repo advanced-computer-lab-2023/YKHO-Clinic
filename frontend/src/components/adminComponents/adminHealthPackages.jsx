@@ -149,6 +149,9 @@ export default function AdminHome() {
       setIsOpen(!isOpen);
     }
 
+    function deletePackage(){//MAKE IT WORK
+    }
+
     async function addHealthPackage(){
       try {
         const res = await axios.post("http://localhost:3000/admin/healthPackages", {
@@ -250,6 +253,7 @@ export default function AdminHome() {
             <TableCell align="left">Pharmacy Discount</TableCell>
             <TableCell align="left">Family Discount</TableCell>
             <TableCell align='left'>Is Deleted</TableCell>
+            <TableCell align='left'>Delete Package</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -261,7 +265,7 @@ export default function AdminHome() {
               <TableCell align="left">{packagesTable.pharmacyDiscount}</TableCell>
               <TableCell align="left">{packagesTable.familyDiscount}</TableCell>
               <TableCell align='left'>{`${packagesTable.deleted}`}</TableCell>
-              
+              <TableCell align='left'><Button variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
             </TableRow>
           ))} 
         </TableBody>

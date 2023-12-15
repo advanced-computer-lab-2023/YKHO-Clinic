@@ -31,18 +31,15 @@ export default function PrescriptionCard(props) {
                     <Typography sx={{ fontSize: 13, whiteSpace: "nowrap", marginLeft: "1%" }} gutterBottom>
                         {props.filled ? "Prescription Filled" : "Prescription Not Filled yet"}
                     </Typography>
-                    {props.paid ?
-                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleWallet(props.id)} disabled> Pay by Wallet </Button> :
-                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleWallet(props.id)}> Pay by Wallet </Button>}
-                    {props.paid ? <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)} disabled> Pay by Credit Card </Button> :
-                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)}> Pay by Credit Card </Button>}
+                    {props.paid ? <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)} disabled> Pay For Prescription </Button> :
+                        <Button variant="contained" size="small" sx={{ marginLeft: "1%" }} onClick={() => props.handleCredit(props.id)}> Pay for Prescription </Button>}
                         
                     <Button variant="contained" size="small" href={`http://localhost:3000/patient/prescriptionPDF/${props.id}`} target="_blank"> Download PDF</Button>
                 </Stack>
-                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
+                <Stack direction="row" spacing={3} justifyContent="center" alignItems="center" sx={{ width: "100%", overflowX: "auto" }} >
                     {props.medicines.map((medicine) => {
                         return (
-                            <Paper sx={{ height: "65%", width: "100px", paddingTop: "10px" }} >
+                            <Paper sx={{ height: "65%", minWidth: "100px", paddingTop: "10px" }} >
                                 <Stack direction="column" spacing={2} justifyContent="center" alignItems="center">
                                     <MedicationLiquidIcon sx={{ fontSize: 40 }} />
                                     <Typography sx={{ fontSize: 18, whiteSpace: "nowrap", marginLeft: "1%" }} gutterBottom>
