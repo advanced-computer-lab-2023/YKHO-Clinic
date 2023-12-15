@@ -395,19 +395,6 @@ const list = (anchor) => (
           >
             El7a2ny
           </Typography>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search for Doctors…"
-              inputProps={{ 'aria-label': 'search' }}
-              type='search'
-              onChange={(e) => setValues(e.target.value)}
-              defaultValue={content}
-            />
-          </Search>
-          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch}> Search </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             <IconButton
