@@ -1534,7 +1534,10 @@ const PayPresc = async (req, res) => {
 }
 
 const getPatientPlan = async (req, res) => {
-  const patient = await patientModel.findById(req.user._id, "subscription");
+  let id = req.user._id;
+  if(req.query.id != -1)
+    id = req.query.id;
+  const patient = await patientModel.findById(id, "subscription");
   res.status(201).json({ result: patient.subscription.healthPackage, endDate: patient.subscription.endDate, state: patient.subscription.state });
 }
 
