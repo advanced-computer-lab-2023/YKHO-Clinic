@@ -68,7 +68,7 @@ const send = async (req,res) => {
     
     let message = {
         text:req.body.text,
-        date: new Date(Date.now()),
+        date: new Date(req.body.time),
         isPatient: (req.user.type == "patient"? true: false)
     }
 
