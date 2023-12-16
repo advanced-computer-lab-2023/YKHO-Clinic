@@ -71,7 +71,7 @@ const {
   goToNewPassword,
   showDoctorRecord,
   getRequests,
-  getHealthPackages,
+  
   
 } = require("./controller/adminController.js");
 // request controller
@@ -120,6 +120,7 @@ const {
   readDetailsFamily,
   changePasswordPatient,
   failSubs,
+  getHealthPackages,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -201,7 +202,7 @@ app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
-app.get("/getHealthPackages", getHealthPackages);
+app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);

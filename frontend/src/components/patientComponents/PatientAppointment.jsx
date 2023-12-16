@@ -271,7 +271,7 @@ const PatientAppointments = () => {
             withCredentials: true
         }).then((res) => {
             window.location.href = res.data.result;
-            console.log(res.status);
+            handleReset();
         }).catch((err) => {
             console.log(err);
         })

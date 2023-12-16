@@ -573,10 +573,7 @@ const getRequests = async (req, res) => {
   return res.status(200).json({ requests: requests });
 };
 
-const getHealthPackages = async (req, res) => {
-  const healthPackages = await healthPackageTable.find();
-  return res.status(200).json({ healthPackages: healthPackages });
-};
+
 
 async function showDoctorRecord(req, res) {
   const doctorId = req.params.id;
@@ -690,5 +687,4 @@ module.exports = {
   forgetPassword,
   goToNewPassword,
   showDoctorRecord,
-  getHealthPackages,
 };

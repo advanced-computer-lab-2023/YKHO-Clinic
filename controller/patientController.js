@@ -1532,7 +1532,26 @@ const PayPresc = async (req, res) => {
   res.status(201).json({ result: process.env.PORTPHARMA });
 
 }
-
+const getHealthPackages = async (req, res) => {
+  const healthPackages = await healthPackage.find();
+  let id = req.user._id;
+  if(req.query.id != -1 && req.query.id != undefined){
+    id = req.query.id;
+  }
+  let patient = await patientModel.findById(id,"agentID");
+  if(patient.agentID){
+    let parentPatient = await patientModel.findById(patient.agentID,"subscription");
+    if(parentPatient.subscription.healthPackage != "none"){
+      let healthPackageP = await healthPackage.findOne({packageName: parentPatient.subscription.healthPackage});
+      let discount = healthPackageP.familyDiscount;
+      discount = (100 - discount) / 100;
+      for(let i = 0; i < healthPackages.length; i++){
+        healthPackages[i].price = Math.floor(healthPackages[i].price * discount);
+      }
+    }
+  }
+  return res.status(200).json({ healthPackages: healthPackages });
+};
 const getPatientPlan = async (req, res) => {
   let id = req.user._id;
   if(req.query.id != -1 && req.query.id != undefined)
@@ -1678,6 +1697,7 @@ module.exports = {
   readDetailsFamily,
   changePasswordPatient,
   failSubs,
+  getHealthPackages,
 };
 
 module.exports.readSubscription = readSubscription;
