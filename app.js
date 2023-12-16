@@ -119,6 +119,7 @@ const {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -309,7 +310,7 @@ app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)
-
+app.get("/failSubs/:i",requireAuthPatient, failSubs)
 // socket.io
 const {Server} = require("socket.io");
 
