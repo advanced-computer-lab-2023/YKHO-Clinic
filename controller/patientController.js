@@ -488,6 +488,7 @@ const readHealthPackages = async (req, res) => {
         total: price * ((100 - discount) / 100),
       })
     );
+    
     //res.status(201).send(healthPackages);
     res
       .status(201)
@@ -1282,11 +1283,11 @@ const LinkFamilyMemeber = async (req, res) => {
     }
   }
   let relate;
-  if (req.query.filter1 == "Email") {
-    relate = await patientModel.find({ email: req.query.searchvalue });
+  if (req.body.filter == "Email") {
+    relate = await patientModel.find({ email: req.body.search });
   }
-  if (req.query.filter1 == "MobileNumber") {
-    relate = await patientModel.find({ mobileNumber: req.query.searchvalue });
+  if (req.query.filter == "MobileNumber") {
+    relate = await patientModel.find({ mobileNumber: req.body.search });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
@@ -1321,9 +1322,11 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  //res.redirect("/patient/home");
-  res.status(201).render("patient/home", { results: [], one: true });
+  let familyMembers = results.familyMembers;
+  res.status(200).json(familyMembers);
+
 };
+
 async function showFile(req, res) {
   const fileId = req.params.fileId;
   patient = req.user;
