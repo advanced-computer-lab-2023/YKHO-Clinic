@@ -130,26 +130,16 @@ export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTim
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [read, setRead] = React.useState(false);
+  const [notifRead, setNotifRead] = React.useState(false);
+  const [readCount, setReadCount] = React.useState(0);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(() => { getNotifications() }, []);
+  useEffect(() => { getNotifications() }, [notifRead]);
   const { searchvalue } = useParams();
 
   useEffect(() => { init() }, [])
-
-
-
-  function toggleFilter() {
-    setIsOpen(!isOpen);
-  }
-  const handleSearch = () => {
-    if (values != "" && values != null) {
-      window.location.href = `/patient/search/${values}`
-    }//a3ml7a ezay deh lel doc
-  }
 
   const [error, setError] = useState('');
   async function LogoutButton() {
@@ -184,9 +174,10 @@ export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTim
 
   async function getNotifications() {
     try {
-      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {
+      const res = await axios.post("http://localhost:3000/doctor/getNotifications", {read:notifRead}, {
         withCredentials: true,
       });
+      setReadCount(res.data.readCount);
       setNotifications(res.data.result);
     } catch (err) {
       console.log(err);
@@ -205,7 +196,7 @@ export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTim
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setRead(true);
+    setNotifRead(true);
     setNotificationsState({ ...notificationsState, [anchor]: open });
   }
 
@@ -467,7 +458,7 @@ const list = (anchor) => (
               color="inherit"
               onClick={toggleNotifications('right', true)}
             >
-            <Badge badgeContent={notifications.length} color="error">
+            <Badge badgeContent={readCount} color="error">
               <NotificationsIcon />
             </Badge>
             </IconButton>

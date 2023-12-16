@@ -137,9 +137,11 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]);  const [values, setValues] = useState("");
+  const [readCount, setReadCount] = useState(0);
+  const [notifRead, setNotifRead] = React.useState(false);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(()=>{getNotifications()},[]);
+  useEffect(()=>{getNotifications()},[notifRead]);
   const { searchvalue } = useParams();
 
   
@@ -212,10 +214,12 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
 
 async function getNotifications(){
     try {
-      const res = await axios.get("http://localhost:3000/patient/getNotifications", {
+      const res = await axios.post("http://localhost:3000/patient/getNotifications", {read: notifRead}, {
         withCredentials: true,
       });
+      setReadCount(res.data.readCount);
       setNotifications(res.data.result);
+      setNotifRead(false);
   } catch (err) {
     console.log(err);
   }
@@ -232,7 +236,7 @@ const toggleNotifications = (anchor, open) => (event) => {
   if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
   }
-
+  setNotifRead(true);
   setNotificationsState({ ...notificationsState, [anchor]: open });
 }
 
@@ -489,7 +493,7 @@ const list = (anchor) => (
               color="inherit"
               onClick={toggleNotifications('right', true)}
             >
-            <Badge badgeContent={notifications.length} color="error">
+            <Badge badgeContent={readCount} color="error">
               <NotificationsIcon />
             </Badge>
             </IconButton>

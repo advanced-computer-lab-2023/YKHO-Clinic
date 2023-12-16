@@ -166,7 +166,7 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
-app.get("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
+app.post("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
@@ -252,7 +252,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
   res.render("patient/addFamily")});
-app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
