@@ -172,8 +172,14 @@ const changePasswordPatient = async (req, res) => {
 
 const createFamilyMember = async (req, res) => {
   // joi validation
-  const { name, nationalID, age, gender, relation } = req.body;
-
+  const { name, nationalID, age, relation } = req.body;
+  let gender;
+  if(relation=="husband"||relation=="son"){
+    gender="male";
+  }
+  else{
+    gender="female"
+  }
   let familyMember = {
     name,
     nationalID,
@@ -181,11 +187,11 @@ const createFamilyMember = async (req, res) => {
     gender,
     relation,
   };
-
+  patient=await patientModel.findOne({_id:req.user._id});
   patient.familyMembers.push(familyMember);
   patient = await patient.save();
   results = patient.familyMembers;
-  res.status(201).render("patient/family", { results });
+  res.status(201).json({ results:results });
 };
 
 const addFollowUpRequest = async (req, res) => {
@@ -511,6 +517,20 @@ const readSubscription = async (req, res) => {
     res.status(401).send({ err: error });
   }
 };
+const readDetailsFamily= async(req,res)=>{
+  let agent= await patientModel.findById(req.user._id,"-healthRecords -medicalHistory");
+  let familymem;
+  for(let i =0;i<agent.familyMembers.length;i++){
+    if(agent.familyMembers[i].nationalID==req.params.nationalID){
+      familymem=agent.familyMembers[i].patientID;
+    }
+  }
+ 
+  let patient=await patientModel.findById(familymem,"-healthRecords -medicalHistory");
+  let result= await healthPackageModel.findOne({packageName:patient.subscription.healthPackage});
+  console.log(result);
+  res.status(200).json({result:result});
+}
 
 const readFamilyMembersSubscriptions = async (req, res) => {
   let agent = await patientModel.findById(req.user._id).populate({
@@ -531,7 +551,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         endDate: patient.subscription.endDate
           ? patient.subscription.endDate
           : "",
-        agent: patient.subscription.agent,
+        agent: true,
         nationalID: familyMembers[i].nationalID,
       });
     } else {
@@ -1591,7 +1611,8 @@ module.exports = {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
-  getPatient
+  getPatient,
+  readDetailsFamily
 };
 
 module.exports.readSubscription = readSubscription;
