@@ -41,15 +41,13 @@ async function showMyPatients(req,res){
          result = await appointment.find({doctorID:id}).populate("patientID",'name mobileNumber').select(["patientID","-_id","date","status"])
         
     }
-    console.log(result)
-    console.log("--------------------")
-    console.log(req.query.upcoming);
+
     if(req.query.upcoming=="true"){
         result = result.filter((c)=>{
             return c.status=="upcoming";
         })
     }
-    console.log(result)
+
     for(i in result){
         for(let j=0;j<result.length;j++){
             if(i!=j){

@@ -140,8 +140,11 @@ function handleBreadcrumbClick(event, breadcrumb) {
     handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
   
-  function deletePackage(){
-
+  async function deletePackage(e){
+    const res = await axios.post("http://localhost:3000/admin/healthPackages/deleted",{packageName: e.target.id}, {
+        withCredentials: true
+    });
+    setHealthPackages(res.data.healthPackages);
   }
 
   async function LogoutButton() {
@@ -190,7 +193,7 @@ async function RejectButton(e) {
       <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
     <div style={{display:'flex'}}>
   <div>
-      <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:150}}>
+      <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:100}}>
       <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (
           <Link
@@ -277,7 +280,7 @@ async function RejectButton(e) {
                 <TableCell align="left">{packagesTable.pharmacyDiscount}</TableCell>
                 <TableCell align="left">{packagesTable.familyDiscount}</TableCell>
                 <TableCell align='left'>{`${packagesTable.deleted}`}</TableCell>
-                <TableCell align='left'><Button variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
+                <TableCell align='left'><Button id={packagesTable.packageName} variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
               </TableRow>
             ))} 
           </TableBody>

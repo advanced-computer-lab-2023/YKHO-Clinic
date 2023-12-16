@@ -256,6 +256,11 @@ const PatientAppointments = () => {
         }).then((res) => {
             console.log(res);
             loadAppointments();
+            if(res.data.result == true){
+                setOpen(true);
+            }else{
+                setOpenError(true);
+            }
         }).catch((err) => {
             console.log(err);
         });
@@ -266,7 +271,7 @@ const PatientAppointments = () => {
             withCredentials: true
         }).then((res) => {
             window.location.href = res.data.result;
-            console.log(res.status);
+            handleReset();
         }).catch((err) => {
             console.log(err);
         })

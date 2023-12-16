@@ -70,7 +70,7 @@ const {
   goToNewPassword,
   showDoctorRecord,
   getRequests,
-  getHealthPackages,
+  
   
 } = require("./controller/adminController.js");
 // request controller
@@ -118,6 +118,8 @@ const {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
+  getHealthPackages,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -194,12 +196,12 @@ app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 app.get("/downloadPresc/:id",requireAuth, downloadPresc);
+
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
-app.get("/getHealthPackages", getHealthPackages);
+app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
-app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
 app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
 app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
@@ -210,7 +212,7 @@ app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
 app.get("/admin/HealthPackages", requireAuthAdmin,  goToHealthPackages);
 app.post("/admin/healthPackages",  requireAuthAdmin, addHealthPackages);
 app.post("/admin/healthPackages/updated",  requireAuthAdmin, callUpdateHealthPackage);
-app.post("/admin/healthPackages/deleted", requireAuthAdmin,  callDeleteHealthPackage);
+app.post("/admin/healthPackages/deleted", requireAuthAdmin, callDeleteHealthPackage);
 
 //ahmed Patient
 app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
@@ -249,13 +251,13 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 // app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
 //   res.render("patient/addFamily")});
-app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
-app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
+app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -306,7 +308,7 @@ app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)
-
+app.get("/failSubs/:i",requireAuthPatient, failSubs)
 // socket.io
 const {Server} = require("socket.io");
 
@@ -327,9 +329,15 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
-    //console.log(data)
+    console.log(data)
     socket.in(data.room).emit("receive_message", data);
-    save(data);
+    save(data);    
+  })
+
+  socket.on("send_message_pharmacist", (data) => {
+    console.log(data)
+    socket.in(data.room).emit("receive_message_pharmacist", data);
+    pharmacistSave(data);    
   })
 
   // video
@@ -360,10 +368,9 @@ io.on('connection', (socket) => {
 });
 
 // chat
-const {chats, send, read, start, save, contacts, unread} = require("./controller/chatController.js");
+const {chats, read, start, save, contacts, unread} = require("./controller/chatController.js");
 
 app.get("/chats", requireAuth, chats);
-app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
@@ -372,3 +379,7 @@ app.get("/unread", requireAuth, unread);
 // notification
 app.get("/rooms", requireAuth, rooms)
 
+// chat
+const { pharmacistChat, pharmacistRead, pharmacistSave, pharmacistStart} = require("./controller/pharmacistChatController.js")
+app.get("/pharmacistChat",requireAuthDoctor,pharmacistChat );
+app.get("/pharmacistRead",requireAuthDoctor,pharmacistRead );

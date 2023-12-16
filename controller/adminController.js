@@ -127,7 +127,7 @@ const Login = async (req, res) => {
 };
 
 const changePasswordAdmin = async (req, res) => {
-  console.log("AAAAAAAAAAAAAAA")
+
   oldPassword = req.body.oldPassword;
   newPassword = req.body.newPassword;
   confirmationPassword = req.body.confirmationPassword;
@@ -419,14 +419,6 @@ const addHealthPackages = async (req, res) => {
   if (validated.error) {
     return res.status(200).json({ message: validated.error.message });
   }
-  // let packageName = req.body.packageName;
-  // let price = req.body.price;
-  // let doctorDiscount = req.body.doctorDiscount;
-  // let pharmacyDiscount = req.body.pharmacyDiscount;
-  // let familyDiscount = req.body.familyDiscount;
-  // if (packageName === "" || price === "" || doctorDiscount === "" || pharmacyDiscount === "" || familyDiscount === "") {
-  //   return res.status(200).json({ message: "Input missing fields" });
-  // }
   const healthPackage = new healthPackageTable({
     packageName: req.body.packageName,
     price: req.body.price,
@@ -448,15 +440,16 @@ const addHealthPackages = async (req, res) => {
     }
   } catch (ex) {
     //law feh missing fields/out of bounds/wrong type inputs
-    return res.status(200).json({ message: ex.message });
+    return res.status(200).json({ message: ex.message, healthPackages: healthPackages });
   }
 };
+
 const callUpdateHealthPackage = async (req, res) => {
   updateHealthPackages(req, res);
 };
+
 const updateHealthPackages = async (req, res) => {
   //if not given any variable to update, it wont return an error and just leave it blank in DB
-  console.log(req.body)
   const healthPackages = await healthPackageTable.find();
   const validated = validateHealthPackage(req.body);
   if (validated.error)
@@ -475,7 +468,7 @@ const updateHealthPackages = async (req, res) => {
       );
       const healthPackages = await healthPackageTable.find();
       if (healthPackage != null)
-        return res.status(200).json({ message: "package Edited successfully" });
+        return res.status(200).json({ message: "package Edited successfully", healthPackages: healthPackages });
       else
         return res.status(200).json({message: "package not found"});
     } catch (ex) {
@@ -483,41 +476,15 @@ const updateHealthPackages = async (req, res) => {
     }
   }
 };
+
 const callDeleteHealthPackage = async (req, res) => {
-  deleteHealthPackages(req, res);
-};
-const deleteHealthPackages = async (req, res) => {
-  if (req.body.packageName === "") {
-    res.render("admin/healthPackages", {
-      healthPackages,
-      updateErrorMessage: "",
-      createErrorMessage: "",
-      deleteErrorMessage: `"packageName" is not allowed to be empty`,
-    });
-  }
-  const healthPackages = await healthPackageTable.find({
-    packageName: req.body.packageName,
-  });
-  if (!healthPackages) {
-    return res.render("admin/healthPackages", {
-      healthPackages,
-      updateErrorMessage: "",
-      createErrorMessage: "",
-      deleteErrorMessage: "Health package not found",
-    });
-  }
   try {
     let healthPackages = await healthPackageTable.findOneAndUpdate(
       { packageName: req.body.packageName },
       { deleted: true }
     );
     healthPackages = await healthPackageTable.find();
-    res.render("admin/healthPackages", {
-      healthPackages,
-      updateErrorMessage: "",
-      createErrorMessage: "",
-      deleteErrorMessage: "Health package deleted",
-    });
+    return res.status(200).json({ healthPackages: healthPackages });
   } catch (err) {
     res.send(err.message);
   }
@@ -574,9 +541,7 @@ const deleteUser = async (req, res) => {
       }
     } 
     let fams = await patientsTable.find({agentID: deletedUser._id});
-    console.log(fams);
     for(let i = 0; i < fams.length; i++){
-      console.log(fams[i]);
       let patient = await patientsTable.findById(fams[i]._id);
       patient.agentID = undefined;
       patient.save();
@@ -610,10 +575,7 @@ const getRequests = async (req, res) => {
   return res.status(200).json({ requests: requests });
 };
 
-const getHealthPackages = async (req, res) => {
-  const healthPackages = await healthPackageTable.find();
-  return res.status(200).json({ healthPackages: healthPackages });
-};
+
 
 async function showDoctorRecord(req, res) {
   const doctorId = req.params.id;
@@ -621,7 +583,6 @@ async function showDoctorRecord(req, res) {
   let result = await requestsTable
     .find({ _id: doctorId })
     .select(["id", "medicalLicense", "medicalDegree"]);
-  console.log(type);
   let File;
   if (type == "id") {
     File = result[0].id.data;
@@ -728,5 +689,4 @@ module.exports = {
   forgetPassword,
   goToNewPassword,
   showDoctorRecord,
-  getHealthPackages,
 };
