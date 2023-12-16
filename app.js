@@ -13,7 +13,6 @@ const {
   docViewWallet,
   createDoctor,
   createPrescription,
-  goToHome,
   updateMyInfo,
   updateThis,
   checkContract,
@@ -71,7 +70,7 @@ const {
   goToNewPassword,
   showDoctorRecord,
   getRequests,
-  getHealthPackages,
+  
   
 } = require("./controller/adminController.js");
 // request controller
@@ -119,6 +118,8 @@ const {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
+  getHealthPackages,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -169,7 +170,6 @@ app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.post("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
-app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -197,24 +197,23 @@ app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 app.get("/downloadPresc/:id",requireAuth, downloadPresc);
+
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
-app.get("/getHealthPackages", getHealthPackages);
+app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
-app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
 app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
 app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
 app.get("/admin/register",  requireAuthAdmin, adminRegister);
-app.get("/admin/home", requireAuth, goToHome);
 app.post("/admin/register", requireAuthAdmin,  createAdmin);
 app.get("/admin/deleteUser", requireAuthAdmin,  goToDeleteUser);
 app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
 app.get("/admin/HealthPackages", requireAuthAdmin,  goToHealthPackages);
 app.post("/admin/healthPackages",  requireAuthAdmin, addHealthPackages);
 app.post("/admin/healthPackages/updated",  requireAuthAdmin, callUpdateHealthPackage);
-app.post("/admin/healthPackages/deleted", requireAuthAdmin,  callDeleteHealthPackage);
+app.post("/admin/healthPackages/deleted", requireAuthAdmin, callDeleteHealthPackage);
 
 //ahmed Patient
 app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
@@ -259,7 +258,7 @@ app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
-app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
+app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -309,7 +308,7 @@ app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)
-
+app.get("/failSubs/:i",requireAuthPatient, failSubs)
 // socket.io
 const {Server} = require("socket.io");
 

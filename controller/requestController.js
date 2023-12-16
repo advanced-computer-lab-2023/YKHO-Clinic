@@ -34,7 +34,6 @@ const createRequest = async (req, res) => {
     affiliation,
     education,
   } = req.body;
-  console.log(req.body);
   DOB = new Date(DOB);
   const id = { data: req.files[0].buffer, contentType: req.files[0].mimetype};
   const medicalLicense = { data: req.files[1].buffer, contentType: req.files[1].mimetype};

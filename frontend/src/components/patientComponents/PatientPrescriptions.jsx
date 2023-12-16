@@ -273,18 +273,20 @@ const PatientPrescriptions = () => {
                             {appLoading ? <Stack direction="column" spacing={1} justifyContent="center" alignItems="center" sx={{ width: "100%", height: "100%" }}>
                                 <Skeleton variant='rectangular' animation="wave" sx={{ width: '100%', height: '100%' }} />
                                 <Skeleton variant='rectangular' animation="wave" sx={{ width: '100%', height: '100%' }} />
-                            </Stack> : prescriptions.length > 0 && <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ width: "100%" }}>
+                            </Stack> : prescriptions.length > 0 && <Grid container spacing={4} sx={{ width: "100%", display:"flex" , justifyContent: "center", alignItems:"center", height: "100%" }}>
                                 {prescriptions.length > 0 && prescriptions.map((prescription, index) => {
                                     return (
+                                        <Grid item key={prescription._id} sx={{minWidth:"200px"}}>
                                         <motion.div
                                             initial={{ opacity: 0, y: -50, width: '100%', height: '100%' }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.2 }}
                                         >
                                             <PrescriptionCard doctorName={prescription.doctorName} prescriptionName={prescription.prescriptionName} date={prescription.date} filled={prescription.filled} medicines={prescription.MedicineNames} handleWallet={handleWallet} handleCredit={handleCredit} id={prescription._id} paid={prescription.paid} price={prescription.price} discount={prescriptionPrice[index]} hasHealthPackage={hasHealthPackage} />
-                                        </motion.div>)
+                                        </motion.div>
+                                        </Grid>)
                                 })}
-                            </Stack>}
+                            </Grid>}
                             {prescriptions.length == 0 && !appLoading && <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ width: "100%", height: "100%" }}>
                                 {!filtered &&
                                     <Stack justifyContent="center" alignSelf="center">

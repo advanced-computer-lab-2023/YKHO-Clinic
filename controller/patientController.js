@@ -191,7 +191,7 @@ const createFamilyMember = async (req, res) => {
   patient.familyMembers.push(familyMember);
   patient = await patient.save();
   results = patient.familyMembers;
-  res.status(201).json({ results:results });
+  res.status(201).json({ results:results,message:"Family Member Added!" });
 };
 
 const addFollowUpRequest = async (req, res) => {
@@ -547,7 +547,6 @@ const readDetailsFamily= async(req,res)=>{
  
   let patient=await patientModel.findById(familymem,"-healthRecords -medicalHistory");
   let result= await healthPackageModel.findOne({packageName:patient.subscription.healthPackage});
-  console.log(result);
   res.status(200).json({result:result});
 }
 
@@ -571,6 +570,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
           ? patient.subscription.endDate
           : "",
         agent: true,
+        patientID: familyMembers[i].patientID,
         nationalID: familyMembers[i].nationalID,
         linked:true
       });
@@ -582,6 +582,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         state: "unsubscribed",
         endDate: "",
         agent: false,
+        patientID: null,
         nationalID: familyMembers[i].nationalID,
         linked: false
       });
@@ -593,13 +594,20 @@ const readFamilyMembersSubscriptions = async (req, res) => {
 
 // req.username, req.body.healthPackage, req.body.paymentMethod
 const subscribe = async (req, res) => {
+  console.log(req.body);
+  console.log(req.params); 
+  console.log(req.user);
   try {
-    let patient = await patientModel.findById(req.user._id);
-
+    let patient = await patientModel.findById(req.user._id, "-healthRecords -medicalHistory");
+    let id = req.body.id;
+    if(id==-1)
+      id = req.user._id;
+    console.log(id);
+    let patientToSub = await patientModel.findById(id, "-healthRecords -medicalHistory");
     // total
     let familyDiscount = 0;
-    if (patient.agentID) {
-      let referal = await patientModel.findById(patient.agentID);
+    if (patientToSub.agentID) {
+      let referal = await patientModel.findById(patientToSub.agentID, "-healthRecords -medicalHistory");
       if (referal.subscription.state == "subscribed") {
         let healthPackage = await healthPackageModel.findOne({
           packageName: referal.subscription.healthPackage,
@@ -615,7 +623,7 @@ const subscribe = async (req, res) => {
 
     if (req.body.paymentMethod == "wallet") {
       if (patient.wallet < total) {
-        throw new Error("insuficient balance, try another payment method");
+        return res.status(201).json({ result: false });
       } else {
         // update wallet
         patient.wallet -= total;
@@ -638,10 +646,11 @@ const subscribe = async (req, res) => {
               quantity: 1,
             },
           ],
-          success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/-1`,
-          cancel_url: `http://localhost:${process.env.PORT}/fail`,
+          success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/${id}`,
+          cancel_url: `http://localhost:${process.env.PORT}/failSubs/${id}`,
         });
-        res.redirect(session.url);
+        // res.redirect(session.url);
+        res.status(201).json({ result: session.url });
       } catch (e) {
         console.error(e);
         res.status(500).send("Internal Server Error");
@@ -655,14 +664,16 @@ const subscribe = async (req, res) => {
       date.setHours(23);
       date.setFullYear(date.getFullYear() + 1);
       // update subscription
-      patient.subscription = {
+      patientToSub.subscription = {
         healthPackage: req.params.healthPackage,
         state: "subscribed",
         endDate: date,
       };
 
       patient = await patient.save();
-      res.status(201).send(patient);
+      patientToSub = await patientToSub.save();
+      //res.status(201).send(patientToSub);
+      res.status(201).json({ result: true });
     }
   } catch (error) {
     res.status(401).send(error.message);
@@ -719,7 +730,7 @@ const subscribeFamilyMember = async (req, res) => {
             },
           ],
           success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/${i}`,
-          cancel_url: `http://localhost:${process.env.PORT}/fail`,
+          cancel_url: `http://localhost:${process.env.PORT}/failSubs`,
         });
         res.redirect(session.url);
       } catch (e) {
@@ -753,7 +764,10 @@ const subscribeFamilyMember = async (req, res) => {
 
 const deleteSubscription = async (req, res) => {
   try {
-    let patient = await patientModel.findById(req.user._id);
+    let patient = await patientModel.findById(req.user._id, "-healthRecords -medicalHistory");
+    if(req.query.id != -1)
+      patient = await patientModel.findById(req.query.id, "-healthRecords -medicalHistory");
+    console.log(patient);
     patient.subscription.state = "cancelled";
 
     patient = await patient.save();
@@ -765,12 +779,12 @@ const deleteSubscription = async (req, res) => {
 
 const subscriptionSuccessful = async (req, res) => {
 
-  let patient = await patientModel.findById(req.user._id);
-  if (req.params.i != -1) {
-    patient = await patientModel.findById(
-      patient.familyMembers[req.params.i].patientID
-    );
-  }
+  let patient = await patientModel.findById(req.params.i);
+  // if (req.params.i != -1) {
+  //   patient = await patientModel.findById(
+  //     patient.familyMembers[req.params.i].patientID
+  //   );
+  // }
   // end date
   let date = new Date();
   date.setSeconds(59);
@@ -785,7 +799,19 @@ const subscriptionSuccessful = async (req, res) => {
     agent: true,
   };
   patient = await patient.save();
-  res.status(201).send(patient);
+  if(req.params.i != req.user._id)
+    res.redirect(`http://localhost:5173/patient/healthPackages/${req.params.i}?success=true`);
+  else
+    res.redirect(`http://localhost:5173/patient/healthPackages/-1?success=true`);
+  // res.status(201).send(patient);
+};
+
+const failSubs = async (req, res) => {
+  console.log(req.params.i !== req.user._id, req.params.i, req.user._id);
+  if(req.params.i != req.user._id)
+    res.redirect(`http://localhost:5173/patient/healthPackages/${req.params.i}?success=false`);
+  else
+    res.redirect(`http://localhost:5173/patient/healthPackages/-1?success=false`);
 };
 
 // req.body.nationalID
@@ -800,9 +826,9 @@ const deleteFamilyMemberSubscription = async (req, res) => {
     patient.subscription.state = "cancelled";
 
     patient = await patient.save();
-    res.status(201).send(patient);
+    return res.status(200).json({message:"Subscription Cancelled Successfully"})
   } catch (error) {
-    res.status(401).send(error.message);
+    return res.status(200).json({message:error.message})
   }
 };
 
@@ -925,8 +951,8 @@ async function getNotifications(req, res) {
     const updated = await notificationModel.updateMany({patientID:req.user._id},{$set:{read:true}});
   }
   const notifications = await notificationModel.find({patientID: req.user._id});
-  const count = await notificationModel.countDocuments({patientID: req.user._id, read: false});
-  return res.status(200).json({result: notifications, readCount: count});
+  const count = await notificationModel.find({patientID: req.user._id, read: false});
+  return res.status(200).json({result: notifications, readCount: count.length});
 }
 
 async function deleteNotification(req, res) {
@@ -1329,10 +1355,10 @@ const LinkFamilyMemeber = async (req, res) => {
     .find({ _id: patientid })
     .select(["familyMembers"]);
   if (results[0].familyMembers.length == 0) {
-    res.status(500).json("No Family Members to link");
+    res.status(504).json("No Family Members to link");
   }
   for (familymem in results[0].familyMembers) {
-    if (results[0].familyMembers[familymem].name == req.query.filter) {
+    if (results[0].familyMembers[familymem].nationalID == req.body.nationalID) {
       familymemberk = results[0].familyMembers[familymem];
       i = familymem;
     }
@@ -1341,12 +1367,12 @@ const LinkFamilyMemeber = async (req, res) => {
   if (req.body.filter == "Email") {
     relate = await patientModel.find({ email: req.body.search });
   }
-  if (req.query.filter == "MobileNumber") {
+  if (req.body.filter == "MobileNumber") {
     relate = await patientModel.find({ mobileNumber: req.body.search });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
-      res.status(500).json("You cant link yourself");
+      return res.status(200).json({message:"You cant link yourself"});
     }
   }
   if (relate.length != 0) {
@@ -1355,15 +1381,12 @@ const LinkFamilyMemeber = async (req, res) => {
         relate[0]._id.equals(results[0].familyMembers[familymem].patientID) &&
         familymem != i
       ) {
-        res
-          .status(500)
-          .json("This user is already linked to another family member");
-
-        return;
+        return res.status(200).json({message:"This user is already linked to another family member"});
       }
     }
   } else {
-    return res.status(500).json("email or mobile number doesnt exist");
+    return res.status(200).json({message:"email or mobile number doesnt exist"});
+    
   }
   const updatedPatient2 = await patientModel.findByIdAndUpdate(
     relate[0]._id,
@@ -1377,8 +1400,7 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  let familyMembers = results.familyMembers;
-  res.status(200).json(familyMembers);
+  return res.status(200).json({message:"Family Member Linked Successfully"});
 
 };
 
@@ -1453,9 +1475,10 @@ const PayByWallet = async (req, res) => {
       { $set: { paid: true } },
       { new: true }
     );
-    res.redirect("/patient/home");
+    // res.redirect("/patient/home");
+    res.status(201).json({ result: true });
   } else {
-    res.status(500).send("Insufficient funds");
+    res.status(201).json({ result: false });
   }
 };
 const ViewWallet = async (req, res) => {
@@ -1505,14 +1528,36 @@ const PayPresc = async (req, res) => {
   }
 
   let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
-  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
+  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true,paid:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });
 
 }
-
+const getHealthPackages = async (req, res) => {
+  const healthPackages = await healthPackage.find();
+  let id = req.user._id;
+  if(req.query.id != -1 && req.query.id != undefined){
+    id = req.query.id;
+  }
+  let patient = await patientModel.findById(id,"agentID");
+  if(patient.agentID){
+    let parentPatient = await patientModel.findById(patient.agentID,"subscription");
+    if(parentPatient.subscription.healthPackage != "none"){
+      let healthPackageP = await healthPackage.findOne({packageName: parentPatient.subscription.healthPackage});
+      let discount = healthPackageP.familyDiscount;
+      discount = (100 - discount) / 100;
+      for(let i = 0; i < healthPackages.length; i++){
+        healthPackages[i].price = Math.floor(healthPackages[i].price * discount);
+      }
+    }
+  }
+  return res.status(200).json({ healthPackages: healthPackages });
+};
 const getPatientPlan = async (req, res) => {
-  const patient = await patientModel.findById(req.user._id, "subscription");
-  res.status(201).json({ result: patient.subscription.healthPackage });
+  let id = req.user._id;
+  if(req.query.id != -1 && req.query.id != undefined)
+    id = req.query.id;
+  const patient = await patientModel.findById(id, "subscription");
+  res.status(201).json({ result: patient.subscription.healthPackage, endDate: patient.subscription.endDate, state: patient.subscription.state });
 }
 
 const getFamilyMembersPlan = async (req, res) => {
@@ -1651,6 +1696,8 @@ module.exports = {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
+  getHealthPackages,
 };
 
 module.exports.readSubscription = readSubscription;

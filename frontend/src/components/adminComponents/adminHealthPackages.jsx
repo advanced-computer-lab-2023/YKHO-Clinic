@@ -150,7 +150,11 @@ export default function AdminHome() {
       setIsOpen(!isOpen);
     }
 
-    function deletePackage(){//MAKE IT WORK
+    async function deletePackage(e){
+      const res = await axios.post("http://localhost:3000/admin/healthPackages/deleted",{packageName: e.target.id}, {
+          withCredentials: true
+      });
+      setHealthPackages(res.data.healthPackages);
     }
 
     async function addHealthPackage(){
@@ -169,6 +173,7 @@ export default function AdminHome() {
             document.getElementById("pharmacyDiscountToBeCreated").value= "";
             document.getElementById("familyDiscountToBeCreated").value= "";
           }
+          setHealthPackages(res.data.healthPackages);
           setMessageAdd(res.data.message);
         });
   
@@ -189,6 +194,7 @@ export default function AdminHome() {
           if (res.data.message == "package Edited successfully"){
             window.location.reload();
           }
+          setHealthPackages(res.data.healthPackages);
           setMessageCreate(res.data.message);
         });
   
@@ -237,7 +243,7 @@ export default function AdminHome() {
               <TableCell align="left">{packagesTable.pharmacyDiscount}</TableCell>
               <TableCell align="left">{packagesTable.familyDiscount}</TableCell>
               <TableCell align='left'>{`${packagesTable.deleted}`}</TableCell>
-              <TableCell align='left'><Button variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
+              <TableCell align='left'><Button id={packagesTable.packageName} variant='contained' onClick={deletePackage}> Delete </Button></TableCell>
             </TableRow>
           ))} 
         </TableBody>
