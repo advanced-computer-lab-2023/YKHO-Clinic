@@ -5,10 +5,10 @@ import { useEffect } from 'react'
 import Navbar from './Navbar'
 import { set } from 'mongoose';
 import FamilyMemberCard from './FamilyMemeberCard';
-
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton, Paper, Button, Typography, Grid } from '@mui/material'
-
 
 
 const PatientHome = () => {
@@ -25,6 +25,7 @@ const PatientHome = () => {
     const [appLoadingPrescription, setAppLoadingPrescription] = useState(true);
     useEffect(() => { check(), loadUser(), loadPlan(), loadFamilyMembers(), loadAppointments(), loadWallet(), loadPrescriptions() }, []);
 
+    const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
 
         const res = await axios.get("http://localhost:3000/loggedIn", {
@@ -37,18 +38,16 @@ const PatientHome = () => {
             }
             else {
                 setResult(true)
-                const homeBreadcrumb = { label: "Home", href: "/patient/home" };
+                const homeBreadcrumb = { label: "home", href: "/patient/home" };
                 const hasHomeBreadcrumb = breadcrumbs.some(
                   (item) => item.label == homeBreadcrumb.label
                 );
-                
                 // If not, add it to the breadcrumbs
                 if (!hasHomeBreadcrumb) {
                   const updatedBreadcrumbs = [homeBreadcrumb];
                   setBreadcrumbs(updatedBreadcrumbs);
                   localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
                 }
-      
             }
         }
         ).catch((err) => {
@@ -79,7 +78,7 @@ const PatientHome = () => {
         // Navigate to the new page
         window.location.href = breadcrumb.href;
       }
-      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleHealthRecords={handleHealthRecords} handleAppointments={handleAppointments} handleHistory={handleHistory} handleLinkFamily={handleLinkFamily} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+
       function goHome() {
         const breadcrumb = { label: "Home", href: "/patient/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
@@ -95,7 +94,7 @@ const PatientHome = () => {
           const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
           handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
-      function handleLinkFamily() {
+      function handleFamilyMembers() {
           //window.location.href = "/patient/LinkFamily"
           const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
           handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
@@ -117,6 +116,12 @@ const PatientHome = () => {
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+      const handleSearch = (values) => {
+        if(values != "" && values != null){
+        const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+    }
 
     async function loadUser() {
         await axios.get("http://localhost:3000/patient/home", { withCredentials: true }).then((res) => {
@@ -180,9 +185,10 @@ const PatientHome = () => {
         });
     }
     const [isOpen, setIsOpen] = useState(false);
+
     function toggleFilter() {
         setIsOpen(!isOpen);
-      }
+    }
 
     async function handleLogout() {
         await axios.get("http://localhost:3000/logout", { withCredentials: true }).then((res) => {
@@ -204,9 +210,21 @@ const PatientHome = () => {
     return (
         <div>
             {result && <div>
-                <Navbar openHelp={toggleFilter} />
-                <div style={{}}>
-                
+                <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <div>
+                    <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+                    {breadcrumbs.map((breadcrumb, index) => (
+                    <Link
+                        key={index}
+                        underline="hover"
+                        color="inherit"
+                        href={breadcrumb.href}
+                        onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                    >
+                        {breadcrumb.label}
+                    </Link>
+                    ))}
+                </Breadcrumbs>
                 <div style={{ width: "96.5%", marginTop: "5%", marginLeft: "2%" }}>
                     <Grid container spacing={2} justifyContent="center">
                         <Grid item xs={6}>
