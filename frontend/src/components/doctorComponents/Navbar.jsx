@@ -34,6 +34,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
+import logo from "../../../../images/logo_white.png";
 // Inside your component
 // axios
 import axios from 'axios';
@@ -96,7 +97,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
+export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
 
@@ -130,26 +131,16 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [read, setRead] = React.useState(false);
+  const [notifRead, setNotifRead] = React.useState(false);
+  const [readCount, setReadCount] = React.useState(0);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(() => { getNotifications() }, []);
+  useEffect(() => { getNotifications() }, [notifRead]);
   const { searchvalue } = useParams();
 
   useEffect(() => { init() }, [])
-
-
-
-  function toggleFilter() {
-    setIsOpen(!isOpen);
-  }
-  const handleSearch = () => {
-    if (values != "" && values != null) {
-      window.location.href = `/patient/search/${values}`
-    }//a3ml7a ezay deh lel doc
-  }
 
   const [error, setError] = useState('');
   async function LogoutButton() {
@@ -184,9 +175,10 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   async function getNotifications() {
     try {
-      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {read:read}, {
+      const res = await axios.post("http://localhost:3000/doctor/getNotifications", {read:notifRead}, {
         withCredentials: true,
       });
+      setReadCount(res.data.readCount);
       setNotifications(res.data.result);
     } catch (err) {
       console.log(err);
@@ -205,7 +197,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    setRead(true);
+    setNotifRead(true);
     setNotificationsState({ ...notificationsState, [anchor]: open });
   }
 
@@ -270,7 +262,7 @@ const list = (anchor) => (
   role="presentation"
   onClick={toggleDrawer(anchor, false)}
   onKeyDown={toggleDrawer(anchor, false)}
->
+  >
   <List>
   <ListItem disablePadding>
       <ListItemButton onClick={()=>{}} sx={{color:"#FAF5FF"}}>
@@ -320,7 +312,7 @@ const list = (anchor) => (
     </ListItem>
     <ListItem disablePadding>
       <ListItemButton onClick={LogoutButton}>
-      <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
         <ListItemText sx={{color:"#FAF5FF"}} primary={'Logout'} style={{ textAlign: 'center' }} />
       </ListItemButton>
     </ListItem>
@@ -437,33 +429,30 @@ const list = (anchor) => (
           >
           <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            El7a2ny
-          </Typography>
+          <img style={{height:"56px"}} src={logo} />
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 0 }}
-              onClick={() => { window.location.href = "/chats" }}
-            >
-              <ChatBubbleIcon />
-            </IconButton>
+          {isChat == undefined &&
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 0 }}
+                onClick={toChats}
+              >
+              <Badge badgeContent={unread} color="error">
+                <ChatBubbleIcon />
+              </Badge>
+              </IconButton>
+            }
             <IconButton
               size="large"
               aria-label="13"
               color="inherit"
               onClick={toggleNotifications('right', true)}
             >
-            <Badge badgeContent={notifications.length} color="error">
+            <Badge badgeContent={readCount} color="error">
               <NotificationsIcon />
             </Badge>
             </IconButton>

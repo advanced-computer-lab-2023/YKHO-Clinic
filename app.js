@@ -25,7 +25,8 @@ const {
   getName,
   ViewPrescriptionsDoc,
   rescheduleAppointment,
-  cancelAppointment,  createMedicine,
+  cancelAppointment,  
+  createMedicine,
   deleteMedicine,
   updateMedicine,
   updatePresc,
@@ -35,6 +36,7 @@ const {
   RejectFollowupRequest,
   downloadPresc,
   getNotificationsDoctor,
+  changePasswordDoctor,
 } = require("./controller/doctorController");
 const {
 
@@ -114,7 +116,9 @@ const {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
-  getPatient
+  getPatient,
+  readDetailsFamily,
+  changePasswordPatient,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -164,8 +168,9 @@ app.post("/doctor/addMedicine/:id",requireAuthDoctor,createMedicine);
 app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
-app.get("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
+app.post("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
+app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuthDoctor, showUpcomingAppointments);
@@ -174,13 +179,13 @@ app.post("/doctor/updateInfo", requireAuthDoctor, updateThis);
 app.get("/doctor/AppointmentsFilter", requireAuthDoctor, DocFilterAppointments);
 app.get("/doctor/Appointments", requireAuthDoctor, DocShowAppointments);
 app.get("/doctor/contract", requireAuthDoctor, checkContract);
-app.post("/doctor/patients/:id/upload-pdf", requireAuthDoctor, upload.single("healthRecords"), uploadHealthRecord);
+app.post("/doctor/patients/:id/upload-pdf", requireAuthDoctor, upload.single("healthRecords"), uploadHealthRecord); 
 app.get("/doctor/timeSlots", requireAuthDoctor, showTimeSlots);
 app.post("/doctor/addTimeSlot", requireAuthDoctor, createTimeSlot);
 app.get("/doctor/deleteTimeSlot/:id",requireAuthDoctor, deleteTimeSlot);
 app.get("/doctor/schedFollowUp/:date",requireAuthDoctor,showFollowUp);
 app.post("/doctor/reserve",requireAuthDoctor, createFollowUp);
-app.get("/doctor/patients/:id/:healthId", requireAuthDoctor, showHealthRecord);
+app.get("/doctor/patients/:id/:healthId", requireAuth, showHealthRecord);
 app.get("/doctor/Wallet",requireAuthDoctor,docViewWallet);
 app.get("/doctor/Prescriptions", requireAuthDoctor, ViewPrescriptionsDoc);
 app.post("/doctor/cancelAppointment",requireAuthDoctor, cancelAppointment);
@@ -216,11 +221,11 @@ app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuthPatient, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuthPatient, selectPrescription);
 app.get("/Patient/Appointments", requireAuthPatient, PatientShowAppointments);
+app.post("/patient/changePassword", requireAuthPatient, changePasswordPatient);
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
-app.get("/patient/medicalHistory",requireAuthPatient, showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
+app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("file"), addMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
 // register
@@ -233,10 +238,9 @@ app.get("/Patient/Appointments/:id", requireAuthPatient, PatientShowAppointments
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
-app.get("/patient/medicalHistory", requireAuthPatient,showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
+app.get("/patient/medicalHistory/:index", requireAuthPatient,showMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
-app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
+app.post( "/patient/deleteMedicalHistory", requireAuthPatient, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
   res.render("patient/register"); 
@@ -247,8 +251,8 @@ app.get("/guest/doctor", function (req, res) {
 app.post("/request/createRequest", upload.array("files"), createRequest);
 
 // patient
-app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
-  res.render("patient/addFamily")});
+// app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
+//   res.render("patient/addFamily")});
 app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
@@ -299,7 +303,7 @@ const deleteSubscription = require("./controller/patientController").deleteSubsc
 app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
-
+app.get("/patient/getFamilyMemberSub/:nationalID",requireAuthPatient,readDetailsFamily)
 app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 
@@ -317,23 +321,23 @@ const io = new Server(server,{
 });
 
 io.on('connection', (socket) => {
-  console.log('connected', socket.id);
+  //console.log('connected', socket.id);
 
   socket.on("join_room", (data) => {
-    console.log("joined room "+ data)
+    //console.log("joined room "+ data)
     socket.join(data);
   })    
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
+    //console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);
   })
 
   // video
   socket.on("outgoing", data => {
-    console.log("outgoing ", data.room)
+    //console.log("outgoing ", data.room)
     socket.in(data.room).emit("incoming", data.room)
   })
 
@@ -354,7 +358,7 @@ io.on('connection', (socket) => {
   
 
   socket.on("disconnect", (data) => {
-    console.log("disconnected", socket.id)
+    //console.log("disconnected", socket.id)
   })
 });
 
