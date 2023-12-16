@@ -4,7 +4,7 @@ import Joi from 'joi';
 import PatientCard from './PatientCard';
 import { useEffect, useState } from 'react';
 import Navbar from './Navbar';
-import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography,Button, Paper, CardActions, CircularProgress, IconButton, Autocomplete } from '@mui/material';
+import { Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography,Button, Paper, CardActions, CircularProgress, IconButton, Autocomplete, Checkbox } from '@mui/material';
 import PlaceHolder from '../PlaceHolder';
 import LoadingComponent from '../LoadingComponent';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
@@ -21,7 +21,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
-
+import FormControlLabel from '@mui/material/FormControlLabel';
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
@@ -52,6 +52,7 @@ const DoctorPatients = () => {
     const [loading2, setLoading2] = useState(false);
     const [prescriptionsOpen, setPrescriptionsOpen] = useState(false);
     const [availableMedicine, setAvailableMedicine] = useState([]);
+    const [isUpcoming, setIsUpcoming] = useState(false);
     useEffect(() => {
         check(); 
         getMedicine();
@@ -191,13 +192,13 @@ const DoctorPatients = () => {
     }
     useEffect(() => {
         searchPatients();
-    }, [searchValue]);
+    }, [searchValue,isUpcoming]);
 
     async function searchPatients() {
-      
+        console.log(isUpcoming)
             setIsLoading(true);
             const name = searchValue;
-            const res = await axios.get(`http://localhost:3000/doctor/patients/?name=${name}`, {
+            const res = await axios.get(`http://localhost:3000/doctor/patients/?name=${name}&upcoming=${isUpcoming}`, {
                 withCredentials: true
             }).then((res)=>{
 
@@ -573,7 +574,7 @@ const DoctorPatients = () => {
                         <AssignmentIndIcon style={{fontSize:"120"}} />
                         <div style={{marginLeft:30}}>
                             <Typography><b>name:</b>{onePatient.patientID.name}</Typography>
-                            <Typography><b>mobile:</b>{onePatient.patientID.mobile}</Typography>
+                            <Typography><b>mobile:</b>{onePatient.patientID.mobileNumber}</Typography>
                             <Typography><b>DOB:</b>{onePatient.patientID.DOB.split("T")[0]}</Typography>
                             <Typography><b>gender:</b>{onePatient.patientID.gender}</Typography>
                         </div>
@@ -708,6 +709,13 @@ const DoctorPatients = () => {
                             </div>
                             <div style={{ display: 'flex', width: '100%', position: 'sticky', backgroundColor:"white",top: -16, zIndex: 1 }}>
                             <TextField id="name" label="search by name" variant="standard" sx={{marginLeft:5}} onChange={changeSearchValue}/>
+                            <FormControlLabel
+                            value="start"
+                            control={<Checkbox />}
+                            label="Has an upcoming appointment?"
+                            labelPlacement="start"
+                            onChange={()=>{setIsUpcoming(!isUpcoming)}}
+                            />
                             </div>
                                 <Grid container columnSpacing={3} rowSpacing={3} sx={{marginTop:2,display:"flex",justifyContent:"center",alignItems:"center"}}>
                                     {!isLoading&&patients.length === 0 ? (

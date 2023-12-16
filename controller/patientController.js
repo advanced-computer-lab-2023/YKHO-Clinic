@@ -140,7 +140,7 @@ const changePasswordPatient = async (req, res) => {
     req.body.newPassword === "" ||
     req.body.confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(201).json({ message: "Fill the empty fields" });
   }
 
   const user = await patientModel.findOne({
@@ -159,7 +159,7 @@ const changePasswordPatient = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
     await patientModel.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });
@@ -191,7 +191,7 @@ const createFamilyMember = async (req, res) => {
   patient.familyMembers.push(familyMember);
   patient = await patient.save();
   results = patient.familyMembers;
-  res.status(201).json({ results:results });
+  res.status(201).json({ results:results,message:"Family Member Added!" });
 };
 
 const addFollowUpRequest = async (req, res) => {
@@ -469,9 +469,9 @@ async function selectDoctor(req, res) {
 
 const readHealthPackage = async (req, res) => {
   let healthPackage = await healthPackageModel.findOne({
-    packageName: req.params.healthPackage,
+    packageName: req.body.healthPackage,
   });
-  res.status(201).send(healthPackage);
+  res.status(201).json(healthPackage);
 };
 
 const readHealthPackages = async (req, res) => {
@@ -547,7 +547,6 @@ const readDetailsFamily= async(req,res)=>{
  
   let patient=await patientModel.findById(familymem,"-healthRecords -medicalHistory");
   let result= await healthPackageModel.findOne({packageName:patient.subscription.healthPackage});
-  console.log(result);
   res.status(200).json({result:result});
 }
 
@@ -572,6 +571,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
           : "",
         agent: true,
         nationalID: familyMembers[i].nationalID,
+        linked:true
       });
     } else {
       familyMembersSubscriptions.push({
@@ -582,6 +582,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         endDate: "",
         agent: false,
         nationalID: familyMembers[i].nationalID,
+        linked: false
       });
     }
   }
@@ -823,9 +824,9 @@ const deleteFamilyMemberSubscription = async (req, res) => {
     patient.subscription.state = "cancelled";
 
     patient = await patient.save();
-    res.status(201).send(patient);
+    return res.status(200).json({message:"Subscription Cancelled Successfully"})
   } catch (error) {
-    res.status(401).send(error.message);
+    return res.status(200).json({message:error.message})
   }
 };
 
@@ -948,8 +949,8 @@ async function getNotifications(req, res) {
     const updated = await notificationModel.updateMany({patientID:req.user._id},{$set:{read:true}});
   }
   const notifications = await notificationModel.find({patientID: req.user._id});
-  const count = await notificationModel.countDocuments({patientID: req.user._id, read: false});
-  return res.status(200).json({result: notifications, readCount: count});
+  const count = await notificationModel.find({patientID: req.user._id, read: false});
+  return res.status(200).json({result: notifications, readCount: count.length});
 }
 
 async function deleteNotification(req, res) {
@@ -1352,10 +1353,10 @@ const LinkFamilyMemeber = async (req, res) => {
     .find({ _id: patientid })
     .select(["familyMembers"]);
   if (results[0].familyMembers.length == 0) {
-    res.status(500).json("No Family Members to link");
+    res.status(504).json("No Family Members to link");
   }
   for (familymem in results[0].familyMembers) {
-    if (results[0].familyMembers[familymem].name == req.query.filter) {
+    if (results[0].familyMembers[familymem].nationalID == req.body.nationalID) {
       familymemberk = results[0].familyMembers[familymem];
       i = familymem;
     }
@@ -1364,12 +1365,12 @@ const LinkFamilyMemeber = async (req, res) => {
   if (req.body.filter == "Email") {
     relate = await patientModel.find({ email: req.body.search });
   }
-  if (req.query.filter == "MobileNumber") {
+  if (req.body.filter == "MobileNumber") {
     relate = await patientModel.find({ mobileNumber: req.body.search });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
-      res.status(500).json("You cant link yourself");
+      return res.status(200).json({message:"You cant link yourself"});
     }
   }
   if (relate.length != 0) {
@@ -1378,15 +1379,12 @@ const LinkFamilyMemeber = async (req, res) => {
         relate[0]._id.equals(results[0].familyMembers[familymem].patientID) &&
         familymem != i
       ) {
-        res
-          .status(500)
-          .json("This user is already linked to another family member");
-
-        return;
+        return res.status(200).json({message:"This user is already linked to another family member"});
       }
     }
   } else {
-    return res.status(500).json("email or mobile number doesnt exist");
+    return res.status(200).json({message:"email or mobile number doesnt exist"});
+    
   }
   const updatedPatient2 = await patientModel.findByIdAndUpdate(
     relate[0]._id,
@@ -1400,8 +1398,7 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  let familyMembers = results.familyMembers;
-  res.status(200).json(familyMembers);
+  return res.status(200).json({message:"Family Member Linked Successfully"});
 
 };
 

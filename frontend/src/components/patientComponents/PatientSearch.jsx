@@ -51,13 +51,18 @@ const PatientSearch = () => {
                 let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
                 setBreadcrumbs(savedBreadcrumbs);
 
-                const homeBreadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+                const homeBreadcrumb = { label: "allDoctors", href: "/patient/search/" };
                 const hasHomeBreadcrumb = savedBreadcrumbs.some(
                   (item) => item.label == homeBreadcrumb.label
                 );
                 
                 // If not, add it to the breadcrumbs
                 if (!hasHomeBreadcrumb) {
+                    for(let i = 0; i < savedBreadcrumbs.length; i++){
+                        if(savedBreadcrumbs[i].label == "allDoctors"){
+                            homeBreadcrumb.href = savedBreadcrumbs[i].href;
+                        };
+                    };  
                   const updatedBreadcrumbs = [homeBreadcrumb];
                   setBreadcrumbs(updatedBreadcrumbs);
                   localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
@@ -129,6 +134,14 @@ const PatientSearch = () => {
       }
       function goFiles(){
         const breadcrumb = { label: "files", href: "/patient/files" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
         const handleSearch = (values) => {
@@ -246,8 +259,7 @@ const PatientSearch = () => {
     return (
         <div>
             {result && <div>
-                
-                <Navbar content={searchValue} openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                 <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                     {breadcrumbs.map((breadcrumb, index) => (
                     <Link

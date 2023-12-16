@@ -213,9 +213,9 @@ function DoctorAppointments() {
     
 
     setRescheduleLoading(true);
-    await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then(() => {
+    await axios.post('http://localhost:3000/doctor/cancelAppointment', { id: appointmentId2 }, { withCredentials: true }).then((res) => {
       socket.emit("update", appointmentId2);
-      window.location.href = '/doctor/appointments';
+      searchAppointments();
     }).catch((err) => {
       console.log(err);
     }).finally(() => {
@@ -303,7 +303,7 @@ function DoctorAppointments() {
       setRescheduleLoading(true);
       if(isScheduleFollowUp){
         await axios.post('http://localhost:3000/doctor/reserve', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
-          window.location.href = '/doctor/appointments';
+          searchAppointments();
         }).catch((err) => {
           console.log(err);
         }).finally(() => {
@@ -317,7 +317,7 @@ function DoctorAppointments() {
       else{
         await axios.post('http://localhost:3000/rescheduleAppointment', { appointmentId: appointmentId , date: rescheduleDate, time: time }, { withCredentials: true }).then(() => {
           socket.emit("update", appointmentId);
-          window.location.href = '/doctor/appointments';
+          searchAppointments();
         }).catch((err) => {
           console.log(err);
         }).finally(() => {

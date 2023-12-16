@@ -24,6 +24,7 @@ import Radio from '@mui/material/Radio';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Alert from '@mui/material/Alert';
 
 const PatientManageFamily = () => {
     const [result, setResult] = useState(false);
@@ -38,11 +39,11 @@ const PatientManageFamily = () => {
     const [search, setSearch] = useState("");
     const [kimo, setKimo] = useState("");
     const [details, setDetails] = useState(false);
-    const [gender, setGender] = useState("male");
-    //const [packageName,setPackageName ] = useState("");
-    //const [doctorDiscount, setDoctorDiscount] = useState("");
-    //const [pharmacyDiscount, setPharmacyDiscount] = useState("");
-   // const [familyDiscount, setFamilyDiscount] = useState("");
+    const [current,setCurrent] =useState("");
+    const [EmailorNo,setEmailorNo]=useState("");
+    const [value,setValue]=useState("MobileNumber");
+    const [negative,setNegative]=useState(false);
+    const [message,setMessage]=useState("");
     useEffect(() => { check(), fetch() }, []);
 
     const [breadcrumbs, setBreadcrumbs] = useState([{}]);
@@ -142,6 +143,14 @@ const PatientManageFamily = () => {
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
         const handleSearch = (values) => {
             if(values != "" && values != null){
                 const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
@@ -170,7 +179,21 @@ const PatientManageFamily = () => {
         window.location.href = `/patient/healthPackages/${nationalID}`
     }
 
-    const cancel = (nationlID) => {
+    const cancel = async (e) => {
+        // set subscribed
+        const res = await axios.post("http://localhost:3000/patient/deleteFamilyMemberSubscription",{nationalID:e} ,{
+            withCredentials: true
+        }).then((res) => {
+            setMessage(res.data.message);
+            setNegative(false);
+            fetch();
+            console.log(message);
+            
+        }
+        ).catch((err) => {
+            console.log(err);
+        })
+        
 
     }
 
@@ -188,10 +211,17 @@ const PatientManageFamily = () => {
 
     }
     async function Addfamily() {
+        if(name==""||natioalID==""||age==""){
+            setMessage("Please Enter Correct Values");
+            setNegative(true);
+            return;
+        }
         const res = await axios.post(`http://localhost:3000/patient/createFamilyMember`,{name:name,nationalID:natioalID,age:age,relation:relation} ,{
             withCredentials: true
         }).then((res) => {
             console.log(res.data.result);
+            setMessage(res.data.message);
+            setNegative(false);
             fetch();
             
         }
@@ -201,15 +231,39 @@ const PatientManageFamily = () => {
         
 
     }
+    async function LinkUser() {
+        
+        const res = await axios.post(`http://localhost:3000/patient/Linked`,{filter:value,nationalID:current,search:EmailorNo} ,{
+            withCredentials: true
+        }).then((res)=>{
+            setMessage(res.data.message);
+            if(res.data.message=="Family Member Linked Successfully"){
+                setNegative(false);
+            }
+            else{
+                setNegative(true);
+            }
+            fetch();
+        }).catch((err)=>{
+            console.log(err);
+        })
+
+
+    }
+
+
     const handleChange = (event) => {
         setRelation(event.target.value);
       };
-
+    const handleValue = (event) => {
+        setValue(event.target.value);
+      };
+    
     return (
         <>
             {result &&
                 <>
-                    <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                     
 
                     <Stack spacing={2} sx={{ p: '32px' ,overflowY:'auto',height:"880px"}} >
@@ -265,22 +319,22 @@ const PatientManageFamily = () => {
                                                     <Stack direction='row'>
                                                         {member.state == "unsubscribed" && member.agent == true&&
                                                             <Button variant="contained" onClick={() => { subscribe(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                subscribe
+                                                                Subscribe to Health Package
                                                             </Button>
                                                         }
                                                         {(member.state == "subscribed" || member.state == "cancelled") && member.agent == true&&
                                                             <Button variant="contained" onClick={() => { viewDetails(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                view package
+                                                                View Health Package Subscription
                                                             </Button>
                                                         }
                                                         {member.state == "subscribed" &&member.agent == true&&
                                                             <Button variant="contained" onClick={() => { cancel(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                cancel
+                                                                Cancel Subscription
                                                             </Button>
                                                         }
                                                         {member.agent == false && 
-                                                            <Button variant="contained" onClick={() => {  }}>
-                                                                Link User
+                                                            <Button variant="contained" onClick={() => { setCurrent(member.nationalID);setLink(true) }}>
+                                                                Link User To Existing Patient
                                                             </Button>
                                                         }
                                                     </Stack>
@@ -291,7 +345,8 @@ const PatientManageFamily = () => {
                                 ))
                             }
                         </>
-
+                        {message.length !== 0 &&negative&&<Alert severity="error">{message}</Alert>}
+                        {message.length !== 0 &&!negative&&<Alert severity="success">{message}</Alert>}
                     </Stack>
                     <Dialog open={add} onClose={() => { setAdd(false) }}>
                         <DialogTitle>Add member</DialogTitle>
@@ -358,24 +413,34 @@ const PatientManageFamily = () => {
                         </DialogActions>
                     </Dialog>
                     <Dialog open={link} onClose={() => { setLink(false) }}>
-                        <DialogTitle>Subscribe</DialogTitle>
+                        <DialogTitle>Link Family Member</DialogTitle>
                         <DialogContent>
                             <DialogContentText>
-                                To subscribe to this website, please enter your email address here. We
-                                will send updates occasionally.
+                                To Link This Family Member Please enter either Their Mobile Number or Email Address
                             </DialogContentText>
+                            <RadioGroup
+                                row
+                                aria-labelledby="demo-row-radio-buttons-group-label"
+                                name="row-radio-buttons-group"
+                                value={value}
+                                onChange={handleValue}
+                            >
+                                <FormControlLabel value="MobileNumber" control={<Radio />} label="Mobile Number" />
+                                <FormControlLabel value="Email" control={<Radio />} label="Email Address" />
+                            </RadioGroup>
                             <TextField
                                 autoFocus
                                 margin="dense"
                                 id="name"
-                                label="Email Address"
+                                label="Mobile Number Or Email Address"
                                 type="email"
                                 fullWidth
                                 variant="standard"
+                                onChange={(e) => { setEmailorNo(e.target.value) }}
                             />
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={() => { setLink(false) }}>Link</Button>
+                            <Button onClick={() => { setLink(false);LinkUser() }}>Link</Button>
                         </DialogActions>
                     </Dialog>
                     <Dialog open={details} onClose={() => { setDetails(false) }}>

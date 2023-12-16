@@ -34,43 +34,119 @@ export default function patientHealthPackages() {
     const [openCancel, setOpenCancel] = useState(false);
     useEffect(() => { getPackages(), check(), getSubscription(), handlePaymentSnack() }, []);
     //  const [breadcrumbs, setBreadcrumbs] = useState([{}]);
-    async function check() {
-        try {
-            const res = await axios.get("http://localhost:3000/loggedIn", {
+const [breadcrumbs, setBreadcrumbs] = useState([{}]);
+async function check() {
+    
+        const res = await axios.get("http://localhost:3000/loggedIn", {
                 withCredentials: true
-            });
+        }).then((res) => {
 
-            if (res.data.type === "admin") {
-                window.location.href = "/admin/home";
-                // // Check if breadcrumbs contain the "Home" breadcrumb
-                // let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
-                // setBreadcrumbs(savedBreadcrumbs);
+        if (res.data.type != "patient") {
 
-                // const healthPackageBreadcrumb = { label: "Health Packages", href: "/admin/healthPackages" };
-                // const hasHealthPackageBreadcrumb = savedBreadcrumbs.some(
-                //   (item) => item.label == healthPackageBreadcrumb.label
-                // );
-                //   console.log(hasHealthPackageBreadcrumb)
-                // // If not, add it to the breadcrumbs
-                // if (!hasHealthPackageBreadcrumb) {
-                //   const updatedBreadcrumbs = [healthPackageBreadcrumb];
-                //   setBreadcrumbs(updatedBreadcrumbs);
-                //   localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
-                // }
-            } else if (res.data.type === "patient") {
-                setResult(true);
-            } else if (res.data.type === "doctor") {
-                window.location.href = "/doctor/home";
-            } else {
-                window.location.href = "/";
-            }
-        } catch (err) {
-            if (err.response && err.response.status === 401) {
-                window.location.href = "/";
-            } else {
-                setError(err.message);
-            }
+            window.location.href = "/"
         }
+        else {
+            setResult(true)
+
+            let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+            setBreadcrumbs(savedBreadcrumbs);
+
+            const homeBreadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+            const hasHomeBreadcrumb = savedBreadcrumbs.some(
+              (item) => item.label == homeBreadcrumb.label
+            );
+            
+            // If not, add it to the breadcrumbs
+            if (!hasHomeBreadcrumb) {
+              const updatedBreadcrumbs = [homeBreadcrumb];
+              setBreadcrumbs(updatedBreadcrumbs);
+              localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+            }
+  
+        }
+    }
+    ).catch((err) => {
+        if (err.response.status == 401) {
+            window.location.href = "/"
+        }
+    })
+}
+
+function handleBreadcrumbClick(event, breadcrumb) {
+    event.preventDefault();
+    // Find the index of the clicked breadcrumb in the array
+    const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+    let updatedBreadcrumbs;
+    if(index == -1){
+      updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+    }else{
+    // Slice the array up to the clicked breadcrumb (inclusive)
+      updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+    }
+    console.log(index);
+    // Set the updated breadcrumbs
+    setBreadcrumbs(updatedBreadcrumbs);
+
+    // Save updated breadcrumbs to localStorage
+    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+
+    // Navigate to the new page
+    window.location.href = breadcrumb.href;
+  }
+
+  function goHome() {
+    const breadcrumb = { label: "Home", href: "/patient/home" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  
+  function handlePrescriptions() {
+      //window.location.href = "/patient/Prescriptions"
+      const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function handleAppointments() {
+      //window.location.href = "/patient/Appointments"
+      const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function handleFamilyMembers() {
+      //window.location.href = "/patient/LinkFamily"
+      const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function handleManageFamily() {
+      //window.location.href = "/patient/readFamilyMembers"
+      const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function viewAllDoctors() {
+    const breadcrumb = { label: "allDoctors", href: "/patient/search" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function toChats(){
+    const breadcrumb = { label: "chats", href: "/chats" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function goFiles(){
+    const breadcrumb = { label: "files", href: "/patient/files" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function goHealthPackages(){
+    const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+  function goEditInfo(){
+    const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+    const handleSearch = (values) => {
+        if(values != "" && values != null){
+            const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
+            handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+        }
+    }
+    function toggleFilter() {
+        setIsOpen(!isOpen);
     }
 
     async function getPackages() {
@@ -209,7 +285,20 @@ export default function patientHealthPackages() {
     };
     return (result &&
         <div>
-            <PrimarySearchAppBar />
+            <PrimarySearchAppBar  goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+                    {breadcrumbs.map((breadcrumb, index) => (
+                    <Link
+                        key={index}
+                        underline="hover"
+                        color="inherit"
+                        href={breadcrumb.href}
+                        onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                    >
+                        {breadcrumb.label}
+                    </Link>
+                    ))}
+                </Breadcrumbs>
             <Snackbar anchorOrigin={{ vertical: "bottom", horizontal: "center" }} open={open} autoHideDuration={6000} onClose={handleClose}>
                 <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
                     Appoinment Payment Successful

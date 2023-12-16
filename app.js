@@ -215,7 +215,7 @@ app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
 app.get("/admin/HealthPackages", requireAuthAdmin,  goToHealthPackages);
 app.post("/admin/healthPackages",  requireAuthAdmin, addHealthPackages);
 app.post("/admin/healthPackages/updated",  requireAuthAdmin, callUpdateHealthPackage);
-app.post("/admin/healthPackages/deleted", requireAuthAdmin,  callDeleteHealthPackage);
+app.post("/admin/healthPackages/deleted", requireAuthAdmin, callDeleteHealthPackage);
 
 //ahmed Patient
 app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
@@ -254,13 +254,13 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 // app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
 //   res.render("patient/addFamily")});
-app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
-app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
+app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -375,3 +375,4 @@ app.get("/unread", requireAuth, unread);
 
 // notification
 app.get("/rooms", requireAuth, rooms)
+
