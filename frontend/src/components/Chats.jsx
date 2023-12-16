@@ -114,21 +114,22 @@ function Chats() {
             else {
                 setResult(true)
                 if (res.data.type == 'patient') {
-                    //breadcrumbs
-                    let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
-                    setBreadcrumbs(savedBreadcrumbs);
-            
-                    const healthPackageBreadcrumb = { label: "chats", href: "/chats" };
-                    const hasHealthPackageBreadcrumb = savedBreadcrumbs.some(
-                      (item) => item.label == healthPackageBreadcrumb.label
-                    );
-                    // If not, add it to the breadcrumbs
-                    if (!hasHealthPackageBreadcrumb) {
-                      const updatedBreadcrumbs = [healthPackageBreadcrumb];
-                      setBreadcrumbs(updatedBreadcrumbs);
-                      localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
-                    }
+                    
                     setIsPatient(true);
+                }
+                //breadcrumbs
+                let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+                setBreadcrumbs(savedBreadcrumbs);
+        
+                const healthPackageBreadcrumb = { label: "chats", href: "/chats" };
+                const hasHealthPackageBreadcrumb = savedBreadcrumbs.some(
+                  (item) => item.label == healthPackageBreadcrumb.label
+                );
+                // If not, add it to the breadcrumbs
+                if (!hasHealthPackageBreadcrumb) {
+                  const updatedBreadcrumbs = [healthPackageBreadcrumb];
+                  setBreadcrumbs(updatedBreadcrumbs);
+                  localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
                 }
             }
         }

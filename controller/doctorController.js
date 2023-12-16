@@ -403,7 +403,8 @@ async function cancelAppointment(req, res) {
     doctore.email,
     `Your appointment on ${date} with ${patient.name} is cancelled`
   );
-  res.status(200).json({ message: "Appointment cancelled successfully." });
+  
+  res.status(200).json({ result: "done" });
 }
 
 async function showTimeSlots(req, res) {
@@ -470,7 +471,7 @@ async function showFollowUp(req, res) {
     const appointments = await appointment.find({
       doctorID: doctorID,
       date: date,
-      status: "upcoming"||"rescheduled",
+      status: { $in: ["upcoming", "rescheduled"] },
     });
     if (appointments.length > 0) {
       result.splice(i, 1);
@@ -517,7 +518,7 @@ async function createFollowUp(req, res) {
     date: date,
     status: "upcoming",
     duration: duration,
-    price: price,
+    price: 0,
     paid: true,
   });
   await newAppointment.save();
