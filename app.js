@@ -117,6 +117,7 @@ const {
   addFollowUpRequest,
   getMyID,
   getPatient,
+  readDetailsFamily,
   changePasswordPatient,
 } = require("./controller/patientController.js");
 const cors=require('cors')
@@ -224,8 +225,7 @@ app.post("/patient/changePassword", requireAuthPatient, changePasswordPatient);
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
-app.get("/patient/medicalHistory",requireAuthPatient, showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
+app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("file"), addMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
 // register
@@ -239,9 +239,8 @@ app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointm
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
 app.get("/patient/medicalHistory/:index", requireAuthPatient,showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
-app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
+app.post( "/patient/deleteMedicalHistory", requireAuthPatient, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
   res.render("patient/register"); 
@@ -252,9 +251,9 @@ app.get("/guest/doctor", function (req, res) {
 app.post("/request/createRequest", upload.array("files"), createRequest);
 
 // patient
-app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
-  res.render("patient/addFamily")});
-app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
+// app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
+//   res.render("patient/addFamily")});
+app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
@@ -304,7 +303,7 @@ const deleteSubscription = require("./controller/patientController").deleteSubsc
 app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
-
+app.get("/patient/getFamilyMemberSub/:nationalID",requireAuthPatient,readDetailsFamily)
 app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 

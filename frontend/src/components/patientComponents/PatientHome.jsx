@@ -154,6 +154,12 @@ const PatientHome = () => {
     async function loadAppointments() {
         await axios.get("http://localhost:3000/patient/appointmentsCards", { withCredentials: true }).then((res) => {
             var app = res.data.result
+            console.log(app)
+            app = app.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
             app = app.slice(0, 4);
             setAppointments(app);
         }
@@ -241,7 +247,7 @@ const PatientHome = () => {
                                     You are not subscribed to any plan
                                 </Typography>}
                                 <Typography variant="h5" sx={{ font: "bold", marginTop: "3%", marginLeft: "3%", paddingBottom: "4.4%" }} gutterBottom>
-                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }}>appointment</Button>?
+                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }} onClick={handleDoctors}>appointment</Button>?
                                 </Typography>
                             </Paper>
                         </Grid>
