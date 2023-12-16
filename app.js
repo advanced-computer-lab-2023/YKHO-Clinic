@@ -116,7 +116,8 @@ const {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
-  getPatient
+  getPatient,
+  changePasswordPatient,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -219,6 +220,7 @@ app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuthPatient, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuthPatient, selectPrescription);
 app.get("/Patient/Appointments", requireAuthPatient, PatientShowAppointments);
+app.post("/patient/changePassword", requireAuthPatient, changePasswordPatient);
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);

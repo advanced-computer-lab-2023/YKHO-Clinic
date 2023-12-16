@@ -261,7 +261,7 @@ const list = (anchor) => (
   role="presentation"
   onClick={toggleDrawer(anchor, false)}
   onKeyDown={toggleDrawer(anchor, false)}
->
+  >
   <List>
   <ListItem disablePadding>
       <ListItemButton onClick={()=>{}} sx={{color:"#FAF5FF"}}>
@@ -311,7 +311,7 @@ const list = (anchor) => (
     </ListItem>
     <ListItem disablePadding>
       <ListItemButton onClick={LogoutButton}>
-      <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
         <ListItemText sx={{color:"#FAF5FF"}} primary={'Logout'} style={{ textAlign: 'center' }} />
       </ListItemButton>
     </ListItem>

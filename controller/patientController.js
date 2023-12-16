@@ -1598,7 +1598,8 @@ module.exports = {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
-  getPatient
+  getPatient,
+  changePasswordPatient,
 };
 
 module.exports.readSubscription = readSubscription;
