@@ -148,6 +148,11 @@ const DoctorTimeSlots = () => {
       handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
     } 
 
+    function toChats(){
+      const breadcrumb = { label: "chats", href: "/chats" };
+      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+
     async function cancel(id){
         deleteTimeSlot(id);
     }
@@ -239,19 +244,19 @@ const DoctorTimeSlots = () => {
     
     return (result &&
         <div>
-          <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
-          <Breadcrumbs separator="›" aria-label="breadcrumb">
-                        {breadcrumbs.map((breadcrumb, index) => (
-                        <Link
-                            key={index}
-                            underline="hover"
-                            color="inherit"
-                            href={breadcrumb.href}
-                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
-                        >
-                            {breadcrumb.label}
-                        </Link>
-                        ))}
+            <Navbar goHome={goHome} toChats={toChats} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+            <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+              {breadcrumbs.map((breadcrumb, index) => (
+                <Link
+                  key={index}
+                  underline="hover"
+                  color="inherit"
+                  href={breadcrumb.href}
+                  onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                >
+                  {breadcrumb.label}
+                </Link>
+              ))}
             </Breadcrumbs>
             <div>
             <Grid container sx={{ display: 'flex', marginTop: 2 ,width:"100%",justifyContent:"center" ,alignItems:"center"  }} columnSpacing={3} rowSpacing={3}>

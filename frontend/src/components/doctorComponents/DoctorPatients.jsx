@@ -163,6 +163,11 @@ const DoctorPatients = () => {
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
 
+      function toChats(){
+        const breadcrumb = { label: "chats", href: "/chats" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
     useEffect(() => {
         getPatients();
     }, []);
@@ -681,8 +686,8 @@ const DoctorPatients = () => {
                         </DialogActions>
                         </>}
                     </Dialog>
-                    <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
-                    <Breadcrumbs separator="›" aria-label="breadcrumb">
+                    <Navbar goHome={goHome} toChats={toChats} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+                    <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                         {breadcrumbs.map((breadcrumb, index) => (
                         <Link
                             key={index}

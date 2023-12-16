@@ -96,7 +96,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
+export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
 
@@ -184,7 +184,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   async function getNotifications() {
     try {
-      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {read:read}, {
+      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {
         withCredentials: true,
       });
       setNotifications(res.data.result);
@@ -447,16 +447,20 @@ const list = (anchor) => (
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 0 }}
-              onClick={() => { window.location.href = "/chats" }}
-            >
-              <ChatBubbleIcon />
-            </IconButton>
+          {isChat == undefined &&
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 0 }}
+                onClick={toChats}
+              >
+              <Badge badgeContent={unread} color="error">
+                <ChatBubbleIcon />
+              </Badge>
+              </IconButton>
+            }
             <IconButton
               size="large"
               aria-label="13"

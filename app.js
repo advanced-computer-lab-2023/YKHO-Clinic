@@ -25,7 +25,8 @@ const {
   getName,
   ViewPrescriptionsDoc,
   rescheduleAppointment,
-  cancelAppointment,  createMedicine,
+  cancelAppointment,  
+  createMedicine,
   deleteMedicine,
   updateMedicine,
   updatePresc,
@@ -35,6 +36,7 @@ const {
   RejectFollowupRequest,
   downloadPresc,
   getNotificationsDoctor,
+  changePasswordDoctor,
 } = require("./controller/doctorController");
 const {
 
@@ -166,6 +168,7 @@ app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.get("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
 app.get("/doctor/home", requireAuthDoctor, goToHome);
+app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuthDoctor, showUpcomingAppointments);
@@ -317,23 +320,23 @@ const io = new Server(server,{
 });
 
 io.on('connection', (socket) => {
-  console.log('connected', socket.id);
+  //console.log('connected', socket.id);
 
   socket.on("join_room", (data) => {
-    console.log("joined room "+ data)
+    //console.log("joined room "+ data)
     socket.join(data);
   })    
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
+    //console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);
   })
 
   // video
   socket.on("outgoing", data => {
-    console.log("outgoing ", data.room)
+    //console.log("outgoing ", data.room)
     socket.in(data.room).emit("incoming", data.room)
   })
 
@@ -354,7 +357,7 @@ io.on('connection', (socket) => {
   
 
   socket.on("disconnect", (data) => {
-    console.log("disconnected", socket.id)
+    //console.log("disconnected", socket.id)
   })
 });
 

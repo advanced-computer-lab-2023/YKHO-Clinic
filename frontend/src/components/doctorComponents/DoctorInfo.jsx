@@ -16,6 +16,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 import Link from '@mui/material/Link';
 const DoctorInfo = () => {
     const [error,setError]= useState("")
+    const [passError,setPassError]= useState("")
+
     const updateDoctor= async()=>{
         console.log(updateTerm,newValue)
         const updateTerm2=updateTerm;
@@ -27,6 +29,21 @@ const DoctorInfo = () => {
            setError(res.data.message);
         })
     }
+
+    const changePassword=async()=>{
+        const oldPassword=document.getElementById("oldPassword").value;
+        const newPassword=document.getElementById("newPassword").value;
+        const confirmationPassword=document.getElementById("confirmationPassword").value;
+
+        await axios.post("http://localhost:3000/doctor/edit/changePassword",{
+          oldPassword:oldPassword,
+          newPassword:newPassword,
+          confirmationPassword:confirmationPassword,
+        },{withCredentials:true}).then((res)=>{
+          setPassError(res.data.message);
+        })
+      }
+
     //checks if logged in and if not redirects to login page
     const [result,setResult]=useState(false);
     useEffect(()=>{check()},[]);
@@ -49,7 +66,6 @@ const DoctorInfo = () => {
             const hasHomeBreadcrumb = savedBreadcrumbs.some(
               (item) => item.label == homeBreadcrumb.label
             );
-            console.log(hasHomeBreadcrumb)
             // If not, add it to the breadcrumbs
             if (!hasHomeBreadcrumb) {
               const updatedBreadcrumbs = [homeBreadcrumb];
@@ -94,14 +110,11 @@ const DoctorInfo = () => {
         // Slice the array up to the clicked breadcrumb (inclusive)
           updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
         }
-        console.log(index);
         // Set the updated breadcrumbs
         setBreadcrumbs(updatedBreadcrumbs);
     
         // Save updated breadcrumbs to localStorage
         localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
-    
-        console.log(updatedBreadcrumbs)
         // Navigate to the new page
         window.location.href = breadcrumb.href;
       }
@@ -136,6 +149,11 @@ const DoctorInfo = () => {
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
 
+      function toChats(){
+        const breadcrumb = { label: "chats", href: "/chats" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
      function handleChange(event){
         setUpdateTerm(event.target.value);
     }
@@ -156,22 +174,22 @@ const DoctorInfo = () => {
                 }}
                 message={error}>
                     <Alert severity="info">{error}</Alert>
-                </Snackbar> 
+        </Snackbar> 
                 
-                <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
-        <Breadcrumbs separator="›" aria-label="breadcrumb">
-                        {breadcrumbs.map((breadcrumb, index) => (
-                        <Link
-                            key={index}
-                            underline="hover"
-                            color="inherit"
-                            href={breadcrumb.href}
-                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
-                        >
-                            {breadcrumb.label}
-                        </Link>
-                        ))}
-        </Breadcrumbs>
+        <Navbar goHome={goHome} toChats={toChats} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+        <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+            {breadcrumbs.map((breadcrumb, index) => (
+              <Link
+                key={index}
+                underline="hover"
+                color="inherit"
+                href={breadcrumb.href}
+                onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+              >
+                {breadcrumb.label}
+              </Link>
+            ))}
+          </Breadcrumbs>
         <div style={{display:"flex",justifyContent:"center",alignItems:"center", height:"90vh"}}>
         <Card sx={{width:"80%",height:"80%",padding:5}}>
         <Typography variant="h4">Update your information</Typography>
@@ -200,32 +218,36 @@ const DoctorInfo = () => {
                 </Card>
                 <Card style={{marginLeft:"5%",height:"100%",width:"50%"}}>
                     <CardContent >
-                    {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'400px', width:'650px'}}>
+              {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'400px', width:'650px'}}>
                 <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Change Password</Typography>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px', width: '400px' }}>
-             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
-
-                   <TextField type="password" id="oldPassword" name="oldPassword" label="Enter Old Password" />
-             </div>
-             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
-
-                   <TextField type="password" id="newPassword" name="newPassword" label="Enter New Password" />
-             </div>
-             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
-
+                  <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
+                    <TextField type="password" id="oldPassword" name="oldPassword" label="Enter Old Password" />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
+                    <TextField type="password" id="newPassword" name="newPassword" label="Enter New Password" />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
                    <TextField type="password" id="confirmationPassword" name="confirmationPassword" label="Enter Confirm Password" />
-             </div>
+                  </div>
                 </div>
 
-                <Button style={{marginTop:'30px', marginBottom:'20px'}} variant="contained"  >Change</Button>
-
-            </div>}
+                <Button style={{marginTop:'30px', marginBottom:'20px'}} variant="contained" onClick={changePassword} >Change</Button>
+                <Snackbar
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }} 
+                open={passError != ""}
+                autoHideDuration={2000}
+                onClose={() => {
+                    setError("");
+                }}
+                message={passError}>
+                    <Alert severity="info">{passError}</Alert>
+                </Snackbar>               
+        </div>}
                     </CardContent>    
                 </Card>   
         </CardContent>
         </Card>
-        
-
       </div></>}
     </div>
   );
