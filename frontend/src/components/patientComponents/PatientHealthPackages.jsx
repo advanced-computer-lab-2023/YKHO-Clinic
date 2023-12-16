@@ -150,7 +150,7 @@ function handleBreadcrumbClick(event, breadcrumb) {
     }
 
     async function getPackages() {
-        await axios.get(`http://localhost:3000/getHealthPackages`, {
+        await axios.get(`http://localhost:3000/getHealthPackages?id=${ID}`, {
             withCredentials: true,
         }).then((res) => {
             const sortedArray = res.data.healthPackages.sort((a, b) => a.price - b.price);

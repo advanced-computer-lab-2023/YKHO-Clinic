@@ -71,7 +71,7 @@ export default function AdminHome() {
 
 async function getPackages() {
     try {
-      const res = await axios.get("http://localhost:3000/getHealthPackages", {
+      const res = await axios.get("http://localhost:3000/admin/getHealthPackages", {
         withCredentials: true,
       });
 

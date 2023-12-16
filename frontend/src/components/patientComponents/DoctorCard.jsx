@@ -62,6 +62,8 @@ export default function DoctorCard(props) {
 
     const handleClose = () => {
         setOpen(false);
+        setRescheduleDate(null);
+        setTime("");
     };
 
     const handleFam = (event) => {
@@ -92,8 +94,9 @@ export default function DoctorCard(props) {
                 <PersonIcon sx={{ fontSize: 100 }} />
                 <Stack direction='column' spacing={2} sx={{ width: "30%" }}>
                     <Typography variant='h4'> Dr. {props.doctorName} </Typography>
-                    <Typography variant='h6'> {props.speciality} </Typography>
-                    <Typography variant='h6'> {props.hospital} </Typography>
+                    <Typography variant='h6'> Speciality: {props.speciality} </Typography>
+                    <Typography variant='h6'> hospital: {props.hospital} </Typography>
+                    <Typography variant='h6'> education: {props.education} </Typography>
                     <Typography variant='h4'> Session Fee: {props.price} $</Typography>
                 </Stack>
                 {props.timeSlots.length > 0 ? <Stack direction='column' spacing={2} sx={{ width: "70%", height: "230.39px" }} justifyContent="center" alignItems="center">

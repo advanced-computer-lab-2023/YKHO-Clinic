@@ -19,6 +19,7 @@ const requestsTable = require("../model/request.js");
 const prescriptionsTable = require("../model/prescription.js").prescription;
 const appointmentsTable = require("../model/appointments.js").appointment;
 const timeSlotsTable = require("../model/timeSlots.js").timeSlot;
+const {pharmacistStart}=require("./pharmacistChatController");
 // create json web token
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (user) => {
@@ -575,10 +576,7 @@ const getRequests = async (req, res) => {
   return res.status(200).json({ requests: requests });
 };
 
-const getHealthPackages = async (req, res) => {
-  const healthPackages = await healthPackageTable.find();
-  return res.status(200).json({ healthPackages: healthPackages });
-};
+
 
 async function showDoctorRecord(req, res) {
   const doctorId = req.params.id;
@@ -659,7 +657,8 @@ const acceptRequest = async (req, res) => {
     acceptedContract: false,
   });
   doctor = await doctor.save();
-  await requestsTable.deleteOne({ email: req.query.email });
+  pharmacistStart(doctor._id);
+  await requestsTable.deleteOne({ email: req.body.email });
   const requests = await requestsTable.find();
   res.status(200).json({ requests: requests, message: "Doctor accepted" });
 };
@@ -692,5 +691,4 @@ module.exports = {
   forgetPassword,
   goToNewPassword,
   showDoctorRecord,
-  getHealthPackages,
 };

@@ -32,8 +32,47 @@ import DialogContentText from '@mui/material/DialogContentText';
 
 import io from 'socket.io-client';
 const socket = io.connect("http://localhost:3000");
+//const socketShared = io.connect("http://localhost:8000");
 
 function Chats() {
+    // pharmacistChat
+    const [pharmacistChat, setPharmacistChat] = useState();
+    const [isFlag, setFlag] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const fetchpharmacistChat = async () => {
+        // fetch chats
+        await axios.get("http://localhost:3000/pharmacistChat", {
+            withCredentials: true
+        }).then((res) => {
+            let chat = res.data;
+
+            let groups = [];
+            let j = 0;
+            while (j < chat.messages.length) {
+                let group = {
+                    isDoctor: chat.messages[j].isDoctor,
+                    messages: []
+                };
+                while (j < chat.messages.length && chat.messages[j].isDoctor == group.isDoctor) {
+                    group.messages.push(j++);
+                }
+                groups.push(group);
+            }
+            chat.groups = groups;
+
+            setPharmacistChat(chat);
+            setLoading(false)
+            socket.emit("join_room", chat.doctorID)
+            //socketServer.emit("join_room", chat.doctorID)
+        }
+        ).catch((err) => {
+            console.log(err);
+        })
+
+    }
+
+    // chat
     const [open, setOpen] = useState(false);
     const [result, setResult] = useState(false);
     const [chats, setChats] = useState([]);
@@ -91,7 +130,7 @@ function Chats() {
 
         await socket.emit("declined", data)
     }
-    
+
     useEffect(() => {
         chatsRef.current = chats;
         indexRef.current = index;
@@ -106,30 +145,32 @@ function Chats() {
             withCredentials: true
         }).then((res) => {
             if (res.data.type != "patient" && res.data.type != 'doctor') {
-                if(res.data.type=="admin"){
+                if (res.data.type == "admin") {
                     window.location.href = "/admin/home"
-                }else
+                } else
                     window.location.href = "/"
             }
             else {
                 setResult(true)
                 if (res.data.type == 'patient') {
-                    
                     setIsPatient(true);
+                }
+                else {
+                    fetchpharmacistChat();
                 }
                 //breadcrumbs
                 let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
                 setBreadcrumbs(savedBreadcrumbs);
-        
+
                 const healthPackageBreadcrumb = { label: "chats", href: "/chats" };
                 const hasHealthPackageBreadcrumb = savedBreadcrumbs.some(
-                  (item) => item.label == healthPackageBreadcrumb.label
+                    (item) => item.label == healthPackageBreadcrumb.label
                 );
                 // If not, add it to the breadcrumbs
                 if (!hasHealthPackageBreadcrumb) {
-                  const updatedBreadcrumbs = [healthPackageBreadcrumb];
-                  setBreadcrumbs(updatedBreadcrumbs);
-                  localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+                    const updatedBreadcrumbs = [healthPackageBreadcrumb];
+                    setBreadcrumbs(updatedBreadcrumbs);
+                    localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
                 }
             }
         }
@@ -139,117 +180,117 @@ function Chats() {
             }
         })
     }
-  
+
     function handleBreadcrumbClick(event, breadcrumb) {
         event.preventDefault();
         // Find the index of the clicked breadcrumb in the array
         const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
         let updatedBreadcrumbs;
-        if(index == -1){
-          updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
-        }else{
-        // Slice the array up to the clicked breadcrumb (inclusive)
-          updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+        if (index == -1) {
+            updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+        } else {
+            // Slice the array up to the clicked breadcrumb (inclusive)
+            updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
         }
         console.log(index);
         // Set the updated breadcrumbs
         setBreadcrumbs(updatedBreadcrumbs);
-    
+
         // Save updated breadcrumbs to localStorage
         localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
-    
+
         console.log(updatedBreadcrumbs)
         // Navigate to the new page
         window.location.href = breadcrumb.href;
-      }
-  
-      function allAppointments() {
+    }
+
+    function allAppointments() {
         const breadcrumb = { label: "appointments", href: "/doctor/appointments" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-    
-      function toFollowUp() {
+    }
+
+    function toFollowUp() {
         const breadcrumb = { label: "followUp", href: "/doctor/followup" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-    
-      function goHome(){
+    }
+
+    function goHome() {
         const breadcrumb = { label: "home", href: "/doctor/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-    
-      function goPatients(){
+    }
+
+    function goPatients() {
         const breadcrumb = { label: "patients", href: "/doctor/patients" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      
-      function goTimeSlots(){
-        const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots"};
+    }
+
+    function goTimeSlots() {
+        const breadcrumb = { label: "timeSlots", href: "/doctor/timeslots" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      
-      function editDoctorInfo(){
+    }
+
+    function editDoctorInfo() {
         const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
+    }
 
-      //Patient routes
+    //Patient routes
 
-      function goHomePatient() {
+    function goHomePatient() {
         const breadcrumb = { label: "Home", href: "/patient/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      
-      function handlePrescriptions() {
-          //window.location.href = "/patient/Prescriptions"
-          const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
-          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function handleAppointments() {
-          //window.location.href = "/patient/Appointments"
-          const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
-          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function handleFamilyMembers() {
-          //window.location.href = "/patient/LinkFamily"
-          const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
-          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function handleManageFamily() {
-          //window.location.href = "/patient/readFamilyMembers"
-          const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
-          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function viewAllDoctors() {
+    }
+
+    function handlePrescriptions() {
+        //window.location.href = "/patient/Prescriptions"
+        const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    function handleAppointments() {
+        //window.location.href = "/patient/Appointments"
+        const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    function handleFamilyMembers() {
+        //window.location.href = "/patient/LinkFamily"
+        const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    function handleManageFamily() {
+        //window.location.href = "/patient/readFamilyMembers"
+        const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+    }
+    function viewAllDoctors() {
         const breadcrumb = { label: "allDoctors", href: "/patient/search" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function toChats(){
+    }
+    function toChats() {
         const breadcrumb = { label: "chats", href: "/chats" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function goFiles(){
+    }
+    function goFiles() {
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function goHealthPackages(){
+    }
+    function goHealthPackages() {
         const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-      function goEditInfo(){
+    }
+    function goEditInfo() {
         const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-      }
-        const handleSearch = (values) => {
-            if(values != "" && values != null){
-                const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
-                handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-            }
+    }
+    const handleSearch = (values) => {
+        if (values != "" && values != null) {
+            const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
+            handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
         }
-        const [isOpen, setIsOpen] = useState(false);
-        function toggleFilter() {
-            setIsOpen(!isOpen);
-        }
+    }
+    const [isOpen, setIsOpen] = useState(false);
+    function toggleFilter() {
+        setIsOpen(!isOpen);
+    }
 
 
     const fetch = async () => {
@@ -274,6 +315,7 @@ function Chats() {
                 }
                 data[i].groups = groups;
             }
+            console.log(data);
             setChats(data);
             for (let i = 0; i < data.length; i++) {
                 joinRoom(data[i].room);
@@ -409,7 +451,6 @@ function Chats() {
 
     }, [socket])
 
-
     const joinRoom = (room) => {
         socket.emit("join_room", room)
     }
@@ -425,8 +466,6 @@ function Chats() {
 
         return result;
     }
-
-
 
     const send = async () => {
         if (message != "" && index != null) {
@@ -465,6 +504,42 @@ function Chats() {
         }
     }
 
+    const pharmacistSend = async () => {
+        if (message != "" && index != null) {
+            const data = {
+                room: chats[index].room,
+                text,
+                isPatient,
+                time: new Date(Date.now())
+            }
+
+            await socket.emit("send_message", data)
+
+            delete data.room;
+            data._id = generate();
+            data.time = data.time.getHours() + ":" + data.time.getMinutes();
+
+            // update chats
+            let tempChats = [...chats];
+
+            tempChats[index].messages.push(data)
+
+            let n = tempChats[index].groups.length;
+
+            if (n > 0 && tempChats[index].groups[n - 1].isPatient == isPatient) {
+                tempChats[index].groups[n - 1].messages.push(tempChats[index].messages.length - 1)
+            }
+            else {
+                let group = {
+                    isPatient,
+                    messages: [tempChats[index].messages.length - 1]
+                }
+                tempChats[index].groups.push(group)
+            }
+            setChats(tempChats);
+            setText("");
+        }
+    }
 
     const openConversation = async (room) => {
         let unread = false
@@ -487,25 +562,24 @@ function Chats() {
             await axios.post("http://localhost:3000/read", {
                 room
             },
-            { withCredentials: true })
-            .then(function (res) {
-                let data = {
-                    room,
-                    read: unread,
-                    isPatient
-                }
-                socket.emit("read", data)
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
+                { withCredentials: true })
+                .then(function (res) {
+                    let data = {
+                        room,
+                        read: unread,
+                        isPatient
+                    }
+                    socket.emit("read", data)
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         }
     }
 
     const handleOpen = async () => {
         setOpen(true);
     }
-
 
     const start = async (room) => {
         let tempContacts = [...contacts];
@@ -545,47 +619,46 @@ function Chats() {
         setOpen(false);
     }
 
-
     return (
         <>
             {result &&
-                <>  
+                <>
                     {isPatient &&
-                    <NavbarPatient goEditInfo={goEditInfo} isChat = {true} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                        <NavbarPatient goEditInfo={goEditInfo} isChat={true} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                     }
                     {!isPatient && <>
-                    <NavbarDoctor isChat={true} goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+                        <NavbarDoctor isChat={true} goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp} />
                     </>
                     }
                     <Grid container spacing={0} sx={{ minHeight: 'calc(100vh - 64px)' }}>
                         <Grid item xs={4} sx={{ borderRight: 2, borderColor: 'primary.main' }}>
                             <List sx={{ overflowY: 'auto', padding: 0 }}>
-                                        <ListSubheader
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                py: '8px',
-                                                fontSize: 16,
-                                                fontWeight: 'medium',
-                                                lineHeight: '24px',
-                                                bgcolor: 'primary.dark',
-                                                color: 'primary.contrastText',
-                                            }}
-                                        >
-                                        <Breadcrumbs sx={{color:'white'}} separator="›" aria-label="breadcrumb">
+                                <ListSubheader
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        py: '8px',
+                                        fontSize: 16,
+                                        fontWeight: 'medium',
+                                        lineHeight: '24px',
+                                        bgcolor: 'primary.dark',
+                                        color: 'primary.contrastText',
+                                    }}
+                                >
+                                    <Breadcrumbs sx={{ color: 'white' }} separator="›" aria-label="breadcrumb">
                                         {breadcrumbs.map((breadcrumb, index) => (
-                                        <Link
-                                            key={index}
-                                            underline="hover"
-                                            color="inherit"
-                                            href={breadcrumb.href}
-                                            onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
-                                        >
-                                            {breadcrumb.label}
-                                        </Link>
+                                            <Link
+                                                key={index}
+                                                underline="hover"
+                                                color="inherit"
+                                                href={breadcrumb.href}
+                                                onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                                            >
+                                                {breadcrumb.label}
+                                            </Link>
                                         ))}
-                                        </Breadcrumbs>
+                                    </Breadcrumbs>
                                     <IconButton
                                         size="large"
                                         color="inherit"
@@ -594,6 +667,24 @@ function Chats() {
                                         <AddBoxIcon />
                                     </IconButton>
                                 </ListSubheader>
+                                {!loading &&
+                                    <ListItem button divider onClick={() => {
+                                        setFlag(true);
+                                    }}>
+                                        <ListItemText
+                                            primary='pharmacy'
+                                            secondary={(pharmacistChat.messages.length > 0 ? pharmacistChat.messages[pharmacistChat.messages.length - 1].text : "start chatting")}
+                                        />
+                                        {pharmacistChat.unread > 0 &&
+                                            <ListItemAvatar sx={{ minWidth: '0', padding: '12px' }}>
+                                                <Avatar sx={{ width: 24, height: 24, fontSize: 16, bgcolor: 'secondary.main', color: 'secondary.contrastText' }}>
+                                                    {pharmacistChat.unread}
+                                                </Avatar>
+                                            </ListItemAvatar>
+                                        }
+                                    </ListItem>
+                                }
+
                                 {
                                     chats.length > 0 &&
                                     chats.map((chat) => (
@@ -615,7 +706,55 @@ function Chats() {
                             </List>
                         </Grid>
                         <Grid item xs={8}>
-                            {index != -1 &&
+                            {isFlag &&
+                                <>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'primary.dark', height: '64px', p: '10px 16px' }}>
+                                        <div>
+                                            <Typography variant="h6" sx={{ color: 'primary.contrastText', fontSize: "16px" }}>
+                                                pharmacy
+                                            </Typography>
+                                        </div>
+                                    </Box>
+                                    <Box sx={{ overflowY: 'auto', height: 'calc(100vh - 224px)', bgcolor: 'AliceBlue', p: "16px" }}>
+                                        {pharmacistChat.messages.length > 0 &&
+                                            pharmacistChat.groups.map((group) => (
+                                                <Stack key={group.messages[0]} direction="column" alignItems={group.isDoctor ? "flex-end" : "flex-start"} spacing={1}>
+                                                    {group.messages.map((message) => (
+                                                        <Paper key={message} sx={{ p: '8px 16px' }} >
+                                                            <Typography variant="body1">
+                                                                {pharmacistChat.messages[message].text}
+                                                            </Typography>
+                                                            <Typography variant="caption">
+                                                                {pharmacistChat.messages[message].time}
+                                                            </Typography>
+                                                        </Paper>
+                                                    ))}
+                                                </Stack>
+                                            ))
+                                        }
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            px: '16px',
+                                            height: '96px',
+                                            bgcolor: 'primary.light',
+                                            color: "white"
+                                        }}
+                                    >
+                                        <TextField value={text} fullWidth id="message" sx={{ input: { color: 'primary.contrastText' }, borderRadius: '5px', bgcolor: "primary.dark", height: '56px', width: '100%', fontSize: '21px' }} onChange={(e) => { setText(e.target.value) }} />
+                                        <Paper elevation={0} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '65.67px', ml: '16px', bgcolor: 'primary.dark' }}>
+                                            <IconButton onClick={pharmacistSend}>
+                                                <SendIcon sx={{ color: 'primary.contrastText' }} />
+                                            </IconButton>
+                                        </Paper>
+                                    </Box>
+                                </>
+                            }
+
+                            {index != -1 && !isFlag &&
                                 <>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'primary.dark', height: '64px', p: '10px 16px' }}>
                                         <div>
