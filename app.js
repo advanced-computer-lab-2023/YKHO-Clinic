@@ -9,6 +9,7 @@ require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const { requireAuthPatient,requireAuthAdmin,requireAuthDoctor,requireAuth } = require("./Middleware/authMiddleware");
 const { home } = require("./controller/homePage");
+const  {healthPackage}  = require("./model/healthPackage");
 const {
   docViewWallet,
   createDoctor,
@@ -197,9 +198,14 @@ app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 
+const getHealthPackages2 = async (req, res) => {
+  const healthPackages = await healthPackage.find();
+  return res.status(200).json({ healthPackages: healthPackages });
+};
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
+app.get("/admin/getHealthPackages", requireAuthAdmin, getHealthPackages2);
 app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
