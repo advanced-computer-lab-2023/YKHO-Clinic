@@ -264,10 +264,7 @@ const PatientManageFamily = () => {
             {result &&
                 <>
                 <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
-                    
-
-                    <Stack spacing={2} sx={{ p: '32px' ,overflowY:'auto',height:"880px"}} >
-                        <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+                <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                             {breadcrumbs.map((breadcrumb, index) => (
                             <Link
                                 key={index}
@@ -280,6 +277,9 @@ const PatientManageFamily = () => {
                             </Link>
                             ))}
                         </Breadcrumbs>
+
+                    <Stack spacing={2} sx={{ p: '32px' ,overflowY:'auto',height:"790px"}} >
+                       
                         <Paper elevation={1} onClick={() => { setAdd(true); }} sx={{ minHeight: '120px', px: "32px", display: 'flex', alignItems: 'center' }}>
                             <IconButton aria-label="delete" size="large" >
                                 <AddCircleOutlineIcon />
@@ -345,9 +345,10 @@ const PatientManageFamily = () => {
                                 ))
                             }
                         </>
-                        {message.length !== 0 &&negative&&<Alert severity="error">{message}</Alert>}
-                        {message.length !== 0 &&!negative&&<Alert severity="success">{message}</Alert>}
+                        
                     </Stack>
+                    {message.length !== 0 &&negative&&<Alert severity="error" onClick={() => {setMessage("")}}>{message}</Alert>}
+                        {message.length !== 0 &&!negative&&<Alert severity="success" onClick={() => {setMessage("")}}>{message}</Alert>}
                     <Dialog open={add} onClose={() => { setAdd(false) }}>
                         <DialogTitle>Add member</DialogTitle>
                         <DialogContent>
