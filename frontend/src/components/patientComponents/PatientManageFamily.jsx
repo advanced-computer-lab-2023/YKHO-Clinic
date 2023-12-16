@@ -176,7 +176,8 @@ const PatientManageFamily = () => {
     }
 
     const subscribe = (nationalID) => {
-        window.location.href = `/patient/healthPackages/${nationalID}`
+        const breadcrumb = { label: "HealthPackages", href: `/patient/healthPackages/${nationalID}`};
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
     }
 
     const cancel = async (e) => {

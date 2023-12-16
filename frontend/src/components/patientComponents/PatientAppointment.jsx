@@ -13,6 +13,8 @@ import { useParams } from 'react-router-dom';
 import AppointmentCard from './AppointmentsCard';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
+import Skeleton from '@mui/material/Skeleton';
+import PlaceHolder from '../PlaceHolder';
 // socket
 import io from 'socket.io-client';
 const socket = io.connect("http://localhost:3000");
@@ -51,7 +53,7 @@ const PatientAppointments = () => {
     const [filled2, setFilled2] = useState("");
     const [selectedDate, setSelectedDate] = useState(null);
     const [familyMembers, setFamilyMembers] = useState([]);
-    
+    const [loadingDoctors, setLoadingDoctors] = useState(false);
     const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
 
@@ -179,7 +181,7 @@ const PatientAppointments = () => {
         })
     }
     async function loadAppointments() {
-        console.log(fam);
+        setLoadingDoctors(true);
         await axios.get(`http://localhost:3000/Patient/Appointments/${fam}`, { withCredentials: true }).then((res) => {
             var app = res.data.result
             app = app.sort((a, b) => {
@@ -188,6 +190,7 @@ const PatientAppointments = () => {
                 return dateA - dateB;
             });
             setAppointments(app);
+            setLoadingDoctors(false);
         }
         ).catch((err) => {
             console.log(err);
@@ -230,12 +233,14 @@ const PatientAppointments = () => {
             socket.emit("update", id);
             console.log(res);
             loadAppointments();
+            handleReset();
         }).catch((err) => {
             console.log(err);
         });
     }
 
     async function filterAppointments() {
+        setLoadingDoctors(true);
         await axios.get(`http://localhost:3000/Patient/AppointmentsFilter?date=${selectedDate}&searchvalue=${filled}&filters=${filled2}&id=${fam}`, {
             withCredentials: true
         }).then((res) => {
@@ -246,6 +251,7 @@ const PatientAppointments = () => {
                 return dateA - dateB;
             });
             setAppointments(app);
+            setLoadingDoctors(false);
         }).catch((err) => {
             console.log(err);
         });
@@ -256,6 +262,7 @@ const PatientAppointments = () => {
         }).then((res) => {
             console.log(res);
             loadAppointments();
+            handleReset();
             if(res.data.result == true){
                 setOpen(true);
             }else{
@@ -279,9 +286,11 @@ const PatientAppointments = () => {
     }
 
     async function getTimeSlots(id, date, day) {
+        console.log(id, date, day);
         await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
             withCredentials: true,
         }).then((res) => {
+            console.log(res.data.result);
             setTimeSlots(res.data.result);
         }).catch((err) => {
             console.log(err);
@@ -295,6 +304,7 @@ const PatientAppointments = () => {
             socket.emit("update", id);
             console.log(res);
             loadAppointments();
+            handleReset();
         }).catch((err) => {
             console.log(err);
         });
@@ -329,6 +339,7 @@ const PatientAppointments = () => {
         }).then((res) => {
             console.log(res);
             loadAppointments();
+            handleReset();
         }
         ).catch((err) => {
             console.log(err);
@@ -440,12 +451,17 @@ const PatientAppointments = () => {
                             </FormControl>
                         </Box>
                     </Stack>
-                    <Paper variant="elevation" elevation={4} sx={{ height: "750px", width: "80%", overflowY: "auto" }}>
+                    <Paper variant="elevation" elevation={4} sx={{ height: "740px", width: "80%", overflowY: "auto" }}>
                         <Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ padding: "15px" }}>
-                            {appointments.length > 0 && appointments.map((appointment) => {
+                            {appointments.length > 0 ? appointments.map((appointment) => {
                                 return <AppointmentCard id={appointment._id} doctorName={appointment.doctorID.name} date={appointment.date} price={appointment.price} status={appointment.status} handleCancel={cancelAppointment} doctorID={appointment.doctorID._id}
                                     getSlots={getTimeSlots} times={timeSlots} handleReschedule={rescheduleAppointment} paid={appointment.paid} handlePayWallet={payByWallet} handlePayCredit={payByCredit} handleFollowUp={requestFollowUp} />
-                            })}
+                            }): loadingDoctors ? <PlaceHolder message={"You do not have Appointments"}/>
+                            :<Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                            </Stack>}
                         </Stack>
                     </Paper>
                 </Stack>
