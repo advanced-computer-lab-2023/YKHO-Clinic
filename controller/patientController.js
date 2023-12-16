@@ -191,7 +191,7 @@ const createFamilyMember = async (req, res) => {
   patient.familyMembers.push(familyMember);
   patient = await patient.save();
   results = patient.familyMembers;
-  res.status(201).json({ results:results });
+  res.status(201).json({ results:results,message:"Family Member Added!" });
 };
 
 const addFollowUpRequest = async (req, res) => {
@@ -800,9 +800,9 @@ const deleteFamilyMemberSubscription = async (req, res) => {
     patient.subscription.state = "cancelled";
 
     patient = await patient.save();
-    res.status(201).send(patient);
+    return res.status(200).json({message:"Subscription Cancelled Successfully"})
   } catch (error) {
-    res.status(401).send(error.message);
+    return res.status(200).json({message:error.message})
   }
 };
 
@@ -1329,10 +1329,10 @@ const LinkFamilyMemeber = async (req, res) => {
     .find({ _id: patientid })
     .select(["familyMembers"]);
   if (results[0].familyMembers.length == 0) {
-    res.status(500).json("No Family Members to link");
+    res.status(504).json("No Family Members to link");
   }
   for (familymem in results[0].familyMembers) {
-    if (results[0].familyMembers[familymem].name == req.query.filter) {
+    if (results[0].familyMembers[familymem].nationalID == req.body.nationalID) {
       familymemberk = results[0].familyMembers[familymem];
       i = familymem;
     }
@@ -1341,12 +1341,12 @@ const LinkFamilyMemeber = async (req, res) => {
   if (req.body.filter == "Email") {
     relate = await patientModel.find({ email: req.body.search });
   }
-  if (req.query.filter == "MobileNumber") {
+  if (req.body.filter == "MobileNumber") {
     relate = await patientModel.find({ mobileNumber: req.body.search });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
-      res.status(500).json("You cant link yourself");
+      return res.status(200).json({message:"You cant link yourself"});
     }
   }
   if (relate.length != 0) {
@@ -1355,15 +1355,12 @@ const LinkFamilyMemeber = async (req, res) => {
         relate[0]._id.equals(results[0].familyMembers[familymem].patientID) &&
         familymem != i
       ) {
-        res
-          .status(500)
-          .json("This user is already linked to another family member");
-
-        return;
+        return res.status(200).json({message:"This user is already linked to another family member"});
       }
     }
   } else {
-    return res.status(500).json("email or mobile number doesnt exist");
+    return res.status(200).json({message:"email or mobile number doesnt exist"});
+    
   }
   const updatedPatient2 = await patientModel.findByIdAndUpdate(
     relate[0]._id,
@@ -1377,8 +1374,8 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  let familyMembers = results.familyMembers;
-  res.status(200).json(familyMembers);
+  console.log(updatedPatient.familyMembers);
+  return res.status(200).json({message:"Family Member Linked Successfully"});
 
 };
 

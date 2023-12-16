@@ -259,7 +259,7 @@ app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
-app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
+app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -377,7 +377,7 @@ app.get("/rooms", requireAuth, rooms)
 
 
 // pharmacistChat
-const { pharmacistChat, pharmacistRead, pharmacistSend, pharmacistStart} = require("./controller/pharmacistChatController.js");
-app.get("/pharmacistChat", requireAuth, pharmacistChat);
-app.post("/pharmacistText", requireAuth, pharmacistSend);
-app.post("/pharmacistRead", requireAuth, pharmacistRead);
+// const { pharmacistChat, pharmacistRead, pharmacistSend, pharmacistStart} = require("./controller/pharmacistChatController.js");
+// app.get("/pharmacistChat", requireAuth, pharmacistChat);
+// app.post("/pharmacistText", requireAuth, pharmacistSend);
+// app.post("/pharmacistRead", requireAuth, pharmacistRead);
