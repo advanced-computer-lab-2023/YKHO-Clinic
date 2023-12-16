@@ -1,4 +1,4 @@
-
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/75c69ac6-f3af-4ce4-a2a0-31f513987283)
 # El7a2ny: Virtual Clinic and Pharmacy
 
 
@@ -1921,6 +1921,16 @@ Copy code
   - `GET`
 ## Features
 we have three main users in our website + sewar
+
+## Tests
+![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
+
+![jjj](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/fd46db25-3395-4f3b-b917-ffb166519672)
+
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/84bdefd9-8129-4dd6-99c8-3e23fbdbe99c)
+
+
+
 ## How to use
 You can use our website as one of three main users (Admin , Doctor, or Patient), you can sign up for an account from the sign up page and login to the website as a patient or if you are a doctor, you will submit a request which will be revised by the admin or if you are an admin the company will create an account for you in its own then you can login and change your password and use our features.
 ## Contribute
