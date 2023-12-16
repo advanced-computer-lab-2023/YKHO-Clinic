@@ -253,7 +253,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 // app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
 //   res.render("patient/addFamily")});
-app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
@@ -330,9 +330,15 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
-    //console.log(data)
+    console.log(data)
     socket.in(data.room).emit("receive_message", data);
-    save(data);
+    save(data);    
+  })
+
+  socket.on("send_message_pharmacist", (data) => {
+    console.log(data)
+    socket.in(data.room).emit("receive_message_pharmacist", data);
+    pharmacistSave(data);    
   })
 
   // video
@@ -363,10 +369,9 @@ io.on('connection', (socket) => {
 });
 
 // chat
-const {chats, send, read, start, save, contacts, unread} = require("./controller/chatController.js");
+const {chats, read, start, save, contacts, unread} = require("./controller/chatController.js");
 
 app.get("/chats", requireAuth, chats);
-app.post("/text", requireAuth, send);
 app.post("/read", requireAuth, read);
 app.post("/start", requireAuth, start);
 app.get("/contacts", requireAuth, contacts);
@@ -374,3 +379,8 @@ app.get("/unread", requireAuth, unread);
 
 // notification
 app.get("/rooms", requireAuth, rooms)
+
+// chat
+const { pharmacistChat, pharmacistRead, pharmacistSave, pharmacistStart} = require("./controller/pharmacistChatController.js")
+app.get("/pharmacistChat",requireAuthDoctor,pharmacistChat );
+app.get("/pharmacistRead",requireAuthDoctor,pharmacistRead );
