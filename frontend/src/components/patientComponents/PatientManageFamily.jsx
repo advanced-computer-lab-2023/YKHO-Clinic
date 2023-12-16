@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 
 
+import Link from '@mui/material/Link';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -155,6 +156,14 @@ const PatientManageFamily = () => {
                     <Dialog open={add} onClose={() => { setAdd(false) }}>
                         <DialogTitle>Add member</DialogTitle>
                         <DialogContent>
+                            <Link 
+                                onClick={() => {
+                                    setAdd(false);
+                                    setLink(true);
+                                }}
+                            >
+                                link account
+                            </Link>
                             <TextField
                                 autoFocus
                                 margin="dense"
@@ -236,12 +245,8 @@ const PatientManageFamily = () => {
                         </DialogActions>
                     </Dialog>
                     <Dialog open={details} onClose={() => { setDetails(false) }}>
-                        <DialogTitle>Subscribe</DialogTitle>
+                        <DialogTitle>Link</DialogTitle>
                         <DialogContent>
-                            <DialogContentText>
-                                To subscribe to this website, please enter your email address here. We
-                                will send updates occasionally.
-                            </DialogContentText>
                         </DialogContent>
                     </Dialog>
                 </>
