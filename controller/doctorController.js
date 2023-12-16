@@ -105,8 +105,8 @@ async function getNotificationsDoctor(req, res) {
       const updated = await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
     }
     const notifications = await notificationModel.find({doctorID: req.user._id});
-    const count = await notificationModel.countDocuments({doctorID: req.user._id, read: false});
-    return res.status(200).json({result: notifications, readCount: count});
+    const count = await notificationModel.find({doctorID: req.user._id, read: false});
+    return res.status(200).json({result: notifications, readCount: count.length});
 }
 
 async function deleteMedicine(req,res){
