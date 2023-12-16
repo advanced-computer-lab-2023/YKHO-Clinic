@@ -140,7 +140,7 @@ const changePasswordPatient = async (req, res) => {
     req.body.newPassword === "" ||
     req.body.confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(201).json({ message: "Fill the empty fields" });
   }
 
   const user = await patientModel.findOne({
@@ -159,7 +159,7 @@ const changePasswordPatient = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
     await patientModel.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });

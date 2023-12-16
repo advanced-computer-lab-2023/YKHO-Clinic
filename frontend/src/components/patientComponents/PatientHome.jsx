@@ -104,24 +104,38 @@ const PatientHome = () => {
           const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
           handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function viewAllDoctors() {
         const breadcrumb = { label: "allDoctors", href: "/patient/search" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function toChats(){
         const breadcrumb = { label: "chats", href: "/chats" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function goFiles(){
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
       const handleSearch = (values) => {
         if(values != "" && values != null){
         const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
-    }
+      }
 
     async function loadUser() {
         await axios.get("http://localhost:3000/patient/home", { withCredentials: true }).then((res) => {
@@ -216,7 +230,7 @@ const PatientHome = () => {
     return (
         <div>
             {result && <div>
-                <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                 <div>
                     <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                     {breadcrumbs.map((breadcrumb, index) => (
@@ -247,7 +261,7 @@ const PatientHome = () => {
                                     You are not subscribed to any plan
                                 </Typography>}
                                 <Typography variant="h5" sx={{ font: "bold", marginTop: "3%", marginLeft: "3%", paddingBottom: "4.4%" }} gutterBottom>
-                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }} onClick={handleDoctors}>appointment</Button>?
+                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }} onClick={viewAllDoctors}>appointment</Button>?
                                 </Typography>
                             </Paper>
                         </Grid>

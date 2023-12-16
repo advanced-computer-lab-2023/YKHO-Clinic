@@ -21,6 +21,7 @@ import PatientPrescriptions from './components/patientComponents/PatientPrescrip
 import PatientAppointment from './components/patientComponents/PatientAppointment'
 import PatientFile from './components/patientComponents/PatientFile'
 import PatinetHistory from './components/patientComponents/PatientHistory'
+import PatientEditInfo from './components/patientComponents/PatientEditInfo'
 import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
 import ForgetPassword from './components/ForgetPassword'
@@ -55,6 +56,7 @@ function App() {
         <Route path="/patient/files" element={<PatientFile/>} />
         <Route path="/patient/medicalHistory" element={<PatinetHistory/>} />
         <Route path="/patient/LinkFamily" element={<PatientLinkFamily/>} />
+        <Route path="/patient/editInfo" element={<PatientEditInfo/>} />
         <Route path="/patient/readFamilyMembers" element={<PatientManageFamily/>} />
         <Route path="/register/doctor" element={<DoctorRegister/>} />
         <Route path="/register/patient" element={<PatientRegister/>} />
