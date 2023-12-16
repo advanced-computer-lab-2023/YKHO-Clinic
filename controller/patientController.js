@@ -925,8 +925,8 @@ async function getNotifications(req, res) {
     const updated = await notificationModel.updateMany({patientID:req.user._id},{$set:{read:true}});
   }
   const notifications = await notificationModel.find({patientID: req.user._id});
-  const count = await notificationModel.countDocuments({patientID: req.user._id, read: false});
-  return res.status(200).json({result: notifications, readCount: count});
+  const count = await notificationModel.find({patientID: req.user._id, read: false});
+  return res.status(200).json({result: notifications, readCount: count.length});
 }
 
 async function deleteNotification(req, res) {

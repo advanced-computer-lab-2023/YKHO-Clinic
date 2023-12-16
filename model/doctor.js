@@ -17,7 +17,6 @@ const doctorSchema = new mongoose.Schema({
     {
         type:String,
         required:true,
-        minlength:5,
         maxlength:20,
     }
     ,
@@ -25,14 +24,12 @@ const doctorSchema = new mongoose.Schema({
     {
         type:String,
         required:true,
-        minlength:5,
         maxlength:20,
     },
     password: 
     {
         type:String,
         required:true,
-        minlength:5,
     },
     email:
     {
@@ -87,9 +84,9 @@ const doctor = mongoose.model('doctor', doctorSchema);
 
 function validateDoctor(newDoctor){
     const schema = Joi.object({
-        name: Joi.string().required().min(5).max(20),
-        username: Joi.string().required().min(5).max(20),
-        password: Joi.string().required().min(5).max(20),
+        name: Joi.string().required().max(20),
+        username: Joi.string().required().max(20),
+        password: Joi.string().required().max(20),
         email: Joi.string().email().required(),
         DOB: Joi.date().required(),
         rate:Joi.number().required(),
