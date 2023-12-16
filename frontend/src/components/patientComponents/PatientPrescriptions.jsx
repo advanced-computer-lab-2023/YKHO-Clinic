@@ -133,6 +133,14 @@ const PatientPrescriptions = () => {
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
         const handleSearch = (values) => {
             if(values != "" && values != null){
                 const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
@@ -214,7 +222,7 @@ const PatientPrescriptions = () => {
     return (
         <div>
             {result && <div>
-                <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                 <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                     {breadcrumbs.map((breadcrumb, index) => (
                     <Link
