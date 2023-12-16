@@ -1,9 +1,11 @@
 import axios from 'axios';
 import Button from '@mui/material/Button';
-import { Typography } from '@mui/material';
+import { Icon, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import MuiAlert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
+import Paper from '@mui/material/Paper';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -14,7 +16,6 @@ function ForgetPassword() {
   const [otpRetrieved, setOtpRetrieved] = useState("");
   const [username, setUsername] = useState("");
   const [changePassword, setChangePassword] = useState(false);
-
   async function forgetPasswordGoToOTP() {
     try {
       const response = await axios.get(`http://localhost:3000/forgetPassword/enterOTP?username=${username}`);
@@ -67,9 +68,12 @@ function ForgetPassword() {
 
   return (
     <div>
+      <IconButton style={{ position: 'absolute', top: '10px', left: '10px' }} onClick={() => { window.location.href = "/" }}>
+        <ArrowBackIcon/>
+      </IconButton>
       {otpRetrieved === "" && (
-        <div style={{ marginTop: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '355px', width: '400px', border: '2px solid black' }}>
+        <div style={{  display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Paper sx={{ marginTop: '300px',display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '355px', width: '400px' }}>
             <Typography style={{ justifyContent: 'center', marginBottom: '20px' }} variant='h4'>Forget Password</Typography>
             <TextField
               id="username"
@@ -81,28 +85,28 @@ function ForgetPassword() {
             <Button style={{ marginTop: '20px', marginBottom: '20px' }} variant="contained" onClick={forgetPasswordGoToOTP}>Forget Password</Button>
             <Typography style={{ justifyContent: 'center', marginBottom: '20px' }}>An OTP will be sent to you through E-Mail</Typography>
             {message && <Alert severity="error">{message}</Alert>}
-          </div>
+          </Paper>
         </div>
       )}
       {otpRetrieved !== "" && !changePassword && (
-        <div style={{ marginTop: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '290px', width: '400px', border: '2px solid black' }}>
+        <div style={{  display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Paper style={{marginTop: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '290px', width: '400px' }}>
             <Typography style={{ justifyContent: 'center', marginBottom: '20px' }} variant='h4'>Enter OTP</Typography>
             <TextField id="OTP" name="OTP" label="OTP" />
             <Button style={{ marginTop: '20px', marginBottom: '20px' }} variant="contained" onClick={checkOTP}>Submit</Button>
             {message && <Alert severity="error">{message}</Alert>}
-          </div>
+          </Paper>
         </div>
       )}
       {changePassword && (
-        <div style={{ marginTop: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '350px', width: '400px', border: '2px solid black' }}>
+        <div style={{  display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Paper style={{ marginTop: '300px',display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20px', height: '350px', width: '400px'}}>
             <Typography style={{ justifyContent: 'center', marginBottom: '20px' }} variant='h4'>Enter new Password</Typography>
             <TextField style={{marginBottom:'15px'}} type='password' id="newPassowrd" name="newPassowrd" label="newPassowrd" />
             <TextField  type='password' id="confirmationPassword" name="confirmationPassword" label="confirmationPassword" />
             <Button style={{ marginTop: '20px', marginBottom: '20px' }} variant="contained" onClick={changePasswordFunc}>Submit</Button>
             {message && <Alert severity="error">{message}</Alert>}
-          </div>
+          </Paper>
         </div>
       )}
     </div>

@@ -35,6 +35,8 @@ import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import logo from "../../../../images/logo_white.png";
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 // Inside your component
 // axios
 import axios from 'axios';
@@ -97,7 +99,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({ goHome, toChats ,goPatients, goTimeSlots, editDoctorInfo, goAppointments, goFollowUp, isChat }) {
+export default function PrimarySearchAppBar({ goHome, goEdit ,goDoctor, goHealth, goPass, Logout }) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
 
@@ -276,27 +278,21 @@ const list = (anchor) => (
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goPatients} sx={{color:"#FAF5FF"}}>
+      <ListItemButton onClick={goEdit} sx={{color:"#FAF5FF"}}>
         <ListItemIcon sx={{color:"#FAF5FF"}}><AccountBoxIcon/></ListItemIcon>
-        <ListItemText primary={'Your Patients'} />
+        <ListItemText primary={'Edit a user'} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goAppointments} sx={{color:"#FAF5FF"}}>
-        <ListItemIcon sx={{color:"#FAF5FF"}}><CalendarMonthIcon/></ListItemIcon>
-        <ListItemText primary={'Your appointments'} />
+      <ListItemButton onClick={goDoctor} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><LocalHospitalIcon/></ListItemIcon>
+        <ListItemText primary={'View Doctor uploaded info'} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goTimeSlots} sx={{color:"#FAF5FF"}}>
-        <ListItemIcon sx={{color:"#FAF5FF"}}><AccessTimeIcon/></ListItemIcon>
-        <ListItemText primary={'Your time slots'} />
-      </ListItemButton>
-    </ListItem>
-    <ListItem disablePadding>
-      <ListItemButton onClick={goFollowUp} sx={{color:"#FAF5FF"}}>
-        <ListItemIcon sx={{color:"#FAF5FF"}}><ScheduleSendIcon/></ListItemIcon>
-        <ListItemText primary={'Follow up requests'} />
+      <ListItemButton onClick={goHealth} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><HealthAndSafetyIcon/></ListItemIcon>
+        <ListItemText primary={'Health Packages'} />
       </ListItemButton>
     </ListItem>
     <Divider />
@@ -305,9 +301,9 @@ const list = (anchor) => (
   {/* Separate List for bottom items */}
   <List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
     <ListItem disablePadding>
-      <ListItemButton onClick={editDoctorInfo} sx={{color:"#FAF5FF"}}>
+      <ListItemButton onClick={goPass} sx={{color:"#FAF5FF"}}>
         <ListItemIcon sx={{color:"#FAF5FF"}}><EditIcon/></ListItemIcon>
-        <ListItemText primary={'Edit your info'} style={{ textAlign: 'center' }} />
+        <ListItemText primary={'Change your password'} style={{ textAlign: 'center' }} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
@@ -370,18 +366,6 @@ const list = (anchor) => (
         <p>Messages</p>
       </MenuItem>
       {/* ma3rfsh meen el element dah lol */}
-      <MenuItem>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
-        >
-          <Badge badgeContent={13} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
@@ -431,32 +415,6 @@ const list = (anchor) => (
           </IconButton>
           <img style={{height:"56px"}} src={logo} />
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-          {isChat == undefined &&
-              <IconButton
-                size="large"
-                edge="end"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 0 }}
-                onClick={toChats}
-              >
-              <Badge badgeContent={unread} color="error">
-                <ChatBubbleIcon />
-              </Badge>
-              </IconButton>
-            }
-            <IconButton
-              size="large"
-              aria-label="13"
-              color="inherit"
-              onClick={toggleNotifications('right', true)}
-            >
-            <Badge badgeContent={readCount} color="error">
-              <NotificationsIcon />
-            </Badge>
-            </IconButton>
-          </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"

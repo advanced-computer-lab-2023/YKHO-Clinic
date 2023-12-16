@@ -5,6 +5,8 @@ import { useState ,useEffect} from 'react'
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
+import logo from "../../../images/logo_white.png";
+import Box from '@mui/material/Box';
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -80,8 +82,14 @@ function Login(){
         window.location.href="/forgetPassword/enterUsername"  
     }
     return(
-        <div>
-            {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
+        <>
+            {result&&
+                <div style={{width:"100vw",height:"100vh",display:"flex",margin:0}}>
+                <Box bgcolor="primary.main" sx={{display:"flex",justifyContent:"center",alignItems:"center",width:"50vw"}}>
+                <img src={logo} style={{width:'400px'}}/>
+                </Box>
+                <div style ={{display:'flex',width:"50vw", flexDirection:'column',justifyContent:'center' ,alignItems:'center'}}>
+                
                 <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>LOGIN</Typography>
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />
@@ -93,8 +101,9 @@ function Login(){
                 <Button style={{...styles.input,marginBottom:'10px'}} variant='contained' onClick={handleDoctor}>register doctor</Button>
                 <Button style={{...styles.input,marginBottom:'30px'}} variant='contained' onClick={handlePatient}>register patient</Button>
                 {error && <Alert severity="error"> {error} </Alert>}
+            </div>
             </div>}
-        </div>
+        </>
     )
 }
 

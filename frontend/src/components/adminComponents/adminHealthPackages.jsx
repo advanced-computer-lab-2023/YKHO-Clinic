@@ -17,6 +17,7 @@ import IconButton from '@mui/material/IconButton';
 import { motion } from 'framer-motion';
 import { Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
+import Navbar from './Navbar';
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -197,39 +198,10 @@ export default function AdminHome() {
     }
 
     return(result && <div>
+          <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
           <div style={{display:'flex'}}>
-          <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 925}}>
-      <div style={{ marginLeft: 8 }}>
-        <IconButton onClick={toggleFilter}>
-          <MenuIcon sx={{ fontSize: 40 }} />
-        </IconButton> 
-      </div>
-      <motion.div
-        initial={{ width: 0, opacity:0 ,backgroundColor: 'transparent' }}
-        animate={{ width: isOpen ? '310px' : 0, opacity: isOpen? 1:0 , backgroundColor: isOpen ? 'secondary' : 'transparent' }}
-        transition={{ duration: 0.3 }}
-        style={{overflow: 'hidden' }}
-      >
-          <Button variant ='contained' style={{marginBottom:3,width:280}} onClick={goHome}>Home</Button>
-        
-        <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={editUserButton}>
-          Edit A User
-        </Button>
-        <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={uploadedInfoButton}>
-          View Doctors Uploaded Info
-        </Button>
-        <Button variant='contained' style={{ marginBottom:3 ,width:280 }} onClick={healthPackagesButton}>
-          Health Packages
-        </Button>
-        <Button variant='contained' style={{ marginRight: '190px',marginTop:600,width:280,marginBottom:3  }} onClick={changePasswordButton}>
-          Change Password
-        </Button>
-        <Button variant='contained' style={{ marginRight: '190px',marginBottom:3,width:280  }} onClick={LogoutButton}>
-          LOGOUT
-        </Button>
-      </motion.div>
-    </Box>
-    <div style={{display:'grid', marginLeft:50, marginTop:50}}>
+          
+    <div style={{display:'grid', marginLeft:200, marginTop:50}}>
     <TableContainer component={Paper} style={{marginLeft:0, width:1500}}>
     <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (
@@ -272,8 +244,8 @@ export default function AdminHome() {
       </Table>
     </TableContainer>
     <div style={{display:'flex', marginLeft:50}}>
-    <div style={{marginTop: '50px',marginRight:100 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
-          {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'490px', width:'650px', border:'2px solid black'}}>
+    <Paper style={{marginTop: '50px',marginRight:100 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
+          {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'490px', width:'650px'}}>
               <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Add a New Health Package</Typography>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', width: '300px' }}>
             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px' }}>
@@ -302,9 +274,9 @@ export default function AdminHome() {
           {(messageAdd=="package created successfully" && <Alert severity="success">{messageAdd}</Alert>) || (messageAdd && <Alert severity="error">{messageAdd}</Alert>)}
 
           </div>}
-      </div>
-      <div style={{marginTop: '50px',marginRight:0 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
-          {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'490px', width:'650px', border:'2px solid black'}}>
+      </Paper>
+      <Paper style={{marginTop: '50px',marginRight:0 ,display:'flex', flexDirection:'column', alignItems:'center'}}>
+          {<div style ={{display:'flex', flexDirection:'column', alignItems:'center', paddingTop:'20px',height:'490px', width:'650px'}}>
               <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>Edit a New Health Package</Typography>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', width: '300px' }}>
             <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px' }}>
@@ -333,7 +305,7 @@ export default function AdminHome() {
               {(messageCreate=="package Edited successfully" && <Alert severity="success">{messageCreate}</Alert>) || (messageCreate && <Alert severity="error">{messageCreate}</Alert>)}
 
           </div>}
-      </div>
+      </Paper>
       </div>
       </div>
       </div>

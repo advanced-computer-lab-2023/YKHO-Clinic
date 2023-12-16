@@ -17,6 +17,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { motion } from 'framer-motion';
 import { Container, Typography, duration } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import Navbar from './Navbar';
 export default DoctorUploadedInfo;
 
 function DoctorUploadedInfo() {
@@ -173,39 +174,11 @@ function DoctorUploadedInfo() {
     return (
         (result && <div>
         <title>Home</title>
+        <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
   <div style={{display:"flex"}}>
-        <Box bgcolor="primary.main" style={{ position: 'sticky', top: 0, zIndex: 1, width: isOpen? 290:80, height: 945}}>
-          <div style={{ marginLeft: 8 }}>
-            <IconButton onClick={toggleFilter}>
-              <MenuIcon sx={{ fontSize: 40 }} />
-            </IconButton>
-          </div>
-          <motion.div
-            initial={{ width: 0, opacity:0 ,backgroundColor: 'transparent' }}
-            animate={{ width: isOpen ? '310px' : 0, opacity: isOpen? 1:0 , backgroundColor: isOpen ? 'secondary' : 'transparent' }}
-            transition={{ duration: 0.3 }}
-            style={{overflow: 'hidden' }}
-          ><Button variant ='contained' style={{marginBottom:3,width:280}} onClick={goHome}>Home</Button>
-            
-            <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={editUserButton}>
-              Edit A User
-            </Button>
-            <Button variant='contained' style={{ marginBottom:3,width:280  }} onClick={uploadedInfoButton}>
-              View Doctors Uploaded Info
-            </Button>
-            <Button variant='contained' style={{ marginBottom:3 ,width:280 }} onClick={healthPackagesButton}>
-              Health Packages
-            </Button>
-            <Button variant='contained' style={{ marginRight: '190px',marginTop:600,width:280,marginBottom:3  }} onClick={changePasswordButton}>
-            Change Password
-          </Button>
-          <Button variant='contained' style={{ marginRight: '190px',marginBottom:3,width:280  }} onClick={LogoutButton}>
-            LOGOUT
-          </Button>
-          </motion.div>
-        </Box>
+        
   <div >
-        <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:150}}>
+        <TableContainer component={Paper} style={{marginLeft:200, marginBottom:150, marginTop:150}}>
         <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (
           <Link

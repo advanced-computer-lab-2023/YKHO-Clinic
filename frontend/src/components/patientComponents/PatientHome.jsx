@@ -5,10 +5,10 @@ import { useEffect } from 'react'
 import Navbar from './Navbar'
 import { set } from 'mongoose';
 import FamilyMemberCard from './FamilyMemeberCard';
-
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton, Paper, Button, Typography, Grid } from '@mui/material'
-
 
 
 const PatientHome = () => {
@@ -24,6 +24,8 @@ const PatientHome = () => {
     const [appLoadingAppointment, setAppLoadingAppointment] = useState(true);
     const [appLoadingPrescription, setAppLoadingPrescription] = useState(true);
     useEffect(() => { check(), loadUser(), loadPlan(), loadFamilyMembers(), loadAppointments(), loadWallet(), loadPrescriptions() }, []);
+
+    const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
 
         const res = await axios.get("http://localhost:3000/loggedIn", {
@@ -36,6 +38,16 @@ const PatientHome = () => {
             }
             else {
                 setResult(true)
+                const homeBreadcrumb = { label: "home", href: "/patient/home" };
+                const hasHomeBreadcrumb = breadcrumbs.some(
+                  (item) => item.label == homeBreadcrumb.label
+                );
+                // If not, add it to the breadcrumbs
+                if (!hasHomeBreadcrumb) {
+                  const updatedBreadcrumbs = [homeBreadcrumb];
+                  setBreadcrumbs(updatedBreadcrumbs);
+                  localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+                }
             }
         }
         ).catch((err) => {
@@ -44,6 +56,73 @@ const PatientHome = () => {
             }
         })
     }
+
+    function handleBreadcrumbClick(event, breadcrumb) {
+        event.preventDefault();
+        // Find the index of the clicked breadcrumb in the array
+        const index = breadcrumbs.findIndex((item) => item.label == breadcrumb.label);
+        let updatedBreadcrumbs;
+        if(index == -1){
+          updatedBreadcrumbs = ([...breadcrumbs, breadcrumb]);
+        }else{
+        // Slice the array up to the clicked breadcrumb (inclusive)
+          updatedBreadcrumbs = breadcrumbs.slice(0, index + 1);
+        }
+        console.log(index);
+        // Set the updated breadcrumbs
+        setBreadcrumbs(updatedBreadcrumbs);
+    
+        // Save updated breadcrumbs to localStorage
+        localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+    
+        // Navigate to the new page
+        window.location.href = breadcrumb.href;
+      }
+      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleHealthRecords={handleHealthRecords} handleAppointments={handleAppointments} handleHistory={handleHistory} handleLinkFamily={handleLinkFamily} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+      function goHome() {
+        const breadcrumb = { label: "Home", href: "/patient/home" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      
+      function handlePrescriptions() {
+          //window.location.href = "/patient/Prescriptions"
+          const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleAppointments() {
+          //window.location.href = "/patient/Appointments"
+          const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleFamilyMembers() {
+          //window.location.href = "/patient/LinkFamily"
+          const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleManageFamily() {
+          //window.location.href = "/patient/readFamilyMembers"
+          const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function viewAllDoctors() {
+        const breadcrumb = { label: "allDoctors", href: "/patient/search" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function toChats(){
+        const breadcrumb = { label: "chats", href: "/chats" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goFiles(){
+        const breadcrumb = { label: "files", href: "/patient/files" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      const handleSearch = (values) => {
+        if(values != "" && values != null){
+        const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+    }
+
     async function loadUser() {
         await axios.get("http://localhost:3000/patient/home", { withCredentials: true }).then((res) => {
             setUser(res.data.result);
@@ -75,6 +154,12 @@ const PatientHome = () => {
     async function loadAppointments() {
         await axios.get("http://localhost:3000/patient/appointmentsCards", { withCredentials: true }).then((res) => {
             var app = res.data.result
+            console.log(app)
+            app = app.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
             app = app.slice(0, 4);
             setAppointments(app);
         }
@@ -106,32 +191,11 @@ const PatientHome = () => {
         });
     }
     const [isOpen, setIsOpen] = useState(false);
+
     function toggleFilter() {
         setIsOpen(!isOpen);
-      }
-    function goHome() {
-      const breadcrumb = { label: "Home", href: "/patient/home" };
-      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
     }
-    
-    function handlePrescriptions() {
-        window.location.href = "/patient/Prescriptions"
-    }
-    function handleHealthRecords() {
-        window.location.href = "/patient/HealthRecords"
-    }
-    function handleAppointments() {
-        window.location.href = "/patient/Appointments"
-    }
-    function handleHistory() {
-        window.location.href = "/patient/medicalHistory"
-    }
-    function handleLinkFamily() {
-        window.location.href = "/patient/LinkFamily"
-    }
-    function handleManageFamily() {
-        window.location.href = "/patient/readFamilyMembers"
-    }
+
     async function handleLogout() {
         await axios.get("http://localhost:3000/logout", { withCredentials: true }).then((res) => {
             window.location.href = "/"
@@ -152,9 +216,21 @@ const PatientHome = () => {
     return (
         <div>
             {result && <div>
-                <Navbar openHelp={toggleFilter} />
-                <div style={{}}>
-                
+                <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <div>
+                    <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
+                    {breadcrumbs.map((breadcrumb, index) => (
+                    <Link
+                        key={index}
+                        underline="hover"
+                        color="inherit"
+                        href={breadcrumb.href}
+                        onClick={(event) => handleBreadcrumbClick(event, breadcrumb)}
+                    >
+                        {breadcrumb.label}
+                    </Link>
+                    ))}
+                </Breadcrumbs>
                 <div style={{ width: "96.5%", marginTop: "5%", marginLeft: "2%" }}>
                     <Grid container spacing={2} justifyContent="center">
                         <Grid item xs={6}>
@@ -171,7 +247,7 @@ const PatientHome = () => {
                                     You are not subscribed to any plan
                                 </Typography>}
                                 <Typography variant="h5" sx={{ font: "bold", marginTop: "3%", marginLeft: "3%", paddingBottom: "4.4%" }} gutterBottom>
-                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }}>appointment</Button>?
+                                    would you like to reserve an <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }} onClick={handleDoctors}>appointment</Button>?
                                 </Typography>
                             </Paper>
                         </Grid>
