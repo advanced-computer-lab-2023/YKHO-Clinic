@@ -118,6 +118,7 @@ const {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -256,7 +257,7 @@ app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
 app.get("/patient/readFamilyMembers", requireAuthPatient, readFamilyMembers);
 app.get("/patient/LinkFamily", requireAuthPatient, LinkF);
-app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
+app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
@@ -306,7 +307,7 @@ app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 const subscriptionSuccessful = require("./controller/patientController").subscriptionSuccessful;
 app.get("/subscriptionSuccessful/:healthPackage/:i",requireAuthPatient, subscriptionSuccessful)
-
+app.get("/failSubs/:i",requireAuthPatient, failSubs)
 // socket.io
 const {Server} = require("socket.io");
 
