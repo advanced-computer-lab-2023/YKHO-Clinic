@@ -252,12 +252,8 @@ function isStrongPassword(password) {
   return true;
 }
 
-async function goToHome(req, res) {
-  res.status(200);
-}
-async function updateMyInfo(req, res) {
-  res.render("doctor/doctorUpdate", { errormessage: "" });
-}
+
+
 async function updateThis(req, res) {
   id = req.user._id;
   const updateTerm = req.body.updateTerm;
@@ -735,8 +731,6 @@ module.exports = {
   createPrescription,
   docViewWallet,
   createDoctor,
-  goToHome,
-  updateMyInfo,
   updateThis,
   checkContract,
   uploadHealthRecord,

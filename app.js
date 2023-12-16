@@ -13,7 +13,6 @@ const {
   docViewWallet,
   createDoctor,
   createPrescription,
-  goToHome,
   updateMyInfo,
   updateThis,
   checkContract,
@@ -169,12 +168,10 @@ app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.post("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
-app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuthDoctor, showUpcomingAppointments);
-app.get("/doctor/updateInfo", requireAuthDoctor, updateMyInfo);
 app.post("/doctor/updateInfo", requireAuthDoctor, updateThis);
 app.get("/doctor/AppointmentsFilter", requireAuthDoctor, DocFilterAppointments);
 app.get("/doctor/Appointments", requireAuthDoctor, DocShowAppointments);
@@ -207,7 +204,6 @@ app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
 app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
 app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
 app.get("/admin/register",  requireAuthAdmin, adminRegister);
-app.get("/admin/home", requireAuth, goToHome);
 app.post("/admin/register", requireAuthAdmin,  createAdmin);
 app.get("/admin/deleteUser", requireAuthAdmin,  goToDeleteUser);
 app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);
@@ -263,6 +259,7 @@ app.get("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
+
 app.get("/patient/doctors/:id", requireAuthPatient, selectDoctor);
 app.get("/patient/paymentcredit/:id",requireAuthPatient,PayByCredit);
 app.get("/patient/paymentWallet/:id",requireAuthPatient,PayByWallet);
