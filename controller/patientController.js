@@ -591,13 +591,20 @@ const readFamilyMembersSubscriptions = async (req, res) => {
 
 // req.username, req.body.healthPackage, req.body.paymentMethod
 const subscribe = async (req, res) => {
+  console.log(req.body);
+  console.log(req.params); 
+  console.log(req.user);
   try {
-    let patient = await patientModel.findById(req.user._id);
-
+    let patient = await patientModel.findById(req.user._id, "-healthRecords -medicalHistory");
+    let id = req.body.id;
+    if(id==-1)
+      id = req.user._id;
+    console.log(id);
+    let patientToSub = await patientModel.findById(id, "-healthRecords -medicalHistory");
     // total
     let familyDiscount = 0;
-    if (patient.agentID) {
-      let referal = await patientModel.findById(patient.agentID);
+    if (patientToSub.agentID) {
+      let referal = await patientModel.findById(patientToSub.agentID, "-healthRecords -medicalHistory");
       if (referal.subscription.state == "subscribed") {
         let healthPackage = await healthPackageModel.findOne({
           packageName: referal.subscription.healthPackage,
@@ -613,7 +620,7 @@ const subscribe = async (req, res) => {
 
     if (req.body.paymentMethod == "wallet") {
       if (patient.wallet < total) {
-        throw new Error("insuficient balance, try another payment method");
+        return res.status(201).json({ result: false });
       } else {
         // update wallet
         patient.wallet -= total;
@@ -636,10 +643,11 @@ const subscribe = async (req, res) => {
               quantity: 1,
             },
           ],
-          success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/-1`,
-          cancel_url: `http://localhost:${process.env.PORT}/fail`,
+          success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/${id}`,
+          cancel_url: `http://localhost:${process.env.PORT}/failSubs/${id}`,
         });
-        res.redirect(session.url);
+        // res.redirect(session.url);
+        res.status(201).json({ result: session.url });
       } catch (e) {
         console.error(e);
         res.status(500).send("Internal Server Error");
@@ -653,14 +661,16 @@ const subscribe = async (req, res) => {
       date.setHours(23);
       date.setFullYear(date.getFullYear() + 1);
       // update subscription
-      patient.subscription = {
+      patientToSub.subscription = {
         healthPackage: req.params.healthPackage,
         state: "subscribed",
         endDate: date,
       };
 
       patient = await patient.save();
-      res.status(201).send(patient);
+      patientToSub = await patientToSub.save();
+      //res.status(201).send(patientToSub);
+      res.status(201).json({ result: true });
     }
   } catch (error) {
     res.status(401).send(error.message);
@@ -717,7 +727,7 @@ const subscribeFamilyMember = async (req, res) => {
             },
           ],
           success_url: `http://localhost:${process.env.PORT}/subscriptionSuccessful/${req.params.healthPackage}/${i}`,
-          cancel_url: `http://localhost:${process.env.PORT}/fail`,
+          cancel_url: `http://localhost:${process.env.PORT}/failSubs`,
         });
         res.redirect(session.url);
       } catch (e) {
@@ -751,7 +761,10 @@ const subscribeFamilyMember = async (req, res) => {
 
 const deleteSubscription = async (req, res) => {
   try {
-    let patient = await patientModel.findById(req.user._id);
+    let patient = await patientModel.findById(req.user._id, "-healthRecords -medicalHistory");
+    if(req.query.id != -1)
+      patient = await patientModel.findById(req.query.id, "-healthRecords -medicalHistory");
+    console.log(patient);
     patient.subscription.state = "cancelled";
 
     patient = await patient.save();
@@ -763,12 +776,12 @@ const deleteSubscription = async (req, res) => {
 
 const subscriptionSuccessful = async (req, res) => {
 
-  let patient = await patientModel.findById(req.user._id);
-  if (req.params.i != -1) {
-    patient = await patientModel.findById(
-      patient.familyMembers[req.params.i].patientID
-    );
-  }
+  let patient = await patientModel.findById(req.params.i);
+  // if (req.params.i != -1) {
+  //   patient = await patientModel.findById(
+  //     patient.familyMembers[req.params.i].patientID
+  //   );
+  // }
   // end date
   let date = new Date();
   date.setSeconds(59);
@@ -783,7 +796,19 @@ const subscriptionSuccessful = async (req, res) => {
     agent: true,
   };
   patient = await patient.save();
-  res.status(201).send(patient);
+  if(req.params.i != req.user._id)
+    res.redirect(`http://localhost:5173/patient/healthPackages/${req.params.i}?success=true`);
+  else
+    res.redirect(`http://localhost:5173/patient/healthPackages/-1?success=true`);
+  // res.status(201).send(patient);
+};
+
+const failSubs = async (req, res) => {
+  console.log(req.params.i !== req.user._id, req.params.i, req.user._id);
+  if(req.params.i != req.user._id)
+    res.redirect(`http://localhost:5173/patient/healthPackages/${req.params.i}?success=false`);
+  else
+    res.redirect(`http://localhost:5173/patient/healthPackages/-1?success=false`);
 };
 
 // req.body.nationalID
@@ -1451,9 +1476,10 @@ const PayByWallet = async (req, res) => {
       { $set: { paid: true } },
       { new: true }
     );
-    res.redirect("/patient/home");
+    // res.redirect("/patient/home");
+    res.status(201).json({ result: true });
   } else {
-    res.status(500).send("Insufficient funds");
+    res.status(201).json({ result: false });
   }
 };
 const ViewWallet = async (req, res) => {
@@ -1510,7 +1536,7 @@ const PayPresc = async (req, res) => {
 
 const getPatientPlan = async (req, res) => {
   const patient = await patientModel.findById(req.user._id, "subscription");
-  res.status(201).json({ result: patient.subscription.healthPackage });
+  res.status(201).json({ result: patient.subscription.healthPackage, endDate: patient.subscription.endDate, state: patient.subscription.state });
 }
 
 const getFamilyMembersPlan = async (req, res) => {
@@ -1649,6 +1675,7 @@ module.exports = {
   getPatient,
   readDetailsFamily,
   changePasswordPatient,
+  failSubs,
 };
 
 module.exports.readSubscription = readSubscription;

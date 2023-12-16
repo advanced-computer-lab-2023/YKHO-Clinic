@@ -49,7 +49,7 @@ function App() {
         <Route path="/admin/uploadedInfo" element={<DoctorUploadedInfo/>}/>
         <Route path="/patient/home" element={<PatientHome/>} />
         <Route path="/chats" element={<Chats/>} />
-        <Route path="/patient/healthPackages/:nationaID" element={<PatientHealthPackages/>} />
+        <Route path="/patient/healthPackages/:ID" element={<PatientHealthPackages/>} />
         <Route path="/patient/Prescriptions" element={<PatientPrescriptions/>} />
         <Route path="/patient/Appointments" element={<PatientAppointment/>} />
         <Route path="/patient/files" element={<PatientFile/>} />

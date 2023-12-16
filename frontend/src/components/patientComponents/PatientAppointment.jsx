@@ -247,6 +247,11 @@ const PatientAppointments = () => {
         }).then((res) => {
             console.log(res);
             loadAppointments();
+            if(res.data.result == true){
+                setOpen(true);
+            }else{
+                setOpenError(true);
+            }
         }).catch((err) => {
             console.log(err);
         });
