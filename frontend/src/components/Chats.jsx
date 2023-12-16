@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 import NavbarPatient from './patientComponents/Navbar'
-import NavbarDoctor from './doctorComponents/Navbar';
+import NavbarDoctor from './doctorComponents/Navbar'
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -113,7 +113,6 @@ function Chats() {
             setResult(true);
             // Check if breadcrumbs contain the "Home" breadcrumb
             let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
-            setBreadcrumbs(savedBreadcrumbs);
             console.log(savedBreadcrumbs)
             const homeBreadcrumb = { label: "chats", href: "/chats" };
             const hasHomeBreadcrumb = savedBreadcrumbs.some(
@@ -205,6 +204,64 @@ function Chats() {
         const breadcrumb = { label: "editInfo", href: "/doctor/edit" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
+      //Patient routes
+
+      function goHomePatient() {
+        const breadcrumb = { label: "Home", href: "/patient/home" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      
+      function handlePrescriptions() {
+          //window.location.href = "/patient/Prescriptions"
+          const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleAppointments() {
+          //window.location.href = "/patient/Appointments"
+          const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleFamilyMembers() {
+          //window.location.href = "/patient/LinkFamily"
+          const breadcrumb = { label: "LinkFamily", href: "/patient/LinkFamily" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function handleManageFamily() {
+          //window.location.href = "/patient/readFamilyMembers"
+          const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
+          handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function viewAllDoctors() {
+        const breadcrumb = { label: "allDoctors", href: "/patient/search" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function toChats(){
+        const breadcrumb = { label: "chats", href: "/chats" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goFiles(){
+        const breadcrumb = { label: "files", href: "/patient/files" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+        const handleSearch = (values) => {
+            if(values != "" && values != null){
+                const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
+                handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+            }
+        }
+        const [isOpen, setIsOpen] = useState(false);
+        function toggleFilter() {
+            setIsOpen(!isOpen);
+        }
 
 
     const fetch = async () => {
@@ -506,13 +563,10 @@ function Chats() {
             {result &&
                 <>  
                     {isPatient &&
-                    <NavbarPatient isChat = {true}/>
+                    <NavbarPatient goEditInfo={goEditInfo} isChat = {true} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                     }
                     {!isPatient && <>
                     <NavbarDoctor isChat={true} goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
-                    {/* <Box sx={{bgcolor:'primary.dark', height:'40px'}}>
-
-                    </Box> */}
                     </>
                     }
                     <Grid container spacing={0} sx={{ minHeight: 'calc(100vh - 64px)' }}>

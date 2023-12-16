@@ -140,7 +140,7 @@ const changePasswordPatient = async (req, res) => {
     req.body.newPassword === "" ||
     req.body.confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(201).json({ message: "Fill the empty fields" });
   }
 
   const user = await patientModel.findOne({
@@ -159,7 +159,7 @@ const changePasswordPatient = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
     await patientModel.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });
@@ -198,7 +198,7 @@ const addFollowUpRequest = async (req, res) => {
   const { doctorID, date, time } = req.body;
   const patientID = req.body.id;
   let dates = new Date(date);
-  const doc = await doctorModel.findById(doctorID,"-id -medicalLicense -medicalDegree");
+  const doc = await doctorModel.findById(doctorID, "-id -medicalLicense -medicalDegree");
   const pat = await patientModel.findById(patientID, "-healthRecords");
 
 
@@ -297,23 +297,24 @@ const searchDoctors = async (req, res) => {
   let searchedDoctors = req.query.searchValues;
   const EnumSpecialities = await doctorModel.schema.path('speciality').enumValues;
   // empty input fields
+  let searchedByName = [];
+  let searchedBySpeciality = [];
   if (searchedDoctors != "undefined") {
     searchedDoctors = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/i);
-    searchedDoctors = searchedDoctors.filter((speciality) => {
-      for (let i = 0; i < EnumSpecialities.length; i++) {
-        if (EnumSpecialities[i].includes(speciality)) return false;
-      }
-      return true;
-    });
+    // searchedDoctors = searchedDoctors.filter((speciality) => {
+    //   for (let i = 0; i < EnumSpecialities.length; i++) {
+    //     if (EnumSpecialities[i].includes(speciality)) return false;
+    //   }
+    //   return true;
+    // });
     if (searchedDoctors.length > 0)
-      doctors = doctors.filter((doctor) => {
+      searchedByName = doctors.filter((doctor) => {
         for (let i = 0; i < searchedDoctors.length; i++) {
           if (doctor.name.includes(searchedDoctors[i])) return true;
         }
         return false;
       });
   }
-
   let searchedSpecialities = req.query.searchValues;
   if (!isEmpty(searchedSpecialities)) {
     searchedSpecialities = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/);
@@ -323,13 +324,21 @@ const searchDoctors = async (req, res) => {
       }
     });
     if (searchedSpecialities.length > 0)
-      doctors = doctors.filter((doctor) => {
+      searchedBySpeciality = doctors.filter((doctor) => {
         for (let i = 0; i < searchedSpecialities.length; i++) {
           if (doctor.speciality.includes(searchedSpecialities[i])) return true;
         }
         return false;
       });
   }
+  if (req.query.searchValues!="undefined" && !isEmpty(req.query.searchValues))
+    doctors = [...searchedByName, ...searchedBySpeciality].reduce((accumulator, currentValue) => {
+      const existingObject = accumulator.find(obj => obj._id === currentValue._id);
+      if (!existingObject) {
+        accumulator.push(currentValue);
+      }
+      return accumulator;
+    }, []);
   let results = await helper(doctors, req.user._id);
   // res.status(201).render("patient/home", { results, one: true });
   res.status(201).json({ results: results });
@@ -344,16 +353,18 @@ const filterDoctors = async (req, res) => {
   let searchedDoctors = req.query.searchValues;
   const EnumSpecialities = await doctorModel.schema.path('speciality').enumValues;
   // empty input fields
+  let searchedByName = [];
+  let searchedBySpeciality = [];
   if (searchedDoctors != "undefined") {
     searchedDoctors = req.query.searchValues.split(/\s*,+\s*|\s+,*\s*/i);
-    searchedDoctors = searchedDoctors.filter((speciality) => {
-      for (let i = 0; i < EnumSpecialities.length; i++) {
-        if (EnumSpecialities[i].includes(speciality)) return false;
-      }
-      return true;
-    });
+    // searchedDoctors = searchedDoctors.filter((speciality) => {
+    //   for (let i = 0; i < EnumSpecialities.length; i++) {
+    //     if (EnumSpecialities[i].includes(speciality)) return false;
+    //   }
+    //   return true;
+    // });
     if (searchedDoctors.length > 0)
-      doctors = doctors.filter((doctor) => {
+      searchedByName = doctors.filter((doctor) => {
         for (let i = 0; i < searchedDoctors.length; i++) {
           if (doctor.name.includes(searchedDoctors[i])) return true;
         }
@@ -369,13 +380,21 @@ const filterDoctors = async (req, res) => {
       }
     });
     if (searchedSpecialities.length > 0)
-      doctors = doctors.filter((doctor) => {
+      searchedBySpeciality = doctors.filter((doctor) => {
         for (let i = 0; i < searchedSpecialities.length; i++) {
           if (doctor.speciality.includes(searchedSpecialities[i])) return true;
         }
         return false;
       });
   }
+  if (searchedDoctors != "undefined" && !isEmpty(searchedSpecialities))
+    doctors = [...searchedByName, ...searchedBySpeciality].reduce((accumulator, currentValue) => {
+      const existingObject = accumulator.find(obj => obj._id === currentValue._id);
+      if (!existingObject) {
+        accumulator.push(currentValue);
+      }
+      return accumulator;
+    }, []);
   if (req.query.speciality != "")
     doctors = doctors.filter((doctor) => doctor.speciality == req.query.speciality)
   // doctors = await doctorModel
@@ -386,14 +405,17 @@ const filterDoctors = async (req, res) => {
   let date = req.query.date;
   if (date != "" && date != "null") {
     date = new Date(date);
-
+    date.setHours(date.getHours() + 2);
     // filter doctors with appointments
-    let appointments = await appointmentModel
-      .find({ date: date })
-      .select({ doctorID: 1, _id: 0 });
-    let arr = appointments.map((appointment) => String(appointment.doctorID));
-    doctors = doctors.filter((doctor) => !arr.includes(String(doctor._id)));
-
+    // let appointments = await appointmentModel
+    //   .find({ status: { $in: ["upcoming", "rescheduled"] } })
+    //   .select({ doctorID: 1, date: 1 });
+    // appointments = appointments.filter((appointment) => {
+    //   let appointmentDate = new Date(appointment.date);
+    //   return appointmentDate.getDate() == date.getDate() && appointmentDate.getMonth() == date.getMonth() && appointmentDate.getFullYear() == date.getFullYear();
+    // });
+    // let arr = appointments.map((appointment) => String(appointment.doctorID));
+    // doctors = doctors.filter((doctor) => !arr.includes(String(doctor._id)));
     // filter doctors with not available time slots
     const weekday = [
       "Sunday",
@@ -405,10 +427,7 @@ const filterDoctors = async (req, res) => {
       "Saturday",
     ];
     let timeSlots = await timeSlotModel.find({
-      day: weekday[date.getDay()],
-      from: `${date.getHours() > 10 ? date.getHours() : "0" + date.getHours()
-        }:${date.getMinutes() > 10 ? date.getMinutes() : "0" + date.getMinutes()
-        }`,
+      day: weekday[date.getDay()]
     });
     arr = timeSlots.map((timeSlot) => String(timeSlot.doctorID));
     doctors = doctors.filter((doctor) => arr.includes(String(doctor._id)));
@@ -450,9 +469,9 @@ async function selectDoctor(req, res) {
 
 const readHealthPackage = async (req, res) => {
   let healthPackage = await healthPackageModel.findOne({
-    packageName: req.params.healthPackage,
+    packageName: req.body.healthPackage,
   });
-  res.status(201).send(healthPackage);
+  res.status(201).json(healthPackage);
 };
 
 const readHealthPackages = async (req, res) => {
@@ -553,6 +572,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
           : "",
         agent: true,
         nationalID: familyMembers[i].nationalID,
+        linked:true
       });
     } else {
       familyMembersSubscriptions.push({
@@ -563,6 +583,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         endDate: "",
         agent: false,
         nationalID: familyMembers[i].nationalID,
+        linked: false
       });
     }
   }
@@ -821,7 +842,11 @@ async function showSlots(req, res) {
 }
 async function reserveSlot(req, res) {
   const doctorID = req.params.id;
-  const id = req.user._id;
+  let id = req.user._id;
+  const idFam = req.query.id;
+  if (idFam != id && idFam != "undefined") {
+    id = idFam;
+  }
   let date = new Date(req.query.date);
   const time = req.query.time;
   const startTime = time.split(",")[0];
@@ -852,7 +877,7 @@ async function reserveSlot(req, res) {
   date.setHours(startHour);
   date.setMinutes(startMinute);
   let dateConverted = date.toISOString();
-  let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0])+2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
+  let dateText = `${dateConverted.split("T")[0]} at ${parseInt(dateConverted.split("T")[1].split(".")[0].split(":")[0]) + 2}:${dateConverted.split("T")[1].split(".")[0].split(":")[1]}`
   // Check if there is an existing appointment at the specified time
   const existingAppointment = await appointment.findOne({
     doctorID: doctorID,
@@ -946,31 +971,32 @@ async function cancelAppointmentPatient(req, res) {
   deletedAppointment.date.setHours(deletedAppointment.date.getHours() + 2);
   const dateNow = new Date();
   dateNow.setHours(dateNow.getHours() + 24);
-  if(deletedAppointment.date > dateNow){ //if appointment is within 24 hours
-    if(deletedAppointment.paid == true){
+  if (deletedAppointment.date > dateNow) { //if appointment is within 24 hours
+    if (deletedAppointment.paid == true) {
       let Wallet = patient.wallet + deletedAppointment.price;
       let doctorWallet = doctore.Wallet - deletedAppointment.price;
-      await patientModel.findByIdAndUpdate(patient._id, {wallet: Wallet}).exec();
-      await doctorModel.findByIdAndUpdate(doctore._id, {Wallet: doctorWallet}).exec();
-      if(deletedAppointment.patientID != req.user._id){
+      await patientModel.findByIdAndUpdate(patient._id, { wallet: Wallet }).exec();
+      await doctorModel.findByIdAndUpdate(doctore._id, { Wallet: doctorWallet }).exec();
+      if (deletedAppointment.patientID != req.user._id) {
         message = `Your family member appointment  on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
-      }else{
+      } else {
         message = `Your appointment on ${date} with ${doctore.name} has been cancelled and the amount has been refunded to your wallet`;
       }
-    }else{
-      if(deletedAppointment.patientID != req.user._id){
+    } else {
+      if (deletedAppointment.patientID != req.user._id) {
         message = `Your family member appointment on ${date} with ${doctore.name} has been cancelled`;
-      }else{
+      } else {
         message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
       }
     }
-  }else{//usability: if appointment is cancelled more than 24 hours before
-    if(deletedAppointment.patientID != req.user._id){
+  } else {//usability: if appointment is cancelled more than 24 hours before
+    if (deletedAppointment.patientID != req.user._id) {
       message = `Your family member appointment on ${date} with ${doctore.name} has been cancelled`;
-    }else{
+    } else {
       message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
     }
   }
+
 
   let newNotification = new notificationModel({
     patientID: patient._id,
@@ -1393,7 +1419,7 @@ const PayByCredit = async (req, res) => {
       cancel_url: `http://localhost:3000/fail`,
     });
     // res.redirect(session.url);
-    res.status(200).json({ result: session.url});
+    res.status(200).json({ result: session.url });
   } catch (e) {
     console.error(e);
     res.status(500).send("Internal Server Error");
@@ -1406,7 +1432,9 @@ const PayByWallet = async (req, res) => {
   const doctor = await doctorModel.findOne({ _id: appoitment.doctorID });
   const patient = await patientModel.findOne({ _id: req.user._id });
 
+
   const Walletp = patient.wallet - appoitmentCost;
+
 
   const doctorw = doctor.Wallet + appoitmentCost;
   if (patient.wallet >= appoitmentCost) {
@@ -1454,7 +1482,7 @@ const success = async (req, res) => {
     { $set: { paid: true } },
     { new: true }
   );
-  
+
   res.redirect("http://localhost:5173/patient/Appointments?success=true");
 };
 const fail = async (req, res) => {
@@ -1502,7 +1530,7 @@ const getFamilyMembersPlan = async (req, res) => {
 };
 
 const getMyAppointments = async (req, res) => {
-  const Appointment = await appointment.find({ patientID: req.user._id, date: { $gt: Date.now() } }).populate("doctorID", "name").select(["doctorID", "date"]);
+  const Appointment = await appointment.find({ patientID: req.user._id, date: { $gt: Date.now() }, status: { $in: ["upcoming", "rescheduled"] } }).populate("doctorID", "name").select(["doctorID", "date"]);
   res.status(201).json({ result: Appointment });
 }
 const viewAllDataOfPrescriptions = async (req, res) => {

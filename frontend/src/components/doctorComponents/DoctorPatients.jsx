@@ -573,7 +573,7 @@ const DoctorPatients = () => {
                         <AssignmentIndIcon style={{fontSize:"120"}} />
                         <div style={{marginLeft:30}}>
                             <Typography><b>name:</b>{onePatient.patientID.name}</Typography>
-                            <Typography><b>mobile:</b>{onePatient.patientID.mobile}</Typography>
+                            <Typography><b>mobile:</b>{onePatient.patientID.mobileNumber}</Typography>
                             <Typography><b>DOB:</b>{onePatient.patientID.DOB.split("T")[0]}</Typography>
                             <Typography><b>gender:</b>{onePatient.patientID.gender}</Typography>
                         </div>
