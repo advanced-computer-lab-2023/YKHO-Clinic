@@ -13,11 +13,14 @@ export default function AppointmentCard(props) {
     const [openPay, setOpenPay] = useState(false);
     const [openFollow, setOpenFollow] = useState(false);
     const today = dayjs();
+
     const handleClickOpen = () => {
         setOpen(true);
     };
 
     const handleClose = () => {
+        setRescheduleDate(null);
+        setTime("");
         setOpen(false);
     };
     const handleClickOpenPay = () => {
@@ -31,11 +34,16 @@ export default function AppointmentCard(props) {
         setTime(event.target.value);
     };
     const handleClickOpenFollow = () => {
+        setRescheduleDate(null);
+        setTime("");
         setOpenFollow(true);
     };
 
     const handleCloseFollow = () => {
+        setRescheduleDate(null);
+        setTime("");
         setOpenFollow(false);
+
     };
 
     return (
@@ -69,7 +77,7 @@ export default function AppointmentCard(props) {
                     <LocalizationProvider dateAdapter={AdapterDayjs} sx={{ marginTop: 5 }}>
                         <DatePicker id="searchDate" minDate={today.add(1, 'day')} value={rescheduleDate} onChange={(date) => {
                             setRescheduleDate(date);
-                            // props.getSlots(props.doctorID, date, new Date(date).getDay())
+                            props.getSlots(props.doctorID, date, new Date(date).getDay())
                         }} />
                     </LocalizationProvider>
                     <Box sx={{ minWidth: 120 }}>

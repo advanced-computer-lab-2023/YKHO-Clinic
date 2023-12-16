@@ -241,13 +241,14 @@ async function helper(doctors, id) {
     discount = healthPackage.doctorDiscount;
     discount = ((100 - discount) / 100);
   }
-  let results = doctors.map(({ _id, name, speciality, rate, affiliation }) => ({
+  let results = doctors.map(({ _id, name, speciality, rate, affiliation,education  }) => ({
     _id,
     name,
     speciality,
     sessionPrice: Math.floor(rate * 1.1 * discount),
     sessionBeforeDiscount: Math.floor(rate * 1.1),
     affiliation,
+    education,
   }));
   const timeSlotsPromises = doctors.map(async (doctor) => {
     return await timeSlotModel.find({ doctorID: doctor._id });
