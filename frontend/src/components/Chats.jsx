@@ -102,54 +102,42 @@ function Chats() {
     useEffect(() => { check(), fetch() }, []);
     const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
-      await axios
-        .get("http://localhost:3000/doctor/contract", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.contract == "rej") {
-            window.location.href = "/doctor/contract";
-          } else {
-            setResult(true);
-            // Check if breadcrumbs contain the "Home" breadcrumb
-            let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
-            console.log(savedBreadcrumbs)
-            const homeBreadcrumb = { label: "chats", href: "/chats" };
-            const hasHomeBreadcrumb = savedBreadcrumbs.some(
-              (item) => item.label == homeBreadcrumb.label
-            );
-
-            // If not, add it to the breadcrumbs
-            if (!hasHomeBreadcrumb) {
-              const updatedBreadcrumbs = [homeBreadcrumb];
-              setBreadcrumbs(updatedBreadcrumbs);
-              localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+        const res = await axios.get("http://localhost:3000/loggedIn", {
+            withCredentials: true
+        }).then((res) => {
+            if (res.data.type != "patient" && res.data.type != 'doctor') {
+                if(res.data.type=="admin"){
+                    window.location.href = "/admin/home"
+                }else
+                    window.location.href = "/"
             }
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      await axios
-        .get("http://localhost:3000/loggedIn", {
-          withCredentials: true,
-        })
-        .then((res) => {
-          if (res.data.type != "doctor") {
-            if (res.data.type == "patient") {
-              window.location.href = "/patient/home";
-            } else if (res.data.type == "admin") {
-              window.location.href = "/admin/home";
-            } else {
-              window.location.href = "/";
+            else {
+                setResult(true)
+                if (res.data.type == 'patient') {
+                    
+                    setIsPatient(true);
+                }
+                //breadcrumbs
+                let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
+                setBreadcrumbs(savedBreadcrumbs);
+        
+                const healthPackageBreadcrumb = { label: "chats", href: "/chats" };
+                const hasHealthPackageBreadcrumb = savedBreadcrumbs.some(
+                  (item) => item.label == healthPackageBreadcrumb.label
+                );
+                // If not, add it to the breadcrumbs
+                if (!hasHealthPackageBreadcrumb) {
+                  const updatedBreadcrumbs = [healthPackageBreadcrumb];
+                  setBreadcrumbs(updatedBreadcrumbs);
+                  localStorage.setItem('breadcrumbs', JSON.stringify(updatedBreadcrumbs));
+                }
             }
-          }
+        }
+        ).catch((err) => {
+            if (err.response.status == 401) {
+                window.location.href = "/"
+            }
         })
-        .catch((err) => {
-          if (err.response.status == 401) {
-            window.location.href = "/";
-          }
-        });
     }
   
     function handleBreadcrumbClick(event, breadcrumb) {
