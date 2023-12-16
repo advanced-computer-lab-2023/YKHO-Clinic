@@ -15,7 +15,7 @@ const admin = require("../model/admin.js");
 const requestModel = require("../model/request.js");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 require("dotenv").config();
-
+const zlib = require('zlib');
 const { isStrongPassword } = require("./adminController.js");
 const healthPackageModel = require("../model/healthPackage").healthPackage;
 //const { date } = require('joi');
@@ -1200,18 +1200,21 @@ async function patientHome(req, res) {
 }
 async function showMedicalHistory(req, res) {
   patient = req.user;
-  let result = await patientModel
-    .find({ _id: patient._id })
-    .select(["medicalHistory"]);
-  let medicalHistoryrows =
-    "<tr><th>name</th> <th>document</th> <th>delete</th></tr>";
-  for (medicalHistory in result[0].medicalHistory) {
-    medicalHistoryrows =
-      medicalHistoryrows +
-      `<tr id=${medicalHistory}><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
-        <td><a href="/files/${medicalHistory}" target="_blank">View</a></td><td><form method="post" action="/patient/deleteMedicalHistory/${medicalHistory}" ><button onClick="patientId()" >delete</button></form></td></tr>`;
-  }
-  res.render("patient/medicalHistory", { medicalHistory: medicalHistoryrows });
+  const index = req.params.index;
+  let result = await patientModel.findById({ _id: patient._id }).select({ medicalHistory: { $slice: [parseInt(index), 1] } });
+  const compressedData = result.medicalHistory[0].data;
+    const decompressedData = zlib.gunzipSync(compressedData);
+
+    const type = result.medicalHistory[0].contentType;
+    const name = result.medicalHistory[0].name;
+
+    res.set("Content-Type", "application/octet-stream");
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${name}.${type.split("/")[1]}"`
+    );
+    
+    res.send(decompressedData);
 }
 async function addMedicalHistory(req, res) {
   const name = req.body.docName;
@@ -1546,7 +1549,7 @@ async function getMyID(req, res) {
   res.status(200).json({ result: req.user._id });
 }
 async function getPatient(req, res) {
-  const patient = await patientModel.findById(req.user._id,"-healthRecords.data");
+  const patient = await patientModel.findById(req.user._id,"-healthRecords.data -medicalHistory.document");
   res.status(200).json({ result: patient });
 }
 module.exports = {
