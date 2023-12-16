@@ -77,7 +77,7 @@ const createPatient = async (req, res) => {
     return res.status(201).json({ message: error.details[0].message });
   }
   if (isStrongPassword(req.body.password) === false) {
-    return res.status(201).json({ message: "Password is weak" });
+    return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
   }
   if (
     (await admin.find({ username: username })).length > 0 ||
@@ -153,7 +153,7 @@ const changePasswordPatient = async (req, res) => {
     }
 
     if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(404).json({ message: "Password is weak" });
+      return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
     }
 
     const salt = await bcrypt.genSalt();
@@ -876,8 +876,12 @@ async function reserveSlot(req, res) {
 }
 
 async function getNotifications(req, res) {
-  const notifications = await notificationModel.find({ patientID: req.user._id });
-  return res.status(200).json({ result: notifications });
+  if(req.body.read){
+    const updated = await notificationModel.updateMany({patientID:req.user._id},{$set:{read:true}});
+  }
+  const notifications = await notificationModel.find({patientID: req.user._id});
+  const count = await notificationModel.countDocuments({patientID: req.user._id, read: false});
+  return res.status(200).json({result: notifications, readCount: count});
 }
 
 async function deleteNotification(req, res) {
@@ -1596,7 +1600,8 @@ module.exports = {
   getTimeSlotOnDate,
   addFollowUpRequest,
   getMyID,
-  getPatient
+  getPatient,
+  changePasswordPatient,
 };
 
 module.exports.readSubscription = readSubscription;

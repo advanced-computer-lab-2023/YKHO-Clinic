@@ -10,8 +10,16 @@ import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Menu from '@mui/material/Menu';
+import HomeIcon from '@mui/icons-material/Home';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
+import LogoutIcon from '@mui/icons-material/Logout';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import FolderIcon from '@mui/icons-material/Folder';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -96,7 +104,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp, isChat}) {
+export default function PrimarySearchAppBar({content, openHelp, isChat, goHome, goFiles, handlePrescriptions, handleHealthRecords, handleAppointments, handleHistory, handleLinkFamily
+,handleManageFamily, viewAllDoctors, toChats}) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
   
@@ -137,9 +146,11 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]);  const [values, setValues] = useState("");
+  const [readCount, setReadCount] = useState(0);
+  const [notifRead, setNotifRead] = React.useState(false);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(()=>{getNotifications()},[]);
+  useEffect(()=>{getNotifications()},[notifRead]);
   const { searchvalue } = useParams();
 
   
@@ -153,33 +164,38 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
       window.location.href = `/patient/search/${values}`
     }
   }
-  function goAllApointments() {
-    window.location.href= '/patient/Appointments';
-      const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
-      handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-    }
-  function goHome() {
-    window.location.href= '/patient/home';
-    const breadcrumb = { label: "Home", href: "/patient/home" };
-    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-  }
-  function goPrescriptions() {
-    window.location.href= '/patient/Prescriptions';
-    const breadcrumb = { label: "Prescriptions", href: "/patient/Prescriptions" };
-    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
-  }
-  function goSeeFamilyOrDie(){
-    window.location.href='/patient/readFamilyMembers';
-  }
-  function goFiles(){
-    window.location.href = '/patient/files'
-  }
-  function goPackages(){
-    window.location.href='/patient/healthPackages'
-  }
-  function goMedicalHistory(){
-    window.location.href='/patient/medicalHistory'
-  }
+  // function goAllApointments() {
+  //   window.location.href= '/patient/Appointments';
+  //     const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+  //     handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  //   }
+  // function goHome() {
+  //   window.location.href= '/patient/home';
+  //   const breadcrumb = { label: "Home", href: "/patient/home" };
+  //   handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  // }
+  // function goPrescriptions() {
+  //   window.location.href= '/patient/Prescriptions';
+  //   const breadcrumb = { label: "Prescriptions", href: "/patient/Prescriptions" };
+  //   handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  // }
+  // function goSeeFamilyOrDie(){
+  //   window.location.href='/patient/readFamilyMembers';
+  // }
+  // function goFiles(){
+  //   window.location.href = '/patient/files'
+  // }
+  // function goPackages(){
+  //   window.location.href='/patient/healthPackages'
+  // }
+  // function goMedicalHistory(){
+  //   window.location.href='/patient/medicalHistory'
+  // }
+
+  // function editPatientInfo(){
+  //   window.location.href='/patient/editPatientInfo'
+  // }
+
   const [error, setError] = useState('');
   async function LogoutButton() {
     try {
@@ -212,10 +228,12 @@ export default function PrimarySearchAppBar({content, openHelp, isChat}) {
 
 async function getNotifications(){
     try {
-      const res = await axios.get("http://localhost:3000/patient/getNotifications", {
+      const res = await axios.post("http://localhost:3000/patient/getNotifications", {read: notifRead}, {
         withCredentials: true,
       });
+      setReadCount(res.data.readCount);
       setNotifications(res.data.result);
+      setNotifRead(false);
   } catch (err) {
     console.log(err);
   }
@@ -232,7 +250,7 @@ const toggleNotifications = (anchor, open) => (event) => {
   if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
   }
-
+  setNotifRead(true);
   setNotificationsState({ ...notificationsState, [anchor]: open });
 }
 
@@ -300,28 +318,44 @@ const list = (anchor) => (
 >
   <List>
     <ListItem disablePadding>
-      <ListItemButton onClick={goHome}>
-        <ListItemText primary={'Home'} />
+      <ListItemButton onClick={()=>{}} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><MenuIcon/></ListItemIcon>
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goAllApointments}>
-        <ListItemText primary={'Appointments'} />
+      <ListItemButton onClick={goHome} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><HomeIcon/></ListItemIcon>
+        <ListItemText primary={'Home'} sx={{color:"#FAF5FF"}} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goPrescriptions}>
-        <ListItemText primary={'Prescriptions'} />
+      <ListItemButton onClick={handleAppointments} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><CalendarMonthIcon/></ListItemIcon>
+        <ListItemText primary={'Appointments'} sx={{color:"#FAF5FF"}} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goSeeFamilyOrDie}>
-        <ListItemText primary={'Family Members'} />
+      <ListItemButton onClick={handlePrescriptions} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><LocalHospitalIcon/></ListItemIcon>
+        <ListItemText primary={'Prescriptions'} sx={{color:"#FAF5FF"}} />
       </ListItemButton>
     </ListItem>
     <ListItem disablePadding>
-      <ListItemButton onClick={goFiles}>
-        <ListItemText primary={'Your files'} />
+      <ListItemButton onClick={handleManageFamily} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><FamilyRestroomIcon/></ListItemIcon>
+        <ListItemText primary={'Family Members'} sx={{color:"#FAF5FF"}}/>
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goFiles} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><FolderIcon/></ListItemIcon>
+        <ListItemText primary={'Your files'} sx={{color:"#FAF5FF"}}/>
+      </ListItemButton>
+    </ListItem>
+      <ListItem disablePadding>
+      <ListItemButton onClick={viewAllDoctors} sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><AssignmentIndIcon /></ListItemIcon>
+        <ListItemText primary={'View All Doctors'} sx={{color:"#FAF5FF"}}/>
       </ListItemButton>
     </ListItem>
   </List>
@@ -330,8 +364,15 @@ const list = (anchor) => (
 
 <List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
   <ListItem disablePadding>
-    <ListItemButton onClick={LogoutButton}>
-      <ListItemText primary={'Logout'} style={{ textAlign: 'center' }} />
+      <ListItemButton sx={{color:"#FAF5FF"}}>
+        <ListItemIcon sx={{color:"#FAF5FF"}}><EditIcon/></ListItemIcon>
+        <ListItemText primary={'Edit your info'} style={{ textAlign: 'center' }} />
+      </ListItemButton>
+  </ListItem>
+  <ListItem disablePadding>
+    <ListItemButton onClick={LogoutButton} sx={{color:"#FAF5FF"}}>
+      <ListItemIcon sx={{color:"#FAF5FF"}}><LogoutIcon/></ListItemIcon>
+      <ListItemText primary={'Logout'} style={{ textAlign: 'center', color:"#FAF5FF"}} />
     </ListItemButton>
   </ListItem>
 </List>
@@ -484,7 +525,7 @@ const list = (anchor) => (
               color="inherit"
               onClick={toggleNotifications('right', true)}
             >
-            <Badge badgeContent={notifications.length} color="error">
+            <Badge badgeContent={readCount} color="error">
               <NotificationsIcon />
             </Badge>
             </IconButton>

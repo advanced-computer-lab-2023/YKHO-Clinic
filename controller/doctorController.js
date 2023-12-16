@@ -101,13 +101,12 @@ async function createMedicine(req, res){
 }
 
 async function getNotificationsDoctor(req, res) {
-  // console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-  // console.log(req)
-  // if(req.body.read=="true"){
-  //   await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
-  // }
-  const notifications = await notificationModel.find({doctorID: req.user._id});
-  return res.status(200).json({result: notifications});
+    if(req.body.read){
+      const updated = await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
+    }
+    const notifications = await notificationModel.find({doctorID: req.user._id});
+    const count = await notificationModel.countDocuments({doctorID: req.user._id, read: false});
+    return res.status(200).json({result: notifications, readCount: count});
 }
 
 async function deleteMedicine(req,res){
@@ -199,8 +198,6 @@ const doctorLogout = (req, res) => {
 };
 
 const changePasswordDoctor = async (req, res) => {
-  console.log(req.body)
-  console.log(req.user)
   if (
     req.body.oldPassword === "" ||
     req.body.newPassword === "" ||
@@ -219,7 +216,7 @@ const changePasswordDoctor = async (req, res) => {
     }
 
     if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(201).json({ message: "Password is weak" });
+      return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
     }
 
     const salt = await bcrypt.genSalt();
@@ -232,7 +229,7 @@ const changePasswordDoctor = async (req, res) => {
   } else {
     return res
       .status(201)
-      .json({ message: "Password not changed successfully" });
+      .json({ message: "Old Password is wrong" });
   }
 };
 

@@ -518,19 +518,19 @@ function Chats() {
                     <Grid container spacing={0} sx={{ minHeight: 'calc(100vh - 64px)' }}>
                         <Grid item xs={4} sx={{ borderRight: 2, borderColor: 'primary.main' }}>
                             <List sx={{ overflowY: 'auto', padding: 0 }}>
-                                <ListSubheader
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        py: '8px',
-                                        fontSize: 16,
-                                        fontWeight: 'medium',
-                                        lineHeight: '24px',
-                                        bgcolor: 'primary.dark',
-                                        color: 'primary.contrastText',
-                                    }}
-                                >
+                                        <ListSubheader
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                py: '8px',
+                                                fontSize: 16,
+                                                fontWeight: 'medium',
+                                                lineHeight: '24px',
+                                                bgcolor: 'primary.dark',
+                                                color: 'primary.contrastText',
+                                            }}
+                                        >
                                         <Breadcrumbs sx={{color:'white'}} separator="›" aria-label="breadcrumb">
                                         {breadcrumbs.map((breadcrumb, index) => (
                                         <Link
@@ -543,7 +543,7 @@ function Chats() {
                                             {breadcrumb.label}
                                         </Link>
                                         ))}
-                                    </Breadcrumbs>
+                                        </Breadcrumbs>
                                     <IconButton
                                         size="large"
                                         color="inherit"
