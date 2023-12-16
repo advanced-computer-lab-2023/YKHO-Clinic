@@ -1914,6 +1914,37 @@ Copy code
 
 - **Request Method:**
   - `GET`
+
+# Pharmacist Read Endpoint
+
+- **URL:**
+  - `GET /pharmacistRead`
+
+- **Middleware:**
+  - `requireAuthDoctor`
+
+- **Function:**
+  - `pharmacistRead`
+
+- **Description:**
+  - Marks pharmacist messages as read for a doctor in a pharmacist chat.
+
+
+
+# Pharmacist Read Endpoint
+
+- **URL:**
+  - `GET /pharmacistRead`
+
+- **Middleware:**
+  - `requireAuthDoctor`
+
+- **Function:**
+  - `pharmacistRead`
+
+- **Description:**
+  - Marks pharmacist messages as read for a doctor in a pharmacist chat.
+
 ## Features
 we have three main users in our website + sewar
 
