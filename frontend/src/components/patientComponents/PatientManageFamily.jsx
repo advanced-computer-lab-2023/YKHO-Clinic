@@ -16,15 +16,29 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
-
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
+import RadioGroup from '@mui/material/RadioGroup';
+import Radio from '@mui/material/Radio';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
 
 const PatientManageFamily = () => {
     const [result, setResult] = useState(false);
     const [members, setMembers] = useState([]);
     const [add, setAdd] = useState(false);
-    const [link, setLink] = useState(false)
+    const [name, setName] = useState(false);
+    const [natioalID, setNationalID] = useState(false);
+    const [age, setAge] = useState(false);
+    const [relation, setRelation] = useState(false);
+    const [link, setLink] = useState(false);
+    const [filter, setFilter] = useState("");
+    const [search, setSearch] = useState("");
+    const [details, setDetails] = useState(false);
+    const [packageName,setPackageName ] = useState("");
+    const [doctorDiscount, setDoctorDiscount] = useState("");
+    const [pharmacyDiscount, setPharmacyDiscount] = useState("");
+    const [familyDiscount, setFamilyDiscount] = useState("");
 
     useEffect(() => { check(), fetch() }, []);
     async function check() {
@@ -69,7 +83,7 @@ const PatientManageFamily = () => {
 
     }
 
-    const view = async (name) => {
+    const viewDetails = async (name) => {
 
     }
 
@@ -119,7 +133,7 @@ const PatientManageFamily = () => {
                                                             </Button>
                                                         }
                                                         {(member.state == "subscribed" || member.state == "cancelled") &&
-                                                            <Button variant="contained" onClick={() => { view(member.nationalID) }}>
+                                                            <Button variant="contained" onClick={() => { viewDetails(member.nationalID) }}>
                                                                 view package
                                                             </Button>
                                                         }
@@ -139,25 +153,65 @@ const PatientManageFamily = () => {
 
                     </Stack>
                     <Dialog open={add} onClose={() => { setAdd(false) }}>
-                        <DialogTitle>Subscribe</DialogTitle>
+                        <DialogTitle>Add member</DialogTitle>
                         <DialogContent>
-                            <DialogContentText>
-                                To subscribe to this website, please enter your email address here. We
-                                will send updates occasionally.
-                            </DialogContentText>
                             <TextField
                                 autoFocus
                                 margin="dense"
                                 id="name"
-                                label="Email Address"
-                                type="email"
+                                label="Name"
+                                type="name"
                                 fullWidth
                                 variant="standard"
-                            />
+                                onChange={(e) => { setName(e.target.value) }}/>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="nationalID"
+                                label="NationalID"
+                                type="nationalID"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => { setNationalID(e.target.value) }}/>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="age"
+                                label="Age"
+                                type="age"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => { setAge(e.target.value) }}
+                                sx={{mb:"16px"}}/>
+                            <FormLabel id="demo-row-radio-buttons-group-label">
+                                Relation
+                            </FormLabel>
+                            <RadioGroup
+                                row
+                                aria-labelledby="demo-row-radio-buttons-group-label"
+                                name="row-radio-buttons-group"
+                            >
+                                <FormControlLabel value="husband" control={<Radio />} label="husband" />
+                                <FormControlLabel value="wife" control={<Radio />} label="wife" />
+                                <FormControlLabel value="son" control={<Radio />} label="son" />
+                                <FormControlLabel value="daughter" control={<Radio />} label="daughter"/>
+                            </RadioGroup>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={() => { setAdd(false) }}>Cancel</Button>
-                            <Button onClick={() => { setAdd(false) }}>Subscribe</Button>
+                        <   Button
+                                onClick={() => { 
+                                    setAdd(false) 
+                                }}
+                            >
+                                cancel
+                            </Button>
+                            <Button
+                                onClick={() => { 
+                                    setAdd(false) 
+                                }}
+                            >
+                                link
+                            </Button>
                         </DialogActions>
                     </Dialog>
                     <Dialog open={link} onClose={() => { setLink(false) }}>
@@ -180,6 +234,15 @@ const PatientManageFamily = () => {
                         <DialogActions>
                             <Button onClick={() => { setLink(false) }}>Link</Button>
                         </DialogActions>
+                    </Dialog>
+                    <Dialog open={details} onClose={() => { setDetails(false) }}>
+                        <DialogTitle>Subscribe</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                To subscribe to this website, please enter your email address here. We
+                                will send updates occasionally.
+                            </DialogContentText>
+                        </DialogContent>
                     </Dialog>
                 </>
             }
