@@ -101,7 +101,11 @@ async function createMedicine(req, res){
 }
 
 async function getNotificationsDoctor(req, res) {
-  console.log("notif doc ----------------------------------------------------")
+  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+  console.log(req)
+  if(req.body.read=="true"){
+    await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
+  }
   const notifications = await notificationModel.find({doctorID: req.user._id});
   return res.status(200).json({result: notifications});
 }
@@ -115,6 +119,7 @@ async function deleteMedicine(req,res){
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicinesup} },{ new: true });
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {price: pricenew} },{ new: true });
   res.status(200).json({result:medicinesup})
+  
 }
 async function updateMedicine(req,res){
   id=req.user._id;

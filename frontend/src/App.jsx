@@ -19,7 +19,7 @@ import DoctorAppointments from './components/doctorComponents/DoctorAppointments
 import DoctorFollowUp from './components/doctorComponents/DoctorFollowUp'
 import PatientPrescriptions from './components/patientComponents/PatientPrescriptions'
 import PatientAppointment from './components/patientComponents/PatientAppointment'
-import PatientHealthRecords from './components/patientComponents/PatientHealthRecords'
+import PatientFile from './components/patientComponents/PatientFile'
 import PatinetHistory from './components/patientComponents/PatientHistory'
 import PatientLinkFamily from './components/patientComponents/PatientLinkFamily'
 import PatientManageFamily from './components/patientComponents/PatientManageFamily'
@@ -52,7 +52,7 @@ function App() {
         <Route path="/patient/healthPackages/:nationaID" element={<PatientHealthPackages/>} />
         <Route path="/patient/Prescriptions" element={<PatientPrescriptions/>} />
         <Route path="/patient/Appointments" element={<PatientAppointment/>} />
-        <Route path="/patient/HealthRecords" element={<PatientHealthRecords/>} />
+        <Route path="/patient/files" element={<PatientFile/>} />
         <Route path="/patient/medicalHistory" element={<PatinetHistory/>} />
         <Route path="/patient/LinkFamily" element={<PatientLinkFamily/>} />
         <Route path="/patient/readFamilyMembers" element={<PatientManageFamily/>} />

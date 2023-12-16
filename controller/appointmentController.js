@@ -97,7 +97,7 @@ async function showUpcomingAppointments(req, res) {
 }
  
    async function PatientShowAppointments(req,res){
-    id=req.user._id;
+    id=req.params.id;
     
     const result = await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid","price"]);
     // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th> <th>Pay By Credit</th> <th>Pay By Wallet</th> </tr>';
@@ -130,30 +130,28 @@ async function DocShowAppointments(req,res){
     res.status(200).json({result:result});
 }
 async function PatientFilterAppointments(req,res){
-    id=req.user._id;
+    id=req.query.id;
     try{
         let result 
-        if(req.query.filter=="Status" && req.query.searchvalue!=""){
-            result =  await appointment.find({patientID:id,status:req.query.searchvalue}).populate("doctorID").select(["doctorID","date","status","paid"]);
-        }
-        else if(req.query.filter=="Status"){
-            result =  await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid"]);
-        }
-        if(req.query.filter=="Date"){
-            
-            let date = new Date(req.query.searchvalue);
-            result= await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid"]);
-            if(req.query.searchvalue!=""){
+        result =  await appointment.find({patientID:id}).populate("doctorID").select(["doctorID","date","status","paid","price"]);
+        
+        if(req.query.date!='undefined'&& req.query.date!='null'){
+
+            let date = new Date(req.query.date);
             result = result.filter((x) => {
                 if (x.date.getFullYear() == date.getFullYear() && x.date.getMonth() == date.getMonth() && x.date.getDate() == date.getDate())
                     return true;
                 return false;
             })
         }
-    }
-    
-        
-        
+        if(req.query.searchvalue!=""){
+            result = result.filter((x) => {
+                if (x.status==req.query.searchvalue)
+                    return true;
+                return false;
+            })
+        }
+
         if(req.query.filters=="upcoming"){ 
             result= result.filter((c)=>{
                 return c.date > new Date();
@@ -164,28 +162,11 @@ async function PatientFilterAppointments(req,res){
                 return c.date < new Date();
             })
         }
-        // let appointmentrows ='<tr><th>name</th>  <th>date</th>  <th>status</th> <th>Pay By Credit</th> <th>Pay By Wallet</th> </tr>';
-        
-        // for(appointmentl in result){
-        //     appointmentrows=appointmentrows + `<tr><td id="${result[appointmentl]._id}"> ${result[appointmentl].doctorID.name} </td>\
-        //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].date.toISOString().split('T')[0]} </td>\
-        //     <td id="${result[appointmentl]._id}"> ${result[appointmentl].status} </td>`
-            
-        //     if(!result[appointmentl].paid&&result[appointmentl].status=='upcoming'){
-        //         appointmentrows+=  `<td> <button onClick="reserveTHIS(this)" id="${result[appointmentl]._id}"> Pay By Credit </button></td> `
-        //         appointmentrows+=  `<td> <button onClick="kimo(this)" id="${result[appointmentl]._id}"> Pay By Wallet </button></td> `
-                
-        //       }
-        //       appointmentrows+= `</tr>`
-    
-    
-        // }
-        // res.render("patient/Appointments",{appointmentrows:appointmentrows,onepatient:true});
         res.status(200).json({result:result});
-        }catch(error){
-            console.log(req.query.filter);
-            console.log(error);
-        }
+    }
+    catch(error){
+        console.log(error);
+    }
 }
 async function DocFilterAppointments(req,res){
     id=req.user._id;

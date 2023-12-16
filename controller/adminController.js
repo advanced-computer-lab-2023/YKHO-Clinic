@@ -45,7 +45,7 @@ const Login = async (req, res) => {
 
     let patient = await patientsTable.findOne({
       username: req.body.username,
-    });
+    },"-healthRecords -medicalHistory");
 
     let doctor = await doctorsTable.findOne({
       username: req.body.username,

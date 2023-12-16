@@ -113,6 +113,8 @@ const {
   deleteNotification,
   getTimeSlotOnDate,
   addFollowUpRequest,
+  getMyID,
+  getPatient
 } = require("./controller/patientController.js");
 const cors=require('cors')
 
@@ -227,7 +229,7 @@ app.get("/guest/patient", function (req, res) {
 app.get("/patient/Prescriptions", requireAuthPatient, ViewPrescriptions);
 app.get("/Patient/PrescriptionsFiltered", requireAuthPatient, FilterPrescriptions);
 app.get("/patient/Prescriptions/:id", requireAuthPatient, selectPrescription);
-app.get("/Patient/Appointments", requireAuthPatient, PatientShowAppointments);
+app.get("/Patient/Appointments/:id", requireAuthPatient, PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
@@ -277,6 +279,8 @@ app.post("/patient/cancelAppointment", requireAuthPatient, cancelAppointmentPati
 app.get("/patient/getTimeSlotOnDate", requireAuthPatient, getTimeSlotOnDate);
 app.post("/patient/rescheduleAppointment",requireAuthPatient,rescheduleAppointment);
 app.post("/patient/addFollowUpRequest",requireAuthPatient,addFollowUpRequest);
+app.get("/patient/getMyID",requireAuthPatient,getMyID);
+app.get("/patient",requireAuthPatient,getPatient);
 // elgharieb S2
 
 const readSubscription = require("./controller/patientController").readSubscription;
