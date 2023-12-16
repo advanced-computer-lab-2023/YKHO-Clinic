@@ -13,7 +13,6 @@ const {
   docViewWallet,
   createDoctor,
   createPrescription,
-  goToHome,
   updateMyInfo,
   updateThis,
   checkContract,
@@ -171,7 +170,6 @@ app.post("/doctor/deleteMedicine",requireAuthDoctor,deleteMedicine);
 app.post("/doctor/updatePrescMed",requireAuthDoctor,updateMedicine);
 app.post("/doctor/updatePresc/:id",requireAuthDoctor,updatePresc);
 app.post("/doctor/getNotifications", requireAuthDoctor, getNotificationsDoctor);
-app.get("/doctor/home", requireAuthDoctor, goToHome);
 app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor);
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
@@ -199,17 +197,16 @@ app.get("/doctor/showRequests",requireAuthDoctor,ShowRequests);
 app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 app.get("/downloadPresc/:id",requireAuth, downloadPresc);
+
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
 app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
-app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
 app.post("/admin/acceptRequest", requireAuthAdmin, acceptRequest);
 app.post("/admin/rejectRequest", requireAuthAdmin, rejectRequest);
 app.get("/admin/register",  requireAuthAdmin, adminRegister);
-app.get("/admin/home", requireAuth, goToHome);
 app.post("/admin/register", requireAuthAdmin,  createAdmin);
 app.get("/admin/deleteUser", requireAuthAdmin,  goToDeleteUser);
 app.post("/admin/deleteUser", requireAuthAdmin,  deleteUser);

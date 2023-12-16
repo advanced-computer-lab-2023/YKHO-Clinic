@@ -443,9 +443,11 @@ const addHealthPackages = async (req, res) => {
     return res.status(200).json({ message: ex.message, healthPackages: healthPackages });
   }
 };
+
 const callUpdateHealthPackage = async (req, res) => {
   updateHealthPackages(req, res);
 };
+
 const updateHealthPackages = async (req, res) => {
   //if not given any variable to update, it wont return an error and just leave it blank in DB
   const healthPackages = await healthPackageTable.find();

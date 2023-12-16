@@ -250,9 +250,6 @@ function isStrongPassword(password) {
   return true;
 }
 
-async function goToHome(req, res) {
-  res.status(200);
-}
 async function updateMyInfo(req, res) {
   res.render("doctor/doctorUpdate", { errormessage: "" });
 }
@@ -732,7 +729,6 @@ module.exports = {
   createPrescription,
   docViewWallet,
   createDoctor,
-  goToHome,
   updateMyInfo,
   updateThis,
   checkContract,
