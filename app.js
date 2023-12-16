@@ -374,3 +374,10 @@ app.get("/unread", requireAuth, unread);
 
 // notification
 app.get("/rooms", requireAuth, rooms)
+
+
+// pharmacistChat
+const { pharmacistChat, pharmacistRead, pharmacistSend, pharmacistStart} = require("./controller/pharmacistChatController.js");
+app.get("/pharmacistChat", requireAuth, pharmacistChat);
+app.post("/pharmacistText", requireAuth, pharmacistSend);
+app.post("/pharmacistRead", requireAuth, pharmacistRead);
