@@ -15,7 +15,7 @@ const admin = require("../model/admin.js");
 const requestModel = require("../model/request.js");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 require("dotenv").config();
-
+const zlib = require('zlib');
 const { isStrongPassword } = require("./adminController.js");
 const healthPackageModel = require("../model/healthPackage").healthPackage;
 //const { date } = require('joi');
@@ -77,7 +77,7 @@ const createPatient = async (req, res) => {
     return res.status(201).json({ message: error.details[0].message });
   }
   if (isStrongPassword(req.body.password) === false) {
-    return res.status(201).json({ message: "Password is weak" });
+    return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
   }
   if (
     (await admin.find({ username: username })).length > 0 ||
@@ -153,7 +153,7 @@ const changePasswordPatient = async (req, res) => {
     }
 
     if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(404).json({ message: "Password is weak" });
+      return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
     }
 
     const salt = await bcrypt.genSalt();
@@ -743,7 +743,7 @@ const deleteSubscription = async (req, res) => {
 };
 
 const subscriptionSuccessful = async (req, res) => {
-  console.log(req.params);
+
   let patient = await patientModel.findById(req.user._id);
   if (req.params.i != -1) {
     patient = await patientModel.findById(
@@ -896,8 +896,12 @@ async function reserveSlot(req, res) {
 }
 
 async function getNotifications(req, res) {
-  const notifications = await notificationModel.find({ patientID: req.user._id });
-  return res.status(200).json({ result: notifications });
+  if(req.body.read){
+    const updated = await notificationModel.updateMany({patientID:req.user._id},{$set:{read:true}});
+  }
+  const notifications = await notificationModel.find({patientID: req.user._id});
+  const count = await notificationModel.countDocuments({patientID: req.user._id, read: false});
+  return res.status(200).json({result: notifications, readCount: count});
 }
 
 async function deleteNotification(req, res) {
@@ -924,7 +928,7 @@ async function sendEmail(email, message) {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log(error);
+
     } else {
       console.log("Email sent: " + info.response);
     }
@@ -967,7 +971,7 @@ async function cancelAppointmentPatient(req, res) {
       message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
     }
   }
-  console.log(message,"lol");
+
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: message,
@@ -1220,34 +1224,40 @@ async function patientHome(req, res) {
 }
 async function showMedicalHistory(req, res) {
   patient = req.user;
-  let result = await patientModel
-    .find({ _id: patient._id })
-    .select(["medicalHistory"]);
-  let medicalHistoryrows =
-    "<tr><th>name</th> <th>document</th> <th>delete</th></tr>";
-  for (medicalHistory in result[0].medicalHistory) {
-    medicalHistoryrows =
-      medicalHistoryrows +
-      `<tr id=${medicalHistory}><td> ${result[0].medicalHistory[medicalHistory].name} </td>\
-        <td><a href="/files/${medicalHistory}" target="_blank">View</a></td><td><form method="post" action="/patient/deleteMedicalHistory/${medicalHistory}" ><button onClick="patientId()" >delete</button></form></td></tr>`;
-  }
-  res.render("patient/medicalHistory", { medicalHistory: medicalHistoryrows });
+  const index = req.params.index;
+  let result = await patientModel.findById({ _id: patient._id }).select({ medicalHistory: { $slice: [parseInt(index), 1] } });
+  const compressedData = result.medicalHistory[0].document;
+  const decompressedData = zlib.gunzipSync(compressedData);
+
+    const type = result.medicalHistory[0].mimeType;
+    const name = result.medicalHistory[0].name;
+
+    res.set("Content-Type", "application/octet-stream");
+    res.set(
+      "Content-Disposition",
+      `attachment; filename="${name}.${type.split("/")[1]}"`
+    );
+    
+    res.send(decompressedData);
 }
 async function addMedicalHistory(req, res) {
   const name = req.body.docName;
-  console.log(name);
+
   const document = req.file.buffer;
   const mimeType = req.file.mimetype;
-  const newRecord = { name, document, mimeType };
+  const compressedData = zlib.gzipSync(document);
+  const newRecord = { name, document:compressedData, mimeType };
   patient = req.user;
   const patientId = patient._id;
   try {
     const updatedPatient = await patientModel.findByIdAndUpdate(
       patientId,
       { $push: { medicalHistory: newRecord } },
-      { new: true }
+      { new: true },
+      "-healthRecords.data -medicalHistory.document"
     );
-    res.redirect("/patient/medicalHistory");
+    
+    res.status(200).json({ result: updatedPatient });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1255,16 +1265,15 @@ async function addMedicalHistory(req, res) {
 async function deleteMedicalHistory(req, res) {
   patient = await patientModel.findOne({ _id: req.user._id });
   const patientId = patient._id;
-  const recordId = req.params.id;
-
-  const result = await patientModel.find({ _id: patientId });
-  result[0].medicalHistory.splice(recordId, 1);
+  const id = req.body.index;
   const updatedPatient = await patientModel.findByIdAndUpdate(
     patientId,
-    { $set: { medicalHistory: result[0].medicalHistory } },
-    { new: true }
-  );
-  res.redirect("/patient/medicalHistory");
+    { $pull: { medicalHistory: { _id: id } } },
+    { new: true },
+    "-healthRecords.data -medicalHistory.document"
+  ) 
+
+  res.status(200).json({ result: updatedPatient });
 }
 const viewHealthRecords = async (req, res) => {
   patient = await patientModel.findOne({ _id: req.user._id });
@@ -1396,9 +1405,9 @@ const PayByWallet = async (req, res) => {
   const appoitmentCost = appoitment.price;
   const doctor = await doctorModel.findOne({ _id: appoitment.doctorID });
   const patient = await patientModel.findOne({ _id: req.user._id });
-  console.log(patient);
+
   const Walletp = patient.wallet - appoitmentCost;
-  console.log(Walletp);
+
   const doctorw = doctor.Wallet + appoitmentCost;
   if (patient.wallet >= appoitmentCost) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
@@ -1466,7 +1475,7 @@ const PayPresc = async (req, res) => {
 
 
   }
-  console.log(patient.shoppingCart);
+
   let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
   pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });
@@ -1566,7 +1575,7 @@ async function getMyID(req, res) {
   res.status(200).json({ result: req.user._id });
 }
 async function getPatient(req, res) {
-  const patient = await patientModel.findById(req.user._id,"-healthRecords.data");
+  const patient = await patientModel.findById(req.user._id,"-healthRecords.data -medicalHistory.document");
   res.status(200).json({ result: patient });
 }
 module.exports = {
@@ -1612,7 +1621,8 @@ module.exports = {
   addFollowUpRequest,
   getMyID,
   getPatient,
-  readDetailsFamily
+  readDetailsFamily,
+  changePasswordPatient,
 };
 
 module.exports.readSubscription = readSubscription;

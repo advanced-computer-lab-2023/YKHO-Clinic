@@ -101,13 +101,12 @@ async function createMedicine(req, res){
 }
 
 async function getNotificationsDoctor(req, res) {
-  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-  console.log(req)
-  if(req.body.read=="true"){
-    await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
-  }
-  const notifications = await notificationModel.find({doctorID: req.user._id});
-  return res.status(200).json({result: notifications});
+    if(req.body.read){
+      const updated = await notificationModel.updateMany({doctorID:req.user._id},{$set:{read:true}});
+    }
+    const notifications = await notificationModel.find({doctorID: req.user._id});
+    const count = await notificationModel.countDocuments({doctorID: req.user._id, read: false});
+    return res.status(200).json({result: notifications, readCount: count});
 }
 
 async function deleteMedicine(req,res){
@@ -204,7 +203,7 @@ const changePasswordDoctor = async (req, res) => {
     req.body.newPassword === "" ||
     req.body.confirmationPassword === ""
   ) {
-    res.status(404).json({ message: "Fill the empty fields" });
+    return res.status(201).json({ message: "Fill the empty fields" });
   }
 
   const user = await doctor.findOne({
@@ -213,26 +212,45 @@ const changePasswordDoctor = async (req, res) => {
 
   if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
     if (req.body.newPassword != req.body.confirmationPassword) {
-      return res.status(404).json({ message: "Passwords dont not match" });
+      return res.status(201).json({ message: "Passwords dont not match" });
     }
 
     if (isStrongPassword(req.body.newPassword) === false) {
-      return res.status(404).json({ message: "Password is weak" });
+      return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
     }
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
     await doctor.findOneAndUpdate(
-      { username: decodedCookie.name },
+      { username: req.user.username },
       { password: hashedPassword }
     );
     return res.status(200).json({ message: "Password changed successfully" });
   } else {
     return res
-      .status(404)
-      .json({ message: "Password not changed successfully" });
+      .status(201)
+      .json({ message: "Old Password is wrong" });
   }
 };
+
+function isStrongPassword(password) {
+  if (password.length < 8) {
+    return false;
+  }
+  if (!/[A-Z]/.test(password)) {
+    return false;
+  }
+  if (!/[a-z]/.test(password)) {
+    return false;
+  }
+  if (!/\d/.test(password)) {
+    return false;
+  }
+  if (!/[*@#$%^&+=]/.test(password)) {
+    return false;
+  }
+  return true;
+}
 
 async function goToHome(req, res) {
   res.status(200);
@@ -272,7 +290,6 @@ const checkContract = async (req, res, next) => {
 };
 const zlib = require('zlib');
 const path = require('path');
-
 
 
 
@@ -739,4 +756,5 @@ module.exports = {
   RejectFollowupRequest,
   downloadPresc,
   getNotificationsDoctor,
+  changePasswordDoctor,
 };

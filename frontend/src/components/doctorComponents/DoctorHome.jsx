@@ -221,6 +221,11 @@ function DoctorHome() {
     handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
   }
 
+  function toChats(){
+    const breadcrumb = { label: "chats", href: "/chats" };
+    handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+  }
+
   async function confirm(id, type) {
     setId(id);
     setConfirmOpen(true);
@@ -238,7 +243,7 @@ function DoctorHome() {
     <div>
       {result && (
         <div>
-          <Navbar goHome={goHome} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
+          <Navbar goHome={goHome} toChats={toChats} goPatients={goPatients} goTimeSlots={goTimeSlots} editDoctorInfo={editDoctorInfo} goAppointments={allAppointments} goFollowUp={toFollowUp}/>
           <Dialog
             open={confirmOpen}
             keepMounted
@@ -258,7 +263,7 @@ function DoctorHome() {
                     <Button onClick={confirmAction}>Yes</Button>
                 </DialogActions>
             </Dialog>
-            <Breadcrumbs separator="›" aria-label="breadcrumb">
+            <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
             {breadcrumbs.map((breadcrumb, index) => (
               <Link
                 key={index}

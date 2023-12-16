@@ -5,6 +5,7 @@ import { useState ,useEffect} from 'react'
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import MuiAlert from '@mui/material/Alert';
+import logo from "../../../images/logo.png";
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -81,7 +82,9 @@ function Login(){
     }
     return(
         <div>
-            {result&&<div style ={{marginTop: '200px',display:'flex', flexDirection:'column', alignItems:'center'}}>
+            {result&&
+                <div style ={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                <img src={logo} style={{marginTop:"200px",width:'200px'}}/>
                 <Typography style ={{justifyContent:'center', marginBottom:'20px'}} variant='h4'>LOGIN</Typography>
                 <input style={styles.input} name="username" type="text" placeholder="username" />
                 <input style={styles.input} name="password" type="password" placeholder="password" />

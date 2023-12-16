@@ -148,7 +148,7 @@ const changePasswordAdmin = async (req, res) => {
     }
     
     if (isStrongPassword(newPassword) === false) {
-      return res.status(200).json({ message: "Password is weak" });
+      return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
     }
   
     const salt = await bcrypt.genSalt();
@@ -256,7 +256,7 @@ const forgetPassword = async (req, res) => {
   }
 
   if (isStrongPassword(req.body.newPassword) === false) {
-    return res.status(200).json({ message: "Password is weak" });
+    return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
   }
 
   let admin = await adminsTable.findOne({
@@ -362,7 +362,7 @@ const createAdmin = async (req, res) => {
   }
 
   if (isStrongPassword(req.body.password) === false) {
-    return res.status(200).json({ message: "password is weak" });
+    return res.status(201).json({ message: "Password must be at least 8 characters, contain 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" });
   }
 
 
