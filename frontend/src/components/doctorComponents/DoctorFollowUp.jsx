@@ -189,6 +189,7 @@ export default function DoctorFollowUp(){
         }
         setConfirmOpen(false);
       }
+      
     return(
       result && <>
         <div>

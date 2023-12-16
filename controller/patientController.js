@@ -488,6 +488,7 @@ const readHealthPackages = async (req, res) => {
         total: price * ((100 - discount) / 100),
       })
     );
+    
     //res.status(201).send(healthPackages);
     res
       .status(201)
@@ -524,6 +525,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
       let patient = await patientModel.findById(familyMembers[i].patientID);
       familyMembersSubscriptions.push({
         name: familyMembers[i].name,
+        relation: familyMembers[i].relation,
         healthPackage: patient.subscription.healthPackage,
         state: patient.subscription.state,
         endDate: patient.subscription.endDate
@@ -535,6 +537,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
     } else {
       familyMembersSubscriptions.push({
         name: familyMembers[i].name,
+        relation: familyMembers[i].relation,
         healthPackage: "none",
         state: "unsubscribed",
         endDate: "",
@@ -544,12 +547,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
     }
   }
 
-  //res.status(201).send(familyMembersSubscriptions);
-  res
-    .status(201)
-    .render("patient/familyMembersSubscriptions", {
-      familyMembersSubscriptions,
-    });
+  res.status(200).json(familyMembersSubscriptions);
 };
 
 // req.username, req.body.healthPackage, req.body.paymentMethod
@@ -1288,11 +1286,11 @@ const LinkFamilyMemeber = async (req, res) => {
     }
   }
   let relate;
-  if (req.query.filter1 == "Email") {
-    relate = await patientModel.find({ email: req.query.searchvalue });
+  if (req.body.filter == "Email") {
+    relate = await patientModel.find({ email: req.body.search });
   }
-  if (req.query.filter1 == "MobileNumber") {
-    relate = await patientModel.find({ mobileNumber: req.query.searchvalue });
+  if (req.query.filter == "MobileNumber") {
+    relate = await patientModel.find({ mobileNumber: req.body.search });
   }
   if (relate.length != 0) {
     if (relate[0]._id.equals(patientid)) {
@@ -1327,9 +1325,11 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  //res.redirect("/patient/home");
-  res.status(201).render("patient/home", { results: [], one: true });
+  let familyMembers = results.familyMembers;
+  res.status(200).json(familyMembers);
+
 };
+
 async function showFile(req, res) {
   const fileId = req.params.fileId;
   patient = req.user;

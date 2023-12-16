@@ -130,6 +130,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [read, setRead] = React.useState(false);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
@@ -183,7 +184,7 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
 
   async function getNotifications() {
     try {
-      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {
+      const res = await axios.get("http://localhost:3000/doctor/getNotifications", {read:read}, {
         withCredentials: true,
       });
       setNotifications(res.data.result);
@@ -199,11 +200,12 @@ export default function PrimarySearchAppBar({ goHome, goPatients, goTimeSlots, e
     right: false,
   });
 
+
   const toggleNotifications = (anchor, open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-
+    setRead(true);
     setNotificationsState({ ...notificationsState, [anchor]: open });
   }
 
@@ -445,16 +447,20 @@ const list = (anchor) => (
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 0 }}
-              onClick={() => { window.location.href = "/chats" }}
-            >
-              <ChatBubbleIcon />
-            </IconButton>
+          {isChat == undefined &&
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 0 }}
+                onClick={() => { window.location.href = "/chats" }}
+              >
+              <Badge badgeContent={unread} color="error">
+                <ChatBubbleIcon />
+              </Badge>
+              </IconButton>
+            }
             <IconButton
               size="large"
               aria-label="13"
