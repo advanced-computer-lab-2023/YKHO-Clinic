@@ -1,9 +1,4 @@
-![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/75c69ac6-f3af-4ce4-a2a0-31f513987283)
 # El7a2ny: Virtual Clinic and Pharmacy
-
-
-
-
 
 ## Motivation
 The El7a2ny project is motivated to provide a comprehensive virtual clinic and pharmacy solution that will change healthcare accessibility and improve the effectiveness of medical services. The main objective is to develop a smooth platform that facilitates communication between doctors, patients, and pharmacists in order to promote a more integrated healthcare ecosystem.
