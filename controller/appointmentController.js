@@ -45,7 +45,6 @@ async function showMyPatients(req,res){
     console.log("--------------------")
     console.log(req.query.upcoming);
     if(req.query.upcoming=="true"){
-        console.log("HERE YABN EL MTNAKA")
         result = result.filter((c)=>{
             return c.status=="upcoming";
         })
