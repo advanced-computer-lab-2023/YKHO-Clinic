@@ -3,7 +3,7 @@ import axios from 'axios';
 import Joi from 'joi';
 import Button from '@mui/material/Button';
 import MuiAlert  from '@mui/material/Alert';
-import { Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
@@ -17,7 +17,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
-
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Paper from '@mui/material/Paper';
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
@@ -142,31 +144,37 @@ const DoctorRegister = () => {
         }
     }
             return (
-                <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'150px'}}>
+                <div style={{display:'flex', flexDirection:'column', justifyContent:"center",alignItems:'center'}}>
+                    <IconButton style={{ position: 'absolute', top: '10px', left: '10px' }} onClick={() => { window.location.href = "/" }}>
+                        <ArrowBackIcon/>
+                    </IconButton>
+                    <Paper sx={{padding:5, marginTop:'150px',display:"flex",flexDirection:'column',alignItems:"center"}}>
                     <Typography style={{marginBottom:'15px'}} variant='h5'>Register Doctor</Typography>
                     <div style={{display:'flex'}}>
-                        <div style={{display:'flex', flexDirection:'column', marginRight:'150px'}}>
-                            <TextField  sx={{ marginBottom:'15px' }}  id="username" name="username" label="username" />
-                            <TextField  sx={{ marginBottom:'15px' }} type="password" id="password" name="password" label='password' />
-                            <TextField  sx={{ marginBottom:'15px' }} id="name" name="name" label='name' />
-                            <TextField  sx={{ marginBottom:'15px' }} type="email" id="email" name="email" label='email'/>
+                        <div style={{display:'flex', flexDirection:'column',alignItems:"center", marginRight:'150px'}}>
+                            <TextField  sx={{ marginBottom:'16px' }}  id="username" name="username" label="username" />
+                            <TextField  sx={{ marginBottom:'16px' }} type="password" id="password" name="password" label='password' />
+                            <TextField  sx={{ marginBottom:'16px' }} id="name" name="name" label='name' />
+                            <TextField  sx={{ marginBottom:'16px' }} type="email" id="email" name="email" label='email'/>
+                            
                             {/* <input style={styles.input} type="date" id="DOB" name="DOB" placeholder='DOB' /> */}
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer sx={{ marginBottom:'15px' }} components={['DatePicker']}>
-                                    <DatePicker id="DOB" name="DOB" value={selectedDate} onChange={handleDateChange} label="Date of Birth" />
-                                </DemoContainer>
+                            <LocalizationProvider sx={{maxWidth:"223px",marginBottom:"16px"}} dateAdapter={AdapterDayjs}>
+                       
+                                    <DatePicker sx={{maxWidth:"223px",marginBottom:"16px"}} id="DOB" name="DOB" value={selectedDate} onChange={handleDateChange} label="Date of Birth" />
+                                
                             </LocalizationProvider>
+                            
                         </div>
-                        <div style={{display:'flex', flexDirection:'column', marginBottom:'15px'}}>
-                            <div style={{width:'259px' }}>
+                        <div style={{display:'flex', flexDirection:'column',alignItems:"center", marginBottom:'15px'}}>
+                            <div style={{width:'259px',display:"flex",flexDirection:'column' }}>
                                 {/* <label htmlFor="speciality">Specialty:</label>
                                 <select style={{...styles.input, width:'186px'}} id="speciality" name="speciality">
                                     <option value="dermatology">dermatology</option>
                                     <option value="pediatrics">pediatrics</option>
                                     <option value="orthopedics">orthopedics</option>
                                 </select> */}
-                                <Box sx={{marginBottom:'16px', minWidth: 120 }}>
-                                    <FormControl fullWidth>
+                                <Box fullWidth sx={{marginBottom:'16px',minWidth: "223px"}}>
+                                    <FormControl sx={{display:"flex",alignItems:"center",minWidth: "223px"}}>
                                         <InputLabel id="choice">dermatology</InputLabel>
                                         <Select
                                             labelId="choice"
@@ -174,6 +182,7 @@ const DoctorRegister = () => {
                                             value={speciality}
                                             label="Speciality"
                                             onChange={handleSpecialityChange}
+                                            sx={{minWidth: "223px"}}
                                             >
                                             <MenuItem value={"dermatology"}>dermatology</MenuItem>
                                             <MenuItem value={"pediatrics"}>pediatrics</MenuItem>
@@ -186,21 +195,20 @@ const DoctorRegister = () => {
                             <TextField sx={{ marginBottom:'16px' }} type="number" id="rate" name="rate" label='rate' />
                             <TextField sx={{ marginBottom:'18px' }} type="text" id="affiliation" name="affiliation" label='affiliation' />
                             <TextField sx={{ marginBottom:'15px' }} type="text" id="education" name="education" label='education' />
+                            
                         </div>
                     </div>
-                    <div style={{display:'flex', marginBottom:'15px', paddingLeft:'80px'}}>
-                        <Typography style={{fontSize: "1.1em", paddingTop:'7px', paddingRight:'3px'}} htmlFor="id">Your Id:</Typography>
-                        <Button style={{marginRight: "100px"}} component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload File <VisuallyHiddenInput id="id" type="file" />  </Button>
-                        <Typography style={{fontSize: "1.1em", paddingTop:'7px', paddingRight:'3px'}} htmlFor="license">Your Medical License:</Typography>
-                        <Button style={{marginRight: "75px"}} component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload File <VisuallyHiddenInput id="license" type="file" />  </Button>
-                    </div>
-                    <div style={{ marginBottom:'30px', display:'flex'}}>
-                    <Typography style={{fontSize: "1.1em", paddingRight:'3px', paddingTop:'4px'}} htmlFor="degree">Your Medical degree:</Typography>
-                    <Button component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload File <VisuallyHiddenInput id="degree" type="file" />  </Button>
-                    </div>
+                    <Stack spacing={1} direction={'column'} style={{ marginBottom:'30px'}}>
+                    <Button  component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload Identification <VisuallyHiddenInput id="id" type="file" />  </Button>
+                    <Button  component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload Medical License <VisuallyHiddenInput id="license" type="file" />  </Button>
+                    <Button component="label" variant="contained" startIcon={<CloudUploadIcon />} name="files"> Upload Medical degree <VisuallyHiddenInput id="degree" type="file" />  </Button>
+                    </Stack>
                     <Button style={{ marginBottom:'15px'}} type="submit" variant='contained' onClick={register} value="register"> Register </Button>
                     {message && <Alert severity="error">{message}</Alert>}
+                    </Paper>
+                    
                 </div>
+                
             );
         };
         

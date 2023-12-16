@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Button from '@mui/material/Button';
 import MuiAlert  from '@mui/material/Alert';
-import { Typography } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,6 +13,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -70,7 +72,11 @@ const patientRegister = () => {
         }
     }
             return (
-                <div style={{display:'flex', flexDirection:'column', alignItems:'center', marginTop:'150px'}}>
+                <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                    <IconButton style={{ position: 'absolute', top: '10px', left: '10px' }} onClick={() => { window.location.href = "/" }}>
+                        <ArrowBackIcon/>
+                    </IconButton>
+                    <Paper sx={{padding:5, marginTop:'150px',display:"flex",flexDirection:"column",alignItems:"center"}}>
                     <Typography style={{marginBottom:'15px'}} variant='h5'>Register Patient</Typography>
                     <div style={{display:'flex'}}>
                         <div style={{display:'flex', flexDirection:'column', marginRight:'150px'}}>
@@ -106,6 +112,7 @@ const patientRegister = () => {
                     </div>
                     <Button style={{ marginBottom:'15px'}} type="submit" variant='contained' onClick={register} value="register"> Register </Button>
                     {message && <Alert severity="error">{message}</Alert>}
+                    </Paper>
                 </div>
             );
         };

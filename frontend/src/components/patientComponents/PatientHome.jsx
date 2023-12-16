@@ -79,7 +79,7 @@ const PatientHome = () => {
         // Navigate to the new page
         window.location.href = breadcrumb.href;
       }
-      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleHealthRecords={handleHealthRecords} handleAppointments={handleAppointments} handleHistory={handleHistory} handleLinkFamily={handleLinkFamily} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions}  handleAppointments={handleAppointments}  handleLinkFamily={handleLinkFamily} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
       function goHome() {
         const breadcrumb = { label: "Home", href: "/patient/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
