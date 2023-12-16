@@ -127,7 +127,7 @@ const Login = async (req, res) => {
 };
 
 const changePasswordAdmin = async (req, res) => {
-  console.log("AAAAAAAAAAAAAAA")
+
   oldPassword = req.body.oldPassword;
   newPassword = req.body.newPassword;
   confirmationPassword = req.body.confirmationPassword;
@@ -448,7 +448,6 @@ const callUpdateHealthPackage = async (req, res) => {
 };
 const updateHealthPackages = async (req, res) => {
   //if not given any variable to update, it wont return an error and just leave it blank in DB
-  console.log(req.body)
   const healthPackages = await healthPackageTable.find();
   const validated = validateHealthPackage(req.body);
   if (validated.error)
@@ -477,7 +476,6 @@ const updateHealthPackages = async (req, res) => {
 };
 
 const callDeleteHealthPackage = async (req, res) => {
-  console.log(req.body);
   try {
     let healthPackages = await healthPackageTable.findOneAndUpdate(
       { packageName: req.body.packageName },
@@ -541,9 +539,7 @@ const deleteUser = async (req, res) => {
       }
     } 
     let fams = await patientsTable.find({agentID: deletedUser._id});
-    console.log(fams);
     for(let i = 0; i < fams.length; i++){
-      console.log(fams[i]);
       let patient = await patientsTable.findById(fams[i]._id);
       patient.agentID = undefined;
       patient.save();
@@ -588,7 +584,6 @@ async function showDoctorRecord(req, res) {
   let result = await requestsTable
     .find({ _id: doctorId })
     .select(["id", "medicalLicense", "medicalDegree"]);
-  console.log(type);
   let File;
   if (type == "id") {
     File = result[0].id.data;

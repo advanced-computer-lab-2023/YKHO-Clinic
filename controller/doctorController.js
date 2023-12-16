@@ -79,7 +79,6 @@ async function createPrescription(req, res) {
 
 
 async function createMedicine(req, res){
-  console.log(req.body)
   id=req.user._id;
   let prescription1 =await prescription.findOne({_id:req.params.id});
   idmed=await medicine.findOne({name:req.body.name}).select(["_id"]);
@@ -135,7 +134,6 @@ async function updateMedicine(req,res){
     }
   }
   prescription1= await prescription.findByIdAndUpdate(req.body.id,{ $set: {MedicineNames: medicineup} },{ new:true  });
-  console.log(prescription1)
   res.status(200).json({result:prescription1})
 }
 async function updatePresc(req,res){
@@ -671,7 +669,6 @@ async function getMedicine(req, res) {
 
 async function downloadPresc(req, res) {
   const id = req.params.id;
-  console.log(id);
   const result = await prescription.findById(id).populate("patientID", "-healthRecords -medicalHistory");
 
   // Create a new PDF document

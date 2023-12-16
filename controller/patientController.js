@@ -547,7 +547,6 @@ const readDetailsFamily= async(req,res)=>{
  
   let patient=await patientModel.findById(familymem,"-healthRecords -medicalHistory");
   let result= await healthPackageModel.findOne({packageName:patient.subscription.healthPackage});
-  console.log(result);
   res.status(200).json({result:result});
 }
 
@@ -1374,7 +1373,6 @@ const LinkFamilyMemeber = async (req, res) => {
     { new: true }
   );
 
-  console.log(updatedPatient.familyMembers);
   return res.status(200).json({message:"Family Member Linked Successfully"});
 
 };

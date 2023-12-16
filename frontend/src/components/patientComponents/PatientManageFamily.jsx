@@ -319,22 +319,22 @@ const PatientManageFamily = () => {
                                                     <Stack direction='row'>
                                                         {member.state == "unsubscribed" && member.agent == true&&
                                                             <Button variant="contained" onClick={() => { subscribe(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                subscribe
+                                                                Subscribe to Health Package
                                                             </Button>
                                                         }
                                                         {(member.state == "subscribed" || member.state == "cancelled") && member.agent == true&&
                                                             <Button variant="contained" onClick={() => { viewDetails(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                view package
+                                                                View Health Package Subscription
                                                             </Button>
                                                         }
                                                         {member.state == "subscribed" &&member.agent == true&&
                                                             <Button variant="contained" onClick={() => { cancel(member.nationalID) }} sx={{marginRight: 2}}>
-                                                                cancel
+                                                                Cancel Subscription
                                                             </Button>
                                                         }
                                                         {member.agent == false && 
                                                             <Button variant="contained" onClick={() => { setCurrent(member.nationalID);setLink(true) }}>
-                                                                Link User
+                                                                Link User To Existing Patient
                                                             </Button>
                                                         }
                                                     </Stack>
