@@ -1,17 +1,17 @@
-# El7a2ny: Virtual Clinic and Pharmacy
+## El7a2ny: Virtual Clinic and Pharmacy
 
-## Motivation
+#### Motivation
 The El7a2ny project is motivated to provide a comprehensive virtual clinic and pharmacy solution that will change healthcare accessibility and improve the effectiveness of medical services. The main objective is to develop a smooth platform that facilitates communication between doctors, patients, and pharmacists in order to promote a more integrated healthcare ecosystem.
 
-## Build Status
+#### Build Status
 - There are some styling problems 
 - the Backend code can be optimised as it is slightly slow 
 - the images can be stored online instead of the data
 
-## Code Style 
+#### Code Style 
 The project is formatted using prettier, ESLint, and the MVC design pattern, MVC software architectural pattern divides the associated program logic into three interconnected pieces, which are then used to construct user interfaces. This is done in order to distinguish between how information is displayed to and accepted from the user and internal representations of that information. Therefore, the backend files were separated into three categories: M (models), which contain the model schema and reflect the database's core; C (controller), which contains the functions required for the routes; and V (views), which are representations of the MERN stack's views and are represented by the react frontend server. Additionally, as can be seen in API References, our project's routes were abstracted from the controller function. 
 
-## Tech and Frameworks
+#### Tech and Frameworks
 MERN stands for MongoDB, Express, React, Node, after the four key technologies that make up the stack.
 
 - MongoDB - document database
@@ -21,7 +21,7 @@ MERN stands for MongoDB, Express, React, Node, after the four key technologies t
 
 Express and Node make up the middle (application) tier. Express.js is a server-side web framework, and Node.js the JavaScript server platform.
 
-## Code Examples
+#### Code Examples
 
 ```javascript
 const requireAuthDoctor = (req, res, next) => {
@@ -132,7 +132,7 @@ async function cancelAppointment(req, res) {
   res.status(200).json({ result: "done" });
 }
 ```
-## Installation 
+#### Installation 
 
 you can install the project using git clone 'https://github.com/advanced-computer-lab-2023/YKHO-Clinic.git' then run npm install to download all the needed packages for the backend and then navigate to frontend using cd frontend then run npm install to download all the needed packages for the frontend.
 
@@ -188,12 +188,12 @@ After cloning the project or downloading the ZIP folder open the project using t
 
 nodemon app to run the backend server on port :3000
 cd frontend npm start to run the frontend server on port :5173
-## Tests
+#### Tests
 sewar
-#### API references
+######## API references
 **Admin's Routes**
 
-###### Login
+############ Login
 ```
     POST /login
 ```
@@ -202,7 +202,7 @@ sewar
 | username | string | admin's username |
 | password | string | admin's password |
 
-###### Logout
+############ Logout
 ```
 GET /logout
 ```
@@ -211,7 +211,7 @@ GET /logout
 | ---------|----------| -------|
 | none | none | none |
 
-###### Forget Password
+############ Forget Password
 
 ```
 POST /forgetPassword/enterUsername
@@ -220,7 +220,7 @@ POST /forgetPassword/enterUsername
 | ---------|----------| -------|
 | username | string | user's username |
 
-###### View Requests
+############ View Requests
 ```
 GET /admin/uploadedInfo
 ```
@@ -229,7 +229,7 @@ GET /admin/uploadedInfo
 | ---------|----------| -------|
 | none | none | none |
 
-###### Retrieve Health Packages
+############ Retrieve Health Packages
 ```
 GET /getHealthPackages
 ```
@@ -237,7 +237,7 @@ GET /getHealthPackages
 | ---------|----------| -------|
 | none | none | none |
 
-#### Change Password Admin
+######## Change Password Admin
 
 **Route:** `/admin/changePasswordAdmin`
 
@@ -250,7 +250,7 @@ GET /getHealthPackages
   "confirmationPassword": "newPassword"
 ```
 
-#### Show Doctor Record
+######## Show Doctor Record
 
 **Route:** `/admin/uploadedInfo/:id/:file`
 
@@ -260,55 +260,55 @@ GET /getHealthPackages
 - `:id` (string): Doctor's ID.
 - `:file` (string): Type of file to retrieve (`id`, `medicalLicense`, or `medicalDegree`).
 
-#### Accept Request
+######## Accept Request
 
 **Route:** `/admin/acceptRequest`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `email` (string): Email of the doctor to be accepted.
 
-#### Reject Request
+######## Reject Request
 
 **Route:** `/admin/rejectRequest`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `email` (string): Email of the doctor to be rejected.
 
-#### Create Admin
+######## Create Admin
 
 **Route:** `/admin/register`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `username` (string): Admin's username.
 - `password` (string): Admin's password.
 - `email` (string): Admin's email.
 
-#### Delete User
+######## Delete User
 
 **Route:** `/admin/deleteUser`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `username` (string): Username of the user to be deleted.
 
-#### Add Health Packages
+######## Add Health Packages
 
 **Route:** `/admin/healthPackages`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `packageName` (string): Name of the health package.
 - `price` (number): Price of the health package.
@@ -316,7 +316,7 @@ GET /getHealthPackages
 - `pharmacyDiscount` (number): Discount offered by pharmacies for the health package.
 - `familyDiscount` (number): Discount offered for family plans for the health package.
 
-#### Update Health Packages
+######## Update Health Packages
 
 **Route:** `/admin/healthPackages/updated`
 
@@ -324,7 +324,7 @@ GET /getHealthPackages
 
 **Middleware:** `requireAuthAdmin`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `packageName` (string): Name of the health package to be updated.
 - `price` (number): Updated price of the health package.
@@ -332,18 +332,18 @@ GET /getHealthPackages
 - `pharmacyDiscount` (number): Updated discount offered by pharmacies for the health package.
 - `familyDiscount` (number): Updated discount offered for family plans for the health package.
 
-#### Delete Health Package
+######## Delete Health Package
 
 **Route:** `/admin/healthPackages/deleted`
 
 **Request type:** `POST`
 
-###### Function Parameters:
+############ Function Parameters:
 
 - `packageName` (string): Name of the health package to be deleted.
 
 **Doctor's Routes**
-## Add Doctor
+#### Add Doctor
 
 - **URL:** 
   - `POST /addDoctor`
@@ -376,7 +376,7 @@ GET /getHealthPackages
 
 
 
-## Add Appointment
+#### Add Appointment
 
 - **URL:** 
   - `POST /addAppointment`
@@ -394,7 +394,7 @@ GET /getHealthPackages
 | status     | string | Status of the appointment   |
 
 
-## Create Prescription
+#### Create Prescription
 
 - **URL:** 
   - `POST /doctor/addPrescription`
@@ -416,7 +416,7 @@ GET /getHealthPackages
 | id                  | string | Patient ID                  |
 
 
-## Add Medicine to Prescription
+#### Add Medicine to Prescription
 
 - **URL:** 
   - `POST /doctor/addMedicine/:id`
@@ -442,7 +442,7 @@ GET /getHealthPackages
     - `dosage` (string): Dosage information
     - `price` (number): Price of the medicine
 
-## Delete Medicine from Prescription
+#### Delete Medicine from Prescription
 
 - **URL:** 
   - `POST /doctor/deleteMedicine`
@@ -465,7 +465,7 @@ GET /getHealthPackages
 | price      | number | Price of the medicine      |
 
 
-## Update Prescription Medicine
+#### Update Prescription Medicine
 
 - **URL:** 
   - `POST /doctor/updatePrescMed`
@@ -489,7 +489,7 @@ GET /getHealthPackages
 
 
 
-## Update Prescription
+#### Update Prescription
 
 - **URL:** 
   - `POST /doctor/updatePresc/:id`
@@ -512,7 +512,7 @@ GET /getHealthPackages
 | filled (Optional) | bool   | New filled status for prescription |
 
 
-## Get Doctor Notifications
+#### Get Doctor Notifications
 
 - **URL:** 
   - `POST /doctor/getNotifications`
@@ -533,7 +533,7 @@ GET /getHealthPackages
 | read       | boolean | Optional flag for marking notifications as read |
 
 
-## Change Doctor Password
+#### Change Doctor Password
 
 - **URL:** 
   - `POST /doctor/edit/changePassword`
@@ -553,7 +553,7 @@ GET /getHealthPackages
     - `newPassword` (string): New password
     - `confirmationPassword` (string): Confirmation of the new password
 
-## Get Doctor's Patients
+#### Get Doctor's Patients
 
 - **URL:** 
   - `GET /doctor/patients`
@@ -572,7 +572,7 @@ GET /getHealthPackages
   - `upcoming` (boolean, optional): Filters patients by upcoming appointments.
 
 
-## Get Doctor's Patient Information
+#### Get Doctor's Patient Information
 
 - **URL:** 
   - `GET /doctor/patients/:id`
@@ -590,7 +590,7 @@ GET /getHealthPackages
   - `id` (string): Patient ID
 
 
-## Get Doctor's Upcoming Appointments
+#### Get Doctor's Upcoming Appointments
 
 - **URL:** 
   - `GET /doctor/upcomingAppointments`
@@ -605,7 +605,7 @@ GET /getHealthPackages
   - Retrieves a list of upcoming appointments for a doctor.
 
 
-## Update Doctor Information
+#### Update Doctor Information
 
 - **URL:** 
   - `POST /doctor/updateInfo`
@@ -624,7 +624,7 @@ GET /getHealthPackages
     - `updateTerm` (string): The term to be updated (e.g., "email", "rate", "affiliation")
     - `updateValue` (string/number): The new value for the specified term
 
-## Get Doctor's Filtered Appointments
+#### Get Doctor's Filtered Appointments
 
 - **URL:** 
   - `GET /doctor/AppointmentsFilter`
@@ -643,7 +643,7 @@ GET /getHealthPackages
   - `searchvalue` (string, optional): Filters appointments by status.
   - `filters` (string, optional): Filters appointments by type ("upcoming" or "past").
 
-## Get Doctor's Appointments
+#### Get Doctor's Appointments
 
 - **URL:** 
   - `GET /doctor/Appointments`
@@ -657,7 +657,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves a list of appointments for a doctor.
 
-## Check Doctor's Contract Status
+#### Check Doctor's Contract Status
 
 - **URL:** 
   - `GET /doctor/contract`
@@ -674,7 +674,7 @@ GET /getHealthPackages
 - **Query Parameters:**
   - `accept` (string, optional): Acceptance status ("accept" to accept the contract).
 
-## Upload Patient Health Record PDF
+#### Upload Patient Health Record PDF
 
 - **URL:** 
   - `POST /doctor/patients/:id/upload-pdf`
@@ -695,7 +695,7 @@ GET /getHealthPackages
 - **Request:**
   - Uses `multipart/form-data` encoding for file upload with a single file field named "healthRecords".
 
-## Get Doctor's Time Slots
+#### Get Doctor's Time Slots
 
 - **URL:** 
   - `GET /doctor/timeSlots`
@@ -709,7 +709,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves the time slots for a doctor.
 
-## Add Doctor's Time Slot
+#### Add Doctor's Time Slot
 
 - **URL:** 
   - `POST /doctor/addTimeSlot`
@@ -728,7 +728,7 @@ GET /getHealthPackages
   - `from` (string): Starting time of the time slot.
   - `to` (string): Ending time of the time slot.
 
-## Delete Doctor's Time Slot
+#### Delete Doctor's Time Slot
 
 - **URL:** 
   - `GET /doctor/deleteTimeSlot/:id`
@@ -746,7 +746,7 @@ GET /getHealthPackages
   - `id` (string): ID of the time slot to be deleted.
 
 
-## Doctor's Schedule Follow-Up
+#### Doctor's Schedule Follow-Up
 
 - **URL:** 
   - `GET /doctor/schedFollowUp/:date`
@@ -763,7 +763,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `date` (string): Date for scheduling the follow-up appointment.
 
-## Doctor's Reserve Follow-Up
+#### Doctor's Reserve Follow-Up
 
 - **URL:** 
   - `POST /doctor/reserve`
@@ -783,7 +783,7 @@ GET /getHealthPackages
   - `time` (string): Time slot for scheduling the follow-up appointment.
 
 
-## Doctor's Show Health Record
+#### Doctor's Show Health Record
 
 - **URL:** 
   - `GET /doctor/patients/:id/:healthId`
@@ -801,7 +801,7 @@ GET /getHealthPackages
   - `id` (string): ID of the patient.
   - `healthId` (string): Index or ID of the health record to be retrieved.
 
-## Doctor's View Wallet
+#### Doctor's View Wallet
 
 - **URL:** 
   - `GET /doctor/Wallet`
@@ -815,7 +815,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves and displays the wallet details of the authenticated doctor.
 
-## Doctor's View Prescriptions
+#### Doctor's View Prescriptions
 
 - **URL:** 
   - `GET /doctor/Prescriptions`
@@ -832,7 +832,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `id` (Query Parameter): ID of the patient for whom prescriptions are being viewed.
 
-## Doctor's Cancel Appointment
+#### Doctor's Cancel Appointment
 
 - **URL:** 
   - `POST /doctor/cancelAppointment`
@@ -849,7 +849,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `id` (Request Body): ID of the appointment to be cancelled.
 
-## Check Logged In Status
+#### Check Logged In Status
 
 - **URL:** 
   - `GET /loggedIn`
@@ -863,7 +863,7 @@ GET /getHealthPackages
 - **Description:**
   - Checks if a user is logged in and returns the login status along with the user type.
 
-## Get Doctor Name
+#### Get Doctor Name
 
 - **URL:** 
   - `GET /doctor/name`
@@ -877,7 +877,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves the name of the authenticated doctor.
 
-## Reschedule Appointment
+#### Reschedule Appointment
 
 - **URL:** 
   - `POST /rescheduleAppointment`
@@ -896,7 +896,7 @@ GET /getHealthPackages
   - `date`: New date for the appointment.
   - `time`: New time range for the appointment.
 
-## Get Medicine
+#### Get Medicine
 
 - **URL:**
   - `GET /doctor/getMedicine`
@@ -910,7 +910,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves a list of medicines for a doctor.
 
-## Show Follow-Up Requests
+#### Show Follow-Up Requests
 
 - **URL:**
   - `GET /doctor/showRequests`
@@ -924,7 +924,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves follow-up requests for a doctor.
 
-## Accept Follow-Up Request
+#### Accept Follow-Up Request
 
 - **URL:**
   - `POST /doctor/acceptFollowUp`
@@ -941,7 +941,7 @@ GET /getHealthPackages
 - **Request Body:**
   - Requires the `id` of the follow-up request.
 
-## Reject Follow-Up Request
+#### Reject Follow-Up Request
 
 - **URL:**
   - `POST /doctor/rejectFollowUp`
@@ -958,7 +958,7 @@ GET /getHealthPackages
 - **Request Body:**
   - Requires the `id` of the follow-up request.
 
-## Download Prescription
+#### Download Prescription
 
 - **URL:**
   - `GET /downloadPresc/:id`
@@ -988,7 +988,7 @@ GET /getHealthPackages
 
 **Middleware:** `requireAuthPatient`
 
-## Function Parameters:
+#### Function Parameters:
 
 - `read` (boolean, optional): If provided and set to `true`, it marks all notifications as read.
 
@@ -998,7 +998,7 @@ GET /getHealthPackages
 
 **Request type:** `POST`
 
-## Function Parameters:
+#### Function Parameters:
 
 - `id` (string): ID of the notification to be deleted.
 
@@ -1008,7 +1008,7 @@ GET /getHealthPackages
 
 **Request type:** `POST`
 
-## Function Parameters:
+#### Function Parameters:
 
 - `username` (string): Username for the patient.
 - `password` (string): Password for the patient.
@@ -1028,7 +1028,7 @@ GET /getHealthPackages
 
 **Middleware:** `requireAuthPatient`
 
-## Function Parameters:
+#### Function Parameters:
 
 - `name` (string): Name of the family member.
 - `nationalID` (string): National ID of the family member.
@@ -1105,7 +1105,7 @@ GET /getHealthPackages
 
 **Middleware:** `requireAuthPatient`
 
-## Subscription Successful
+#### Subscription Successful
 
 - **URL:**
   - `GET /subscriptionSuccessful/:healthPackage/:i`
@@ -1123,7 +1123,7 @@ GET /getHealthPackages
   - `healthPackage`: The health package to which the patient is subscribed.
   - `i`: Index of the family member (if applicable). Pass `-1` if not applicable.
 
-## Pay Prescription
+#### Pay Prescription
 
 - **URL:**
   - `GET /patient/paymentcreditpresc/:id`
@@ -1140,7 +1140,7 @@ GET /getHealthPackages
 - **URL Parameters:**
   - `id`: Prescription ID.
 
-## Get Family Member Subscription
+#### Get Family Member Subscription
 
 - **URL:**
   - `GET /patient/getFamilyMemberSub/:nationalID`
@@ -1157,7 +1157,7 @@ GET /getHealthPackages
 - **URL Parameters:**
   - `nationalID`: National ID of the family member.
 
-## Delete Family Member Subscription
+#### Delete Family Member Subscription
 
 - **URL:**
   - `POST /patient/deleteFamilyMemberSubscription`
@@ -1177,7 +1177,7 @@ GET /getHealthPackages
 - **Request Body:**
   - `nationalID: ` National ID of the family member.
 
-## Delete Patient Subscription
+#### Delete Patient Subscription
 
 - **URL:**
   - `GET /patient/deleteSubscription`
@@ -1191,7 +1191,7 @@ GET /getHealthPackages
 - **Description:**
   - Cancels the subscription of the patient.
 
-## Subscribe Family Member to Health Package
+#### Subscribe Family Member to Health Package
 
 - **URL:**
   - `POST /patient/subscribeFamilyMember/:healthPackage`
@@ -1216,7 +1216,7 @@ GET /getHealthPackages
   - `paymentMethod`: Payment method (wallet or card).
 
 
-## Read Health Packages for Patient
+#### Read Health Packages for Patient
 
 - **URL:**
   - `GET /patient/readHealthPackages/:nationalID`
@@ -1236,7 +1236,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `nationalID` (URL parameter): The national ID of the patient.
 
-## Subscribe Patient to Health Package
+#### Subscribe Patient to Health Package
 
 - **URL:**
   - `POST /patient/subscribe/:healthPackage`
@@ -1264,7 +1264,7 @@ GET /getHealthPackages
   - If the payment method is "card," a Stripe Checkout session is created, and the user is redirected to complete the payment. The success and cancel URLs are specified in the Stripe Checkout session.
 
 
-## Read Health Package for Patient
+#### Read Health Package for Patient
 
 - **URL:**
   - `GET /patient/readHealthPackage/:healthPackage`
@@ -1284,7 +1284,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `healthPackage` (URL parameter): The name of the health package.
 
-## Read Family Members Subscriptions for Patient
+#### Read Family Members Subscriptions for Patient
 
 - **URL:**
   - `GET /patient/readFamilyMembersSubscriptions`
@@ -1298,7 +1298,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves information about the subscriptions of family members linked to the patient.
 
-## Read Subscription for Patient
+#### Read Subscription for Patient
 
 - **URL:**
   - `GET /patient/readSubscription`
@@ -1312,7 +1312,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves information about the patient's subscription.
 
-## Get Patient Information
+#### Get Patient Information
 
 - **URL:**
   - `GET /patient`
@@ -1329,7 +1329,7 @@ GET /getHealthPackages
 - **Request Method:**
   - `GET`
 
-## Get Patient ID
+#### Get Patient ID
 
 - **URL:**
   - `GET /patient/getMyID`
@@ -1343,7 +1343,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves the ID of the authenticated patient.
 
-## Add Follow-Up Request
+#### Add Follow-Up Request
 
 - **URL:**
   - `POST /patient/addFollowUpRequest`
@@ -1366,7 +1366,7 @@ GET /getHealthPackages
   - `time` (String): Time range for the follow-up request in the format "HH:mm-HH:mm".
   - `id` (String): ID of the patient.
 
-## Reschedule Appointment (Patient)
+#### Reschedule Appointment (Patient)
 
 - **URL:**
   - `POST /patient/rescheduleAppointment`
@@ -1388,7 +1388,7 @@ GET /getHealthPackages
   - `date` (Date): New date for the rescheduled appointment.
   - `time` (String): New time range for the rescheduled appointment in the format "HH:mm-HH:mm".
 
-## Get Time Slots on Date (Patient)
+#### Get Time Slots on Date (Patient)
 
 - **URL:**
   - `GET /patient/getTimeSlotOnDate`
@@ -1410,7 +1410,7 @@ GET /getHealthPackages
   - `day` (Number): Day of the week (0 for Sunday, 1 for Monday, and so on).
   - `id` (String): ID of the doctor for whom time slots are requested.
 
-## Cancel Appointment (Patient)
+#### Cancel Appointment (Patient)
 
 - **URL:**
   - `POST /patient/cancelAppointment`
@@ -1431,7 +1431,7 @@ GET /getHealthPackages
   - `id` (String): ID of the appointment to be cancelled.
 
 
-## Get Doctor Specialities
+#### Get Doctor Specialities
 
 - **URL:**
   - `GET /patient/doctorSpecialities`
@@ -1445,7 +1445,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves the list of available doctor specialities.
 
-## View Prescription PDF
+#### View Prescription PDF
 
 - **URL:**
   - `GET /patient/prescriptionPDF/:id`
@@ -1465,7 +1465,7 @@ GET /getHealthPackages
 - **Parameters:**
   - `:id` (Prescription ID)
 
-## View All Prescription Information
+#### View All Prescription Information
 
 - **URL:**
   - `GET /patient/AllPresecrptionsInfo`
@@ -1479,7 +1479,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves and sends information about all prescriptions associated with the authenticated patient.
 
-## Get Upcoming Appointments
+#### Get Upcoming Appointments
 
 - **URL:**
   - `GET /patient/appointmentsCards`
@@ -1493,7 +1493,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves and sends information about upcoming appointments for the authenticated patient.
 
-## Get Family Members' Health Plans
+#### Get Family Members' Health Plans
 
 - **URL:**
   - `GET /patient/familyMembersPlans`
@@ -1507,7 +1507,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves and sends information about the health plans of the authenticated patient's family members.
 
-## Get Patient Health Plan
+#### Get Patient Health Plan
 
 - **URL:**
   - `GET /patient/plan`
@@ -1521,7 +1521,7 @@ GET /getHealthPackages
 - **Description:**
   - Retrieves and sends information about the health plan of the authenticated patient.
 
-## Reserve Slot for Family Member
+#### Reserve Slot for Family Member
 
 - **URL:**
   - `GET /patient/doctors/:id/familyMember/reserve`
@@ -1541,7 +1541,7 @@ GET /getHealthPackages
   - `time`: Appointment time slot (in the format startHour:startMinute,endHour:endMinute)
   - `famID`: Family member ID
 
-## Show Slots for Family Member
+#### Show Slots for Family Member
 
 - **URL:**
   - `GET /patient/doctors/:id/showSlots/familyMember`
@@ -1561,7 +1561,7 @@ GET /getHealthPackages
 - **Query Parameters:**
   - `date`: Appointment date (in the format YYYY-MM-DD)
 
-## Reserve Slot
+#### Reserve Slot
 
 - **URL:**
   - `GET /patient/doctors/:id/reserve`
@@ -1586,7 +1586,7 @@ GET /getHealthPackages
   - `date`: Appointment date (in the format YYYY-MM-DD)
   - `time`: Appointment time range (e.g., "10:00,11:00")
 
-## Show Slots
+#### Show Slots
 
 - **URL:**
   - `GET /patient/doctors/:id/showSlots`
@@ -1608,7 +1608,7 @@ GET /getHealthPackages
   - `date`: Appointment date (in the format YYYY-MM-DD, optional)
 
 
-## Failure Endpoint
+#### Failure Endpoint
 
 - **URL:**
   - `GET /fail`
@@ -1623,7 +1623,7 @@ GET /getHealthPackages
   - Redirects to a specified URL indicating a failure status, typically used in payment failure scenarios.
 
 
-## Success Endpoint
+#### Success Endpoint
 
 - **URL:**
   - `GET /success/:id`
@@ -1640,7 +1640,7 @@ GET /getHealthPackages
 - **Parameters:**
 - `id`: Appointment ID
 
-## View Wallet Endpoint
+#### View Wallet Endpoint
 
 - **URL:**
   - `GET /patient/Wallet`
@@ -1787,7 +1787,7 @@ post /request/createRequest
 | affiliation                 | string | Future Doctor affiliation       |
 | education                 | string | Future Doctor education       |
 
-## Chats Endpoint
+#### Chats Endpoint
 
 - **URL:**
   - `GET /chats`
@@ -1804,7 +1804,7 @@ post /request/createRequest
 
 json
 Copy code
-## Send Message Endpoint
+#### Send Message Endpoint
 
 - **URL:**
   - `POST /text`
@@ -1824,7 +1824,7 @@ Copy code
     - `text`: Message content.
     - `time`: Time when the message was sent (formatted as a string).
 
-## Read Message Endpoint
+#### Read Message Endpoint
 
 - **URL:**
   - `POST /read`
@@ -1849,7 +1849,7 @@ Copy code
     - `room`: Chat room identifier.
 
 
-## Start Chat Endpoint
+#### Start Chat Endpoint
 
 - **URL:**
   - `POST /start`
@@ -1870,7 +1870,7 @@ Copy code
     - `patientID`: Patient's user ID.
     - `doctorID`: Doctor's user ID.
 
-## Contacts Endpoint
+#### Contacts Endpoint
 
 - **URL:**
   - `GET /contacts`
@@ -1884,7 +1884,7 @@ Copy code
 - **Description:**
   - Retrieves a list of contacts (chats) for a patient or doctor.
 
-## Unread Messages Endpoint
+#### Unread Messages Endpoint
 
 - **URL:**
   - `GET /unread`
@@ -1898,7 +1898,7 @@ Copy code
 - **Description:**
   - Retrieves the total number of unread messages for a patient or doctor.
 
-## Rooms Endpoint
+#### Rooms Endpoint
 
 - **URL:**
   - `GET /rooms`
@@ -1915,7 +1915,7 @@ Copy code
 - **Request Method:**
   - `GET`
 
-# Pharmacist Read Endpoint
+## Pharmacist Read Endpoint
 
 - **URL:**
   - `GET /pharmacistRead`
@@ -1931,7 +1931,7 @@ Copy code
 
 
 
-# Pharmacist Read Endpoint
+## Pharmacist Read Endpoint
 
 - **URL:**
   - `GET /pharmacistRead`
@@ -1945,10 +1945,10 @@ Copy code
 - **Description:**
   - Marks pharmacist messages as read for a doctor in a pharmacist chat.
 
-## Features
+#### Features
 we have three main users in our website + sewar
 
-## Tests
+#### Tests
 ![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
 
 ![jjj](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/fd46db25-3395-4f3b-b917-ffb166519672)
@@ -1957,17 +1957,17 @@ we have three main users in our website + sewar
 
 
 
-## How to use
+#### How to use
 You can use our website as one of three main users (Admin , Doctor, or Patient), you can sign up for an account from the sign up page and login to the website as a patient or if you are a doctor, you will submit a request which will be revised by the admin or if you are an admin the company will create an account for you in its own then you can login and change your password and use our features.
-## Contribute
+#### Contribute
 
 We welcome contributions from the community! If you'd like to contribute to this project, please follow these guidelines:
 
-### Issues
+###### Issues
 
 If you find a bug, have a feature request, or want to discuss something related to the project, please check the [Issues](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/issues) section. If the issue doesn't already exist, feel free to open a new one.
 
-### Pull Requests
+###### Pull Requests
 
 We appreciate pull requests! Before submitting a pull request, please make sure to:
 
@@ -1977,7 +1977,7 @@ We appreciate pull requests! Before submitting a pull request, please make sure 
 4. Update the documentation if necessary.
 5. Ensure your code passes the existing tests.
 
-#### How to submit a Pull Request
+######## How to submit a Pull Request
 
 1. Fork the project.
 2. Create a new branch: `git checkout -b feature-name`.
@@ -1987,13 +1987,13 @@ We appreciate pull requests! Before submitting a pull request, please make sure 
 
 
 
-## Credits
+#### Credits
 - [mongoDb docs](https://www.mongodb.com/docs/manual/introduction/)
 - [Material UI](https://www.youtube.com/watch?v=Xoz31I1FuiY)
 - [React](https://www.youtube.com/watch?v=hQAHSlTtcmY)
 - [Node.Js](https://www.youtube.com/watch?v=TlB_eWDSMt4)
 
-## License
+#### License
 
 This project is licenced under [Apache license 2.0](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/blob/main/License.txt)
 
