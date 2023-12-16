@@ -29,7 +29,7 @@ async function showMyPatients(req,res){
     let result
     id=req.user._id;
     if(req.query.name){
-         result = await appointment.find({doctorID:id}).populate("patientID",'name mobileNumber').select(["patientID","-_id","date"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name mobileNumber').select(["patientID","-_id","date","status"])
          result=result.filter((c)=>{
             
             return c.patientID.name.substring(0,req.query.name.length)==req.query.name
@@ -38,9 +38,19 @@ async function showMyPatients(req,res){
     }
     else{
         
-         result = await appointment.find({doctorID:id}).populate("patientID",'name mobileNumber').select(["patientID","-_id","date"])
+         result = await appointment.find({doctorID:id}).populate("patientID",'name mobileNumber').select(["patientID","-_id","date","status"])
         
     }
+    console.log(result)
+    console.log("--------------------")
+    console.log(req.query.upcoming);
+    if(req.query.upcoming=="true"){
+        console.log("HERE YABN EL MTNAKA")
+        result = result.filter((c)=>{
+            return c.status=="upcoming";
+        })
+    }
+    console.log(result)
     for(i in result){
         for(let j=0;j<result.length;j++){
             if(i!=j){
@@ -52,7 +62,7 @@ async function showMyPatients(req,res){
             }
         } 
     }
-
+    
 
     res.status(200).json({result:result});
 }
