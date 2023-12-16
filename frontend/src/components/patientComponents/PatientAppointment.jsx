@@ -184,13 +184,6 @@ const PatientAppointments = () => {
         }).catch((err) => {
             console.log(err);
         });
-        await axios.get(`http://localhost:3000/patient/getTimeSlotOnDate?id=${id}&&date=${date}&&day=${day}`, {
-            withCredentials: true,
-        }).then((res) => {
-            setTimeSlots(res.data.result);
-        }).catch((err) => {
-            console.log(err);
-        });
     }
 
     async function rescheduleAppointment(id, date, time) {
@@ -264,6 +257,7 @@ const PatientAppointments = () => {
             console.log(err);
         });
     }
+    
     return (
         <div>
             {result && <div>

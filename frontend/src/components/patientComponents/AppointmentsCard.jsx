@@ -69,7 +69,7 @@ export default function AppointmentCard(props) {
                     <LocalizationProvider dateAdapter={AdapterDayjs} sx={{ marginTop: 5 }}>
                         <DatePicker id="searchDate" minDate={today.add(1, 'day')} value={rescheduleDate} onChange={(date) => {
                             setRescheduleDate(date);
-                            props.getSlots(props.doctorID, date, new Date(date).getDay())
+                            // props.getSlots(props.doctorID, date, new Date(date).getDay())
                         }} />
                     </LocalizationProvider>
                     <Box sx={{ minWidth: 120 }}>
@@ -103,7 +103,7 @@ export default function AppointmentCard(props) {
                 </DialogActions>
             </Dialog>}
             {props.status != "completed" && props.status != "cancelled" &&<Dialog open={openPay} onClose={handleClose}>
-                <DialogTitle>Reschudle an Appointment</DialogTitle>
+                <DialogTitle>Pay for an Appointment</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         You are going to pay for the appointment with Dr. {props.doctorName} on {props.date.split("T")[0]} at {parseInt(props.date.split("T")[1].split(".")[0].split(":")[0]) + 2}:{props.date.split("T")[1].split(".")[0].split(":")[1]}
