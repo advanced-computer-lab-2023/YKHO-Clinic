@@ -41,6 +41,7 @@ import { FilledInput } from '@mui/material';
 import { useNavigate,useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logo from "../../../../images/logo_white.png";
+import AddBoxIcon from '@mui/icons-material/AddBox';
 // Inside your component
 
 // axios
@@ -104,7 +105,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp, handleSearch,isChat, goHome, goFiles, 
+export default function PrimarySearchAppBar({content, goEditInfo, openHelp, goHealthPackages, handleSearch,isChat, goHome, goFiles, 
   handlePrescriptions, handleAppointments ,handleManageFamily, viewAllDoctors, toChats}) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
@@ -145,7 +146,8 @@ export default function PrimarySearchAppBar({content, openHelp, handleSearch,isC
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-  const [notifications, setNotifications] = useState([]);  const [values, setValues] = useState("");
+  const [notifications, setNotifications] = useState([]);  
+  const [values, setValues] = useState("");
   const [readCount, setReadCount] = useState(0);
   const [notifRead, setNotifRead] = React.useState(false);
   const isMenuOpen = Boolean(anchorEl);
@@ -354,9 +356,15 @@ const list = (anchor) => (
       </ListItemButton>
     </ListItem>
       <ListItem disablePadding>
-      <ListItemButton onClick={viewAllDoctors} sx={{color:"#FAF5FF"}}>
-        <ListItemIcon sx={{color:"#FAF5FF"}}><AssignmentIndIcon /></ListItemIcon>
-        <ListItemText primary={'View All Doctors'} sx={{color:"#FAF5FF"}}/>
+        <ListItemButton onClick={viewAllDoctors} sx={{color:"#FAF5FF"}}>
+          <ListItemIcon sx={{color:"#FAF5FF"}}><AssignmentIndIcon /></ListItemIcon>
+          <ListItemText primary={'View All Doctors'} sx={{color:"#FAF5FF"}}/>
+      </ListItemButton>
+    </ListItem>
+    <ListItem disablePadding>
+      <ListItemButton onClick={goHealthPackages} sx={{color:"#FAF5FF"}}>
+          <ListItemIcon sx={{color:"#FAF5FF"}}><AddBoxIcon /></ListItemIcon>
+          <ListItemText primary={'Health Packages'} sx={{color:"#FAF5FF"}}/>
       </ListItemButton>
     </ListItem>
   </List>
@@ -365,7 +373,7 @@ const list = (anchor) => (
 
 <List sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
   <ListItem disablePadding>
-      <ListItemButton sx={{color:"#FAF5FF"}}>
+      <ListItemButton onClick={goEditInfo} sx={{color:"#FAF5FF"}}>
         <ListItemIcon sx={{color:"#FAF5FF"}}><EditIcon/></ListItemIcon>
         <ListItemText primary={'Edit your info'} style={{ textAlign: 'center' }} />
       </ListItemButton>
@@ -503,7 +511,7 @@ const list = (anchor) => (
               defaultValue={content}
             />
           </Search>
-          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch(values)}> Search </Button>
+          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={() => handleSearch(values)}> Search </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             {isChat == undefined &&

@@ -8,7 +8,7 @@ function PatientCard({patient,showPatientInfo}){
                 <AssignmentIndIcon style={{fontSize:"60"}} />
                 <div>
                     <Typography>name:{patient.name}</Typography>
-                    <Typography>phone:{patient.mobile}</Typography>
+                    <Typography>phone:{patient.mobileNumber}</Typography>
                 </div>
             </CardContent>
             <CardActions>

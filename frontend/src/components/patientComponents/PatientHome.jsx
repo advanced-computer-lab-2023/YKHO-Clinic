@@ -78,7 +78,7 @@ const PatientHome = () => {
         // Navigate to the new page
         window.location.href = breadcrumb.href;
       }
-      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions}handleAppointments={handleAppointments}  handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+      <Navbar goHome={goHome} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments}  handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
       function goHome() {
         const breadcrumb = { label: "Home", href: "/patient/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
@@ -104,24 +104,38 @@ const PatientHome = () => {
           const breadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
           handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function viewAllDoctors() {
         const breadcrumb = { label: "allDoctors", href: "/patient/search" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function toChats(){
         const breadcrumb = { label: "chats", href: "/chats" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
       function goFiles(){
         const breadcrumb = { label: "files", href: "/patient/files" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
+
+      function goHealthPackages(){
+        const breadcrumb = { label: "HealthPackages", href: "/patient/healthPackages/-1" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
+      function goEditInfo(){
+        const breadcrumb = { label: "editInfo", href: "/patient/editInfo" };
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
+      }
+
       const handleSearch = (values) => {
         if(values != "" && values != null){
         const breadcrumb = { label: "allDoctors", href: `/patient/search/${values}` };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
       }
-    }
+      }
 
     async function loadUser() {
         await axios.get("http://localhost:3000/patient/home", { withCredentials: true }).then((res) => {
@@ -216,7 +230,7 @@ const PatientHome = () => {
     return (
         <div>
             {result && <div>
-                <Navbar openHelp={toggleFilter} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                 <div>
                     <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                     {breadcrumbs.map((breadcrumb, index) => (
