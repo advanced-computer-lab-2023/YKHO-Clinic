@@ -81,11 +81,11 @@ const PatientManageFamily = () => {
     }
 
     const cancel = (nationlID) => {
-
+        // set subscribed
     }
 
     const viewDetails = async (name) => {
-
+        
     }
 
     return (
@@ -151,7 +151,6 @@ const PatientManageFamily = () => {
                                 ))
                             }
                         </>
-
                     </Stack>
                     <Dialog open={add} onClose={() => { setAdd(false) }}>
                         <DialogTitle>Add member</DialogTitle>

@@ -444,9 +444,9 @@ async function selectDoctor(req, res) {
 
 const readHealthPackage = async (req, res) => {
   let healthPackage = await healthPackageModel.findOne({
-    packageName: req.params.healthPackage,
+    packageName: req.body.healthPackage,
   });
-  res.status(201).send(healthPackage);
+  res.status(201).json(healthPackage);
 };
 
 const readHealthPackages = async (req, res) => {
@@ -533,6 +533,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
           : "",
         agent: patient.subscription.agent,
         nationalID: familyMembers[i].nationalID,
+        linked:true
       });
     } else {
       familyMembersSubscriptions.push({
@@ -543,6 +544,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         endDate: "",
         agent: false,
         nationalID: familyMembers[i].nationalID,
+        linked: false
       });
     }
   }
