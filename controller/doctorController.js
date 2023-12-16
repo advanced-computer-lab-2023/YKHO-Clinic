@@ -270,7 +270,6 @@ const path = require('path');
 
 
 
-
 const uploadHealthRecord = async (req, res) => {
   const patientId = req.params.id;
   const name = req.body.name;
