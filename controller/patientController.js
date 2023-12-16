@@ -523,6 +523,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
       let patient = await patientModel.findById(familyMembers[i].patientID);
       familyMembersSubscriptions.push({
         name: familyMembers[i].name,
+        relation: familyMembers[i].relation,
         healthPackage: patient.subscription.healthPackage,
         state: patient.subscription.state,
         endDate: patient.subscription.endDate
@@ -534,6 +535,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
     } else {
       familyMembersSubscriptions.push({
         name: familyMembers[i].name,
+        relation: familyMembers[i].relation,
         healthPackage: "none",
         state: "unsubscribed",
         endDate: "",
@@ -543,12 +545,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
     }
   }
 
-  //res.status(201).send(familyMembersSubscriptions);
-  res
-    .status(201)
-    .render("patient/familyMembersSubscriptions", {
-      familyMembersSubscriptions,
-    });
+  res.status(200).json(familyMembersSubscriptions);
 };
 
 // req.username, req.body.healthPackage, req.body.paymentMethod

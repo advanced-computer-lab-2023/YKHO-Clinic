@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 import NavbarPatient from './patientComponents/Navbar'
-import NavbarDoctor from './doctorComponents/Navbar'
+import NavbarDoctor from './doctorComponents/Navbar';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
