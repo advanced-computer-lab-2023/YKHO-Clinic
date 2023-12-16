@@ -34,6 +34,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ScheduleSendIcon from '@mui/icons-material/ScheduleSend';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
+import logo from "../../../../images/logo_white.png";
 // Inside your component
 // axios
 import axios from 'axios';
@@ -437,14 +438,7 @@ const list = (anchor) => (
           >
           <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            El7a2ny
-          </Typography>
+          <img style={{height:"56px"}} src={logo} />
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
           {isChat == undefined &&

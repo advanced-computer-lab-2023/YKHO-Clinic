@@ -222,8 +222,7 @@ app.get("/Patient/Appointments", requireAuthPatient, PatientShowAppointments);
 app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointments);
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
-app.get("/patient/medicalHistory",requireAuthPatient, showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
+app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("file"), addMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
 app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
 // register
@@ -237,9 +236,8 @@ app.get("/Patient/AppointmentsFilter", requireAuthPatient, PatientFilterAppointm
 app.get("/patient/patientHome", requireAuthPatient, patientHome);
 app.get("/patient/HealthRecords", requireAuthPatient, viewHealthRecords);
 app.get("/patient/medicalHistory/:index", requireAuthPatient,showMedicalHistory);
-app.post("/patient/addMedicalHistory", requireAuthPatient, upload.single("files"), addMedicalHistory);
 app.get("/files/:fileId", requireAuthPatient, showFile);
-app.post( "/patient/deleteMedicalHistory/:id", requireAuthPatient, deleteMedicalHistory);
+app.post( "/patient/deleteMedicalHistory", requireAuthPatient, deleteMedicalHistory);
 // register
 app.get("/guest/patient", function (req, res) {
   res.render("patient/register"); 

@@ -723,7 +723,7 @@ const deleteSubscription = async (req, res) => {
 };
 
 const subscriptionSuccessful = async (req, res) => {
-  console.log(req.params);
+
   let patient = await patientModel.findById(req.user._id);
   if (req.params.i != -1) {
     patient = await patientModel.findById(
@@ -904,7 +904,7 @@ async function sendEmail(email, message) {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log(error);
+
     } else {
       console.log("Email sent: " + info.response);
     }
@@ -947,7 +947,7 @@ async function cancelAppointmentPatient(req, res) {
       message = `Your appointment on ${date} with ${doctore.name} has been cancelled`;
     }
   }
-  console.log(message,"lol");
+
   let newNotification = new notificationModel({
     patientID: patient._id,
     text: message,
@@ -1202,10 +1202,10 @@ async function showMedicalHistory(req, res) {
   patient = req.user;
   const index = req.params.index;
   let result = await patientModel.findById({ _id: patient._id }).select({ medicalHistory: { $slice: [parseInt(index), 1] } });
-  const compressedData = result.medicalHistory[0].data;
-    const decompressedData = zlib.gunzipSync(compressedData);
+  const compressedData = result.medicalHistory[0].document;
+  const decompressedData = zlib.gunzipSync(compressedData);
 
-    const type = result.medicalHistory[0].contentType;
+    const type = result.medicalHistory[0].mimeType;
     const name = result.medicalHistory[0].name;
 
     res.set("Content-Type", "application/octet-stream");
@@ -1218,19 +1218,22 @@ async function showMedicalHistory(req, res) {
 }
 async function addMedicalHistory(req, res) {
   const name = req.body.docName;
-  console.log(name);
+
   const document = req.file.buffer;
   const mimeType = req.file.mimetype;
-  const newRecord = { name, document, mimeType };
+  const compressedData = zlib.gzipSync(document);
+  const newRecord = { name, document:compressedData, mimeType };
   patient = req.user;
   const patientId = patient._id;
   try {
     const updatedPatient = await patientModel.findByIdAndUpdate(
       patientId,
       { $push: { medicalHistory: newRecord } },
-      { new: true }
+      { new: true },
+      "-healthRecords.data -medicalHistory.document"
     );
-    res.redirect("/patient/medicalHistory");
+    
+    res.status(200).json({ result: updatedPatient });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1238,16 +1241,15 @@ async function addMedicalHistory(req, res) {
 async function deleteMedicalHistory(req, res) {
   patient = await patientModel.findOne({ _id: req.user._id });
   const patientId = patient._id;
-  const recordId = req.params.id;
-
-  const result = await patientModel.find({ _id: patientId });
-  result[0].medicalHistory.splice(recordId, 1);
+  const id = req.body.index;
   const updatedPatient = await patientModel.findByIdAndUpdate(
     patientId,
-    { $set: { medicalHistory: result[0].medicalHistory } },
-    { new: true }
-  );
-  res.redirect("/patient/medicalHistory");
+    { $pull: { medicalHistory: { _id: id } } },
+    { new: true },
+    "-healthRecords.data -medicalHistory.document"
+  ) 
+
+  res.status(200).json({ result: updatedPatient });
 }
 const viewHealthRecords = async (req, res) => {
   patient = await patientModel.findOne({ _id: req.user._id });
@@ -1379,9 +1381,9 @@ const PayByWallet = async (req, res) => {
   const appoitmentCost = appoitment.price;
   const doctor = await doctorModel.findOne({ _id: appoitment.doctorID });
   const patient = await patientModel.findOne({ _id: req.user._id });
-  console.log(patient);
+
   const Walletp = patient.wallet - appoitmentCost;
-  console.log(Walletp);
+
   const doctorw = doctor.Wallet + appoitmentCost;
   if (patient.wallet >= appoitmentCost) {
     const updatedPatient2 = await patientModel.findByIdAndUpdate(
@@ -1449,7 +1451,7 @@ const PayPresc = async (req, res) => {
 
 
   }
-  console.log(patient.shoppingCart);
+
   let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
   pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });

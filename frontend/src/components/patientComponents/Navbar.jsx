@@ -32,7 +32,7 @@ import { Button, Stack } from '@mui/material';
 import { FilledInput } from '@mui/material';
 import { useNavigate,useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
+import logo from "../../../../images/logo_white.png";
 // Inside your component
 
 // axios
@@ -446,14 +446,9 @@ const list = (anchor) => (
           >
           <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            El7a2ny
-          </Typography>
+
+
+            <img style={{height:"56px"}} src={logo} />
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
