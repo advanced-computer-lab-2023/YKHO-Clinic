@@ -1528,7 +1528,7 @@ const PayPresc = async (req, res) => {
   }
 
   let updatepatient= await patientModel.findByIdAndUpdate(pres.patientID,{$set: {shoppingCart:patient.shoppingCart}},{new:1});
-  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true}},{new:1});
+  pres= await prescription.findByIdAndUpdate(req.params.id,{$set:{filled:true,paid:true}},{new:1});
   res.status(201).json({ result: process.env.PORTPHARMA });
 
 }
