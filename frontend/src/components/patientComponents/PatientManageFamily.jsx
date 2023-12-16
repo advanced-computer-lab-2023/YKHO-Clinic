@@ -63,7 +63,7 @@ const PatientManageFamily = () => {
                 let savedBreadcrumbs = JSON.parse(localStorage.getItem('breadcrumbs'));
                 setBreadcrumbs(savedBreadcrumbs);
 
-                const homeBreadcrumb = { label: "Appointments", href: "/patient/Appointments" };
+                const homeBreadcrumb = { label: "FamilyMembers", href: "/patient/readFamilyMembers" };
                 const hasHomeBreadcrumb = savedBreadcrumbs.some(
                   (item) => item.label == homeBreadcrumb.label
                 );
@@ -176,7 +176,8 @@ const PatientManageFamily = () => {
     }
 
     const subscribe = (nationalID) => {
-        window.location.href = `/patient/healthPackages/${nationalID}`
+        const breadcrumb = { label: "HealthPackages", href: `/patient/healthPackages/${nationalID}`};
+        handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
     }
 
     const cancel = async (e) => {
