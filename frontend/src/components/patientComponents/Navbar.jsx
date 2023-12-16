@@ -104,8 +104,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function PrimarySearchAppBar({content, openHelp, isChat, goHome, goFiles, handlePrescriptions, handleHealthRecords, handleAppointments, handleHistory, handleLinkFamily
-,handleManageFamily, viewAllDoctors, toChats}) {
+export default function PrimarySearchAppBar({content, openHelp, handleSearch,isChat, goHome, goFiles, 
+  handlePrescriptions, handleAppointments ,handleManageFamily, viewAllDoctors, toChats}) {
   const [unread, setUnread] = useState(0);
   const unreadRef = useRef(unread);
   
@@ -159,11 +159,11 @@ export default function PrimarySearchAppBar({content, openHelp, isChat, goHome, 
   function toggleFilter() {
     setIsOpen(!isOpen);
   }
-  const handleSearch = () => {
-    if(values != "" && values != null){
-      window.location.href = `/patient/search/${values}`
-    }
-  }
+  // const handleSearch = (values) => {
+  //   if(values != "" && values != null){
+  //     window.location.href = `/patient/search/${values}`
+  // }
+ // }
   // function goAllApointments() {
   //   window.location.href= '/patient/Appointments';
   //     const breadcrumb = { label: "Appointments", href: "/patient/Appointments" };
@@ -202,12 +202,13 @@ export default function PrimarySearchAppBar({content, openHelp, isChat, goHome, 
         const res = await axios.get("http://localhost:3000/logout", {
             withCredentials: true
         });
+        localStorage.removeItem('breadcrumbs');
         window.location.href = "/";
         
     } catch (err) {
         setError(err.message);
     }
-}
+  }
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -502,7 +503,7 @@ const list = (anchor) => (
               defaultValue={content}
             />
           </Search>
-          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch}> Search </Button>
+          <Button variant="contained" color="success" size="small" sx={{ marginLeft: "1%" }} onClick={handleSearch(values)}> Search </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             {isChat == undefined &&
@@ -512,7 +513,7 @@ const list = (anchor) => (
                 color="inherit"
                 aria-label="menu"
                 sx={{ mr: 0 }}
-                onClick={() => { window.location.href = "/chats" }}
+                onClick={toChats}
               >
               <Badge badgeContent={unread} color="error">
                 <ChatBubbleIcon />

@@ -117,6 +117,7 @@ const {
   addFollowUpRequest,
   getMyID,
   getPatient,
+  readDetailsFamily,
   changePasswordPatient,
 } = require("./controller/patientController.js");
 const cors=require('cors')
@@ -250,9 +251,9 @@ app.get("/guest/doctor", function (req, res) {
 app.post("/request/createRequest", upload.array("files"), createRequest);
 
 // patient
-app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
-  res.render("patient/addFamily")});
-app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
+// app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
+//   res.render("patient/addFamily")});
+app.get("/patient/getNotifications", requireAuthPatient, getNotifications);
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
@@ -302,7 +303,7 @@ const deleteSubscription = require("./controller/patientController").deleteSubsc
 app.get("/patient/deleteSubscription",requireAuthPatient, deleteSubscription)
 const deleteFamilyMemberSubscription = require("./controller/patientController").deleteFamilyMemberSubscription;
 app.post("/patient/deleteFamilyMemberSubscription",requireAuthPatient, deleteFamilyMemberSubscription)
-
+app.get("/patient/getFamilyMemberSub/:nationalID",requireAuthPatient,readDetailsFamily)
 app.get("/patient/paymentcreditpresc/:id",requireAuthPatient,PayPresc);
 
 
