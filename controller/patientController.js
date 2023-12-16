@@ -570,6 +570,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
           ? patient.subscription.endDate
           : "",
         agent: true,
+        patientID: familyMembers[i].patientID,
         nationalID: familyMembers[i].nationalID,
         linked:true
       });
@@ -581,6 +582,7 @@ const readFamilyMembersSubscriptions = async (req, res) => {
         state: "unsubscribed",
         endDate: "",
         agent: false,
+        patientID: null,
         nationalID: familyMembers[i].nationalID,
         linked: false
       });

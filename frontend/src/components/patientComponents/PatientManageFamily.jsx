@@ -318,7 +318,7 @@ const PatientManageFamily = () => {
                                                     </Typography>
                                                     <Stack direction='row'>
                                                         {member.state == "unsubscribed" && member.agent == true&&
-                                                            <Button variant="contained" onClick={() => { subscribe(member.nationalID) }} sx={{marginRight: 2}}>
+                                                            <Button variant="contained" onClick={() => { subscribe(member.patientID) }} sx={{marginRight: 2}}>
                                                                 Subscribe to Health Package
                                                             </Button>
                                                         }

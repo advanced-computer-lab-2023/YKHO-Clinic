@@ -254,7 +254,7 @@ const PatientHome = () => {
                                 </Typography>
                                 {plan !== "none" && (
                                     <Typography variant="h5" sx={{ font: "bold", marginLeft: "3.5%" }} gutterBottom>
-                                        You are subscribed to <Button variant="text" size="small" sx={{ font: "bold", fontSize: "18px" }}>{plan}</Button>
+                                        You are subscribed to the {plan} plan
                                     </Typography>
                                 )}
                                 {plan == "none" && <Typography variant="h4" sx={{ font: "bold", marginTop: "3%", marginLeft: "3%" }} gutterBottom>
