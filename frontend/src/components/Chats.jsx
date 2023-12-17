@@ -142,7 +142,7 @@ function Chats() {
     }
 
     const pharmacistSend = async () => {
-        if (message != "" ) {
+        if (text != "" ) {
             const data = {
                 room: pharmacistChat.doctorID,
                 text,
@@ -453,7 +453,7 @@ function Chats() {
         socket.on("receive_message", (data) => {
             data.time = new Date(data.time).getHours() + ":" + new Date(data.time).getMinutes()
 
-            // chats - chatsRef.current
+            
             let tempChats = [...chatsRef.current];
 
             let found = false;

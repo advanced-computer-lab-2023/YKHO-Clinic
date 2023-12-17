@@ -43,8 +43,6 @@ const pharmacistRead = async (req, res) => {
         chat.messages[chat.messages.length - i].unread = false;
     }
 
-    chat.unreadDoctor = 0;
-
     chat.save();
     res.status(200).json({ chat });
 }
