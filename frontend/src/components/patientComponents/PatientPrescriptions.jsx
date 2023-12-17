@@ -188,7 +188,7 @@ const PatientPrescriptions = () => {
         await axios.get(`http://localhost:3000/patient/paymentcreditpresc/${id}`, {
             withCredentials: true
         }).then((res) => {
-            window.location.href = "http://localhost:"+res.data.result+"/";
+            window.location.href = "http://localhost:"+res.data.result+"/login";
 
         }).catch((err) => {
             console.log(err);
