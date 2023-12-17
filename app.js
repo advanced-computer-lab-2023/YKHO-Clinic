@@ -9,6 +9,7 @@ require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const { requireAuthPatient,requireAuthAdmin,requireAuthDoctor,requireAuth } = require("./Middleware/authMiddleware");
 const { home } = require("./controller/homePage");
+const  {healthPackage}  = require("./model/healthPackage");
 const {
   docViewWallet,
   createDoctor,
@@ -174,7 +175,6 @@ app.post("/doctor/edit/changePassword", requireAuthDoctor, changePasswordDoctor)
 app.get("/doctor/patients", requireAuthDoctor, showMyPatients);
 app.get("/doctor/patients/:id", requireAuthDoctor, showMyPatientInfo);
 app.get("/doctor/upcomingAppointments", requireAuthDoctor, showUpcomingAppointments);
-app.get("/doctor/updateInfo", requireAuthDoctor, updateMyInfo);
 app.post("/doctor/updateInfo", requireAuthDoctor, updateThis);
 app.get("/doctor/AppointmentsFilter", requireAuthDoctor, DocFilterAppointments);
 app.get("/doctor/Appointments", requireAuthDoctor, DocShowAppointments);
@@ -198,9 +198,14 @@ app.post("/doctor/acceptFollowUp",requireAuthDoctor,AcceptFollowupRequest);
 app.post("/doctor/rejectFollowUp",requireAuthDoctor,RejectFollowupRequest);
 app.get("/downloadPresc/:id",requireAuth, downloadPresc);
 
+const getHealthPackages2 = async (req, res) => {
+  const healthPackages = await healthPackage.find();
+  return res.status(200).json({ healthPackages: healthPackages });
+};
 //Admin
 app.get("/admin/uploadedInfo", requireAuthAdmin, goToUploadedInfo);
 app.get("/getRequests", requireAuthAdmin, getRequests);
+app.get("/admin/getHealthPackages", requireAuthAdmin, getHealthPackages2);
 app.get("/getHealthPackages", requireAuthPatient,getHealthPackages);
 app.put("/admin/changePassword", requireAuthAdmin, changePasswordAdmin);
 app.get("/admin/uploadedInfo/:id/:file", requireAuthAdmin, showDoctorRecord);
@@ -252,7 +257,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 // app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
 //   res.render("patient/addFamily")});
-app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);//
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
@@ -262,9 +267,10 @@ app.post("/patient/Linked",requireAuthPatient, LinkFamilyMemeber);
 app.get("/patient/home", requireAuthPatient, readUserData);
 app.get("/patient/searchDoctors", requireAuthPatient, searchDoctors);
 app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
+
 app.get("/patient/doctors/:id", requireAuthPatient, selectDoctor);
 app.get("/patient/paymentcredit/:id",requireAuthPatient,PayByCredit);
-app.get("/patient/paymentWallet/:id",requireAuthPatient,PayByWallet);
+app.get("/patient/paymentWallet/:id",requireAuthPatient,PayByWallet);//
 app.get("/patient/Wallet",requireAuthPatient,ViewWallet);
 app.get("/success/:id",requireAuth,success);
 app.get("/fail",requireAuth,fail);

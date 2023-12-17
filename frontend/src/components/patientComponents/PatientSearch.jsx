@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import Navbar from './Navbar'
-import { Stack, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, Alert, Button } from '@mui/material'
+import { Stack, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, Alert, Button, Skeleton } from '@mui/material'
 import { set } from 'mongoose';
 import FamilyMemberCard from './FamilyMemeberCard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,7 @@ import dayjs from 'dayjs';
 
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
+import PlaceHolder from '../PlaceHolder';
 
 const PatientSearch = () => {
     const [result, setResult] = useState(false);
@@ -33,7 +34,7 @@ const PatientSearch = () => {
     const [familyMembers, setFamilyMembers] = useState([]);
     const [id, setID] = useState("");
     const [selectedDateSent, setSelectedDateSent] = useState(null);
-
+    const [loadingDoctors, setLoadingDoctors] = useState(false);
     const [breadcrumbs, setBreadcrumbs] = useState([{}]);
     async function check() {
 
@@ -156,6 +157,7 @@ const PatientSearch = () => {
         }
 
     async function getDoctors() {
+        setLoadingDoctors(true);
         if (searchValue != "")
             await axios.get(`http://localhost:3000/patient/searchDoctors?searchValues=${searchValue}`, {
                 withCredentials: true,
@@ -164,6 +166,7 @@ const PatientSearch = () => {
                 setTimeSlots(res.data.results.timeSlots)
                 setAppointments(res.data.results.doctorAppointments)
                 handleReset();
+                setLoadingDoctors(false);
             }).catch((err) => {
                 console.log(err)
             });
@@ -174,13 +177,14 @@ const PatientSearch = () => {
         }).then((res) => {
             getDoctors();
             setOpen(true);
-            console.log(res.data)
+
         }).catch((err) => {
             console.log(err)
         });
     }
 
     async function doctorsFiltered() {
+        setLoadingDoctors(true);
         await axios.get(`http://localhost:3000/patient/filterDoctors/?searchValues=${searchValue}&&speciality=${filled}&&date=${selectedDate}`, {
             withCredentials: true,
         }).then((res) => {
@@ -188,7 +192,7 @@ const PatientSearch = () => {
             setTimeSlots(res.data.results.timeSlots)
             setAppointments(res.data.results.doctorAppointments)
             handleDateChange(selectedDate)
-            console.log(res.data);
+            setLoadingDoctors(false);
         }).catch((err) => {
             console.log(err)
         })
@@ -259,7 +263,7 @@ const PatientSearch = () => {
     return (
         <div>
             {result && <div>
-                <Navbar goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
+                <Navbar content={searchValue} goEditInfo={goEditInfo} openHelp={toggleFilter} goHealthPackages={goHealthPackages} goHome={goHome} handleSearch={handleSearch} goFiles={goFiles} handlePrescriptions={handlePrescriptions} handleAppointments={handleAppointments} handleFamilyMembers={handleFamilyMembers} handleManageFamily={handleManageFamily} viewAllDoctors={viewAllDoctors} toChats={toChats} />
                 <Breadcrumbs sx={{padding:'15px 0px 0px 15px'}} separator="›" aria-label="breadcrumb">
                     {breadcrumbs.map((breadcrumb, index) => (
                     <Link
@@ -302,12 +306,17 @@ const PatientSearch = () => {
                         <Button variant="outlined" size="small" sx={{ marginLeft: "1%" }} onClick={() => { getDoctors();}}> Reset </Button>
                     </Stack>
                     <Paper elevation={7} sx={{ padding: "20px", width: "80%", height: "700px", overflowY: "auto" }}>
-                        <Stack direction="column" spacing={1} sx={{ width: "100%" }}>
-                            {doctors.length > 0 && doctors.map((doctor) => (
-                                < DoctorCard doctorName={doctor.name} speciality={doctor.speciality} hospital={doctor.affiliation} price={doctor.sessionPrice} timeSlots={timeSlots.filter(slot => slot.doctorID == doctor._id)} 
+                        <Stack direction="column" spacing={1} sx={{ width: "100%" }} justifyContent="center" alignContent="center">
+                            {doctors.length > 0 ? doctors.map((doctor) => (
+                                < DoctorCard education={doctor.education} doctorName={doctor.name} speciality={doctor.speciality} hospital={doctor.affiliation} price={doctor.sessionPrice} timeSlots={timeSlots.filter(slot => slot.doctorID == doctor._id)} 
                                 appointments={appointments.filter(appointment => appointment.doctorID == doctor._id)} handleReserve={reserveSlot} doctorID={doctor._id} selectedDate={selectedDateSent}
                                 getSlots={getTimeSlots} times = {timeSlotsShow} familyMembers= {familyMembers} myID={id}/>
-                            ))}
+                            )) : !loadingDoctors ? <PlaceHolder message={"No Doctors with this data"}/>
+                            :<Stack direction="column" spacing={2} justifyContent="center" alignItems="center" sx={{ marginTop: "2%" }}>
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                                <Skeleton animation="wave" variant="rectangular" width={1500} height={200} />
+                            </Stack>}
                         </Stack>
                     </Paper>
                 </Stack>
