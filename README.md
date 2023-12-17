@@ -1967,6 +1967,9 @@ This is the register patient page
 This is the admin home page, it contains the doctor requests and the health packages
 ![image5](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/d9be7fe5-5990-4564-b1d2-a101921bf306)
 
+this is the navigation bar for the admin
+![Screenshot 2023-12-17 024505](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/19ff6798-86df-4241-b587-23bc75d1738d)
+
 This is the edit users page where you can remove a user and create a new admin
 ![image6](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/0fcc5a64-4f65-4008-8f04-426a8c2b9b85)
 
@@ -2024,6 +2027,29 @@ This is the doctor appointments page , you can filter by the status, date or whe
 ![image23](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/e3e65c3c-ea1d-4d73-92f9-ff1a0041a047)
 This is the doctor timeSlots page , you can add a new timeslot if its not clashing and view your already created time slots
 ![image24](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/a954f869-97c8-4e04-8dc7-8c575b9ea794)
+
+### Patient Page
+this is the patient home page, you can navigate to most of the patient's page from here
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/b11b7869-b4d4-4974-8ea7-c529d24fa247)
+this is the prescriptions page, you can view your prescriptions along with their details here
+![imsdsdage](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/11a37c29-76e5-4b16-b5fe-ef608cbada6e)
+this is the appointments page, you can view your appointments, reschedule, or cancel them here
+![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/e505416d-1050-4746-ac5d-6b39ef802381)
+this is the Link family members page, you can link your family members and subscribe to health packages for them
+![imadssdge](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/205330e6-cf81-4cf7-98d2-3aa6ee5c1d5d)
+this is medical history page where you can upload and view files
+![imadssdge](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/26ee4779-5cc8-4f3c-9b67-caac7024f6af)
+this is the doctor searching page, where you see the result of your search query
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/091551bf-4ec9-4738-adce-89a074a23dd0)
+this is the health packages' subscription page
+![imadssdge](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/3fc32b37-c081-46e0-8a39-43c0d0426a9b)
+this is the change Password page
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/a8d3b908-991c-49ea-beeb-539e08de9f9f)
+this is the navigation bar
+![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/4e4bf44c-4d15-410c-ad21-fbcac0ebfb00)
+this is is the notifcations view
+![ddddddddd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/74f52b3f-93e9-416c-ad48-a83b7f3c8c75)
+
 
 #### Tests
 ![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
