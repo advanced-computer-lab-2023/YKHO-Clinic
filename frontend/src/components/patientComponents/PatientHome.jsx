@@ -266,7 +266,7 @@ const PatientHome = () => {
                             </Paper>
                         </Grid>
                         <Grid item xs={6} >
-                            <Paper variant="elevation" elevation={4}>
+                            <Paper variant="elevation" elevation={4} sx={{minHeight:"231px"}} >
                                 <Typography variant="h4" sx={{ font: "bold", marginLeft: "3%", paddingTop: "3%" }} gutterBottom>
                                     Family Members<Button variant="outlined" sx={{ marginLeft: "55%" }} onClick={handleManageFamily}>View All</Button>
                                 </Typography>

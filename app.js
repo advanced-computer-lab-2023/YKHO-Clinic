@@ -335,13 +335,11 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);    
   })
 
   socket.on("send_message_pharmacist", (data) => {
-    console.log(data)
     socket.in(data.room).emit("receive_message_pharmacist", data);
     pharmacistSave(data);    
   })
