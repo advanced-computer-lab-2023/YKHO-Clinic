@@ -1997,10 +1997,29 @@ This is what happens when you click the view prescriptions button , you see the 
 This is what you see when you edit a prescription, you can add a new medication from the pharmacy side of the database and edit the dosage of the medicine or remove the medicine
 ![image14](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/eac6bfdd-ff8d-4ff9-8d0b-0cbeb09b7b72)
 
-This is the chat UI where you can add a new patient to chat to
+This is what happens when you click the view health records button , you can upload new health records and you can also download health records
 ![image15](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/2355002f-115c-4586-918a-e27834c609ce)
 
+This is the Chat ui where you can add new chats
+![chat](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/b3d851c6-0ca4-4a32-b8ee-cdffc5d9fe5b)
 
+This is what happens when you add new chat , you can select one of your patients to chat with
+![image16](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/3ca5f2ff-07a0-4324-b795-7fe21f27cfce)
+
+This is what happens when you chat with a patient you added
+![image17](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/7ffd57c7-83a8-4c84-9c1b-f3c0e4155154)
+This is what happens you call a patient , you wait for the other side to answer the call
+![image18](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/1afc71a1-44fc-40f2-a4de-ed9e855362ab)
+This is the doctor follow up page where you can accept or reject a follow up a patient made
+![image19](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/c8758ff0-7071-409e-b3a5-da7a4dcb14a5)
+
+This is the doctor edit info page , you can change your email , rate or affiliation or you can change your password
+![image20](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/41393387-0c45-4b06-8157-c3ec66b81327)
+
+This is the notification bar
+![image21](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/916dcf79-173c-4c58-b27d-8256e08fce5f)
+This is the burger menu
+![image22](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/d56d057d-8488-47cf-8b80-c207a05c1629)
 
 #### Tests
 ![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
