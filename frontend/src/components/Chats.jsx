@@ -31,6 +31,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 
 import io from 'socket.io-client';
+import { paginationClasses } from '@mui/material';
 const socket = io.connect("http://localhost:3000");
 //const socketShared = io.connect("http://localhost:8000");
 
@@ -39,6 +40,46 @@ function Chats() {
     const [pharmacistChat, setPharmacistChat] = useState();
     const [isFlag, setFlag] = useState(false);
     const [loading, setLoading] = useState(true);
+    const pharmacistChatRef = useRef(pharmacistChat);
+
+    useEffect(() => {
+        pharmacistChatRef.current = pharmacistChat;
+    }, [pharmacistChat])
+
+    useEffect(() => {
+        socket/*Shared*/.on("receive_message_pharmacist", (data) => {
+            data.time = new Date(data.time).getHours() + ":" + new Date(data.time).getMinutes()
+            data.isDoctor = false;
+
+
+            // chats - chatsRef.current
+            let temp = {
+                doctorID: pharmacistChatRef.current.doctorID,
+                unread: pharmacistChatRef.current.unread,
+                messages: pharmacistChatRef.current.messages,
+                groups: pharmacistChatRef.current.groups
+            }
+            
+            temp.messages.push(data)
+            temp.unread = 1 + temp.unread;
+
+            let n = temp.groups.length;
+            
+            if (n > 0 && !temp.groups[n - 1].isDoctor) {
+                temp.groups[n - 1].messages.push(temp.messages.length - 1)
+            }
+            else {
+                let group = {
+                    isDoctor: false,
+                    messages: [temp.messages.length - 1]
+                }
+                temp.groups.push(group)
+            }
+
+            setPharmacistChat(temp);
+        })
+
+    }, [socket/*Shared*/])
 
     const fetchpharmacistChat = async () => {
         // fetch chats
@@ -70,6 +111,75 @@ function Chats() {
             console.log(err);
         })
 
+    }
+
+    const openPharmacist = async (room) => {
+        setFlag(true);
+
+        let temp = {
+            doctorID: pharmacistChat.doctorID,
+            unread: pharmacistChat.unread,
+            messages: pharmacistChat.messages,
+            groups: pharmacistChat.groups
+        }
+        
+        if (temp.unread > 0) {
+            for (let j = 1; j <= temp.unread; j++) {
+                temp.messages[temp.messages.length - j].unread = false;
+            }
+
+            temp.unread = 0;
+            setPharmacistChat(temp);
+
+            await axios.get("http://localhost:3000/pharmacistRead", {
+            withCredentials: true
+        }).then((res) => {
+        }
+        ).catch((err) => {
+            console.log(err);
+        })
+        }
+    }
+
+    const pharmacistSend = async () => {
+        if (message != "" ) {
+            const data = {
+                room: pharmacistChat.doctorID,
+                text,
+                time: new Date(Date.now())
+            }
+
+            await socket.emit("send_message_pharmacist", data)
+
+            delete data.room;
+            data._id = generate();
+            data.time = data.time.getHours() + ":" + data.time.getMinutes();
+            data.unread = true;
+
+            // update chats
+            let temp = {
+                doctorID: pharmacistChat.doctorID,
+                unread: pharmacistChat.unread,
+                messages: pharmacistChat.messages,
+                groups: pharmacistChat.groups
+            }
+            
+            temp.messages.push(data);
+            let n = temp.groups.length;
+            
+            if (n > 0 && temp.groups[n - 1].isDoctor) {
+                temp.groups[n - 1].messages.push(temp.messages.length - 1)
+            }
+            else {
+                let group = {
+                    isDoctor: true,
+                    messages: [temp.messages.length - 1]
+                }
+                temp.groups.push(group)
+            }
+
+            setPharmacistChat(temp);
+        }
     }
 
     // chat
@@ -240,7 +350,6 @@ function Chats() {
         const breadcrumb = { label: "Home", href: "/patient/home" };
         handleBreadcrumbClick(new MouseEvent('click'), breadcrumb);
     }
-
     function handlePrescriptions() {
         //window.location.href = "/patient/Prescriptions"
         const breadcrumb = { label: "prescriptions", href: "/patient/Prescriptions" };
@@ -291,7 +400,6 @@ function Chats() {
     function toggleFilter() {
         setIsOpen(!isOpen);
     }
-
 
     const fetch = async () => {
         // fetch chats
@@ -504,44 +612,8 @@ function Chats() {
         }
     }
 
-    const pharmacistSend = async () => {
-        if (message != "" && index != null) {
-            const data = {
-                room: chats[index].room,
-                text,
-                isPatient,
-                time: new Date(Date.now())
-            }
-
-            await socket.emit("send_message", data)
-
-            delete data.room;
-            data._id = generate();
-            data.time = data.time.getHours() + ":" + data.time.getMinutes();
-
-            // update chats
-            let tempChats = [...chats];
-
-            tempChats[index].messages.push(data)
-
-            let n = tempChats[index].groups.length;
-
-            if (n > 0 && tempChats[index].groups[n - 1].isPatient == isPatient) {
-                tempChats[index].groups[n - 1].messages.push(tempChats[index].messages.length - 1)
-            }
-            else {
-                let group = {
-                    isPatient,
-                    messages: [tempChats[index].messages.length - 1]
-                }
-                tempChats[index].groups.push(group)
-            }
-            setChats(tempChats);
-            setText("");
-        }
-    }
-
     const openConversation = async (room) => {
+        setFlag(false);
         let unread = false
         for (let i = 0; i < chats.length; i++) {
             if (chats[i].room == room) {
@@ -668,9 +740,7 @@ function Chats() {
                                     </IconButton>
                                 </ListSubheader>
                                 {!loading &&
-                                    <ListItem button divider onClick={() => {
-                                        setFlag(true);
-                                    }}>
+                                    <ListItem button divider onClick={openPharmacist}>
                                         <ListItemText
                                             primary='pharmacy'
                                             secondary={(pharmacistChat.messages.length > 0 ? pharmacistChat.messages[pharmacistChat.messages.length - 1].text : "start chatting")}
@@ -684,7 +754,6 @@ function Chats() {
                                         }
                                     </ListItem>
                                 }
-
                                 {
                                     chats.length > 0 &&
                                     chats.map((chat) => (
