@@ -561,7 +561,9 @@ const readFamilyMembersSubscriptions = async (req, res) => {
   let familyMembersSubscriptions = [];
   for (let i = 0; i < familyMembers.length; i++) {
     if (familyMembers[i].patientID) {
+      console.log(familyMembers[i].patientID);
       let patient = await patientModel.findById(familyMembers[i].patientID);
+      console.log(patient)
       familyMembersSubscriptions.push({
         name: familyMembers[i].name,
         relation: familyMembers[i].relation,
