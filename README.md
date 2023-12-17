@@ -1948,32 +1948,59 @@ Copy code
 #### Features
 we have three main users in our website
 
-this is the starting screen if youre not logged in , you can forget your pass , register as a doctor and register as a patient or login
+##### Starting Page
+
+This is the starting screen if youre not logged in , you can forget your pass , register as a doctor and register as a patient or login
 ![image](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/4b330434-cf81-441c-8150-1ead95cc1b4a)
 
-this is the forget password , you write your username and you get an email on your email address
+This is the forget password , you write your username and you get an email on your email address
 ![image2](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/09663656-fe9b-41fb-94aa-6ca8b52f54af)
 
-this is the register doctor page
+This is the register doctor page
 ![image3](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/b3551484-ecf2-472f-a09c-f6685e0270a7)
 
-this is the register patient page
+This is the register patient page
 ![image4](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/8aa1f1b6-c85b-4a0d-8670-08aa712c7eb7)
 
-this is the admin home page, it contains the doctor requests and the health packages
+##### Admin page
+
+This is the admin home page, it contains the doctor requests and the health packages
 ![image5](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/d9be7fe5-5990-4564-b1d2-a101921bf306)
 
-this is the edit users page where you can remove a user and create a new admin
+This is the edit users page where you can remove a user and create a new admin
 ![image6](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/0fcc5a64-4f65-4008-8f04-426a8c2b9b85)
 
-this is the doctor requests
+This is the doctor requests
 ![image7](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/c6ef8b2e-8018-4b9c-b42c-ba805b447da7)
 
-this is the health packages page , you can view health packages , edit health packages and add new health packages
+This is the health packages page , you can view health packages , edit health packages and add new health packages
 ![image8](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/96f189eb-72fd-4ccd-bb08-deb9c0ed45cd)
 
-this is where you change your password
+This is where you change your password
 ![image9](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/17f6e9df-268b-478e-a9fb-86b1c3c4e504)
+
+##### Doctor page
+
+This is the doctor home page , you can view general information about the doctor like upcoming appointments , your wallet and followup requests
+you can click view all to see more
+![image10](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/d3c1dbcd-b205-40d6-bbe2-c20d69325e84)
+
+This is the doctor patients page, you view your patient general information by clicking view more and you can search by name or whether the patient has an upcoming appointment
+![image11](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/442ecfb8-f9ef-4c64-ba5c-19aae6386b33)
+
+This is what happens when you click view more on the patient in the previous page, you have a view health records button to show the patients health record and a view prescriptions button to show the patients prescriptions
+![image12](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/2da58bcd-20a6-48a8-aa33-f2fd8c789b1d)
+
+This is what happens when you click the view prescriptions button , you see the patients prescriptions , you can add a new one and edit or download old ones
+![image13](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/19adf430-a784-43e0-bf6d-26e32681c4f1)
+
+This is what you see when you edit a prescription, you can add a new medication from the pharmacy side of the database and edit the dosage of the medicine or remove the medicine
+![image14](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/eac6bfdd-ff8d-4ff9-8d0b-0cbeb09b7b72)
+
+This is the chat UI where you can add a new patient to chat to
+![image15](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/2355002f-115c-4586-918a-e27834c609ce)
+
+
 
 #### Tests
 ![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
