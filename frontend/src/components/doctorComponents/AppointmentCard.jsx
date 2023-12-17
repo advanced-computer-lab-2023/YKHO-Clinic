@@ -40,7 +40,7 @@ function AppointmentCard(props) {
             </div>
             {props.isFull && (
               <div>
-              {props.status!="completed" &&< IconButton sx={{ marginTop: '-60px' }} id={props.ids} onClick={() => props.whenClicked(props.ids)}>
+              {props.status!="completed" &&props.status!="cancelled" &&< IconButton sx={{ marginTop: '-60px' }} id={props.ids} onClick={() => props.whenClicked(props.ids)}>
                 <EditCalendarIcon sx={{ fontSize: 24 }} />
               </IconButton>}
               {props.status!="cancelled"&&props.status!="completed"&&<IconButton sx={{ marginBottom: '-80px' }} color="error" id={props.ids} onClick={() => props.cancel(props.ids)}>
