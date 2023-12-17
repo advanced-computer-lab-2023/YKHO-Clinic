@@ -100,7 +100,7 @@ export default function AdminHome() {
           const res = await axios.get("http://localhost:3000/admin/getHealthPackages", {
             withCredentials: true,
           });
-    
+          
           setHealthPackages(res.data.healthPackages);
         } catch (err) {
           setError(err.message);
@@ -173,8 +173,9 @@ export default function AdminHome() {
             document.getElementById("pharmacyDiscountToBeCreated").value= "";
             document.getElementById("familyDiscountToBeCreated").value= "";
           }
-          setHealthPackages(res.data.healthPackages);
           setMessageAdd(res.data.message);
+          if(res.data.healthPackages)
+            setHealthPackages(res.data.healthPackages);
         });
   
       } catch (err) {
@@ -194,10 +195,10 @@ export default function AdminHome() {
           if (res.data.message == "package Edited successfully"){
             window.location.reload();
           }
-          setHealthPackages(res.data.healthPackages);
+          if(res.data.healthPackages)
+            setHealthPackages(res.data.healthPackages);
           setMessageCreate(res.data.message);
         });
-  
       } catch (err) {
         setMessageCreate(err.message);
       }
@@ -205,9 +206,9 @@ export default function AdminHome() {
 
     return(result && <div>
           <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
-          <div style={{display:'flex'}}>
+          <div style={{display:'flex', justifyContent:'center',alignItems:'center'}}>
           
-    <div style={{display:'grid', marginLeft:200, marginTop:50}}>
+    <div style={{display:'grid', marginTop:50}}>
     <TableContainer component={Paper} style={{marginLeft:0, width:1500}}>
     <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (

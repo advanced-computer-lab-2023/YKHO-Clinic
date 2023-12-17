@@ -190,15 +190,15 @@ export default function ChangePassword() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', width: '300px' }}>
              <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
                   <Typography style={{ marginRight: '10px', width: '100px' }}>Old Password:</Typography>
-                   <TextField id="oldPassword" name="oldPassword" label="Enter Old Password" />
+                   <TextField type='password' id="oldPassword" name="oldPassword" label="Enter Old Password" />
              </div>
              <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
                   <Typography style={{ marginRight: '10px', width: '100px' }}>New Password:</Typography>
-                   <TextField id="newPassword" name="newPassword" label="Enter New Password" />
+                   <TextField type='password' id="newPassword" name="newPassword" label="Enter New Password" />
              </div>
              <div style={{ display: 'flex', alignItems: 'center',marginBottom: '10px',marginTop:10 }}>
                   <Typography style={{ marginRight: '10px', width: '100px' }}>Confirm Password:</Typography>
-                   <TextField id="confirmationPassword" name="confirmationPassword" label="Enter Confirm Password" />
+                   <TextField type='password' id="confirmationPassword" name="confirmationPassword" label="Enter Confirm Password" />
              </div>
                 </div>
 

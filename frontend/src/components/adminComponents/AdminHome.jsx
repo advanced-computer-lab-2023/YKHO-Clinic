@@ -191,9 +191,9 @@ async function RejectButton(e) {
     (result && <div>
       <title>Home</title>
       <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
-    <div style={{display:'flex'}}>
+    <div style={{display:'flex', justifyContent:'center',alignItems:'center'}}>
   <div>
-      <TableContainer component={Paper} style={{marginLeft:120, marginBottom:150, marginTop:100}}>
+      <TableContainer component={Paper} style={{ marginBottom:150, marginTop:100}}>
       <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (
           <Link
@@ -258,7 +258,7 @@ async function RejectButton(e) {
         
       </TableContainer>
       
-      <TableContainer component={Paper} style={{marginLeft:120}} >
+      <TableContainer component={Paper} style={{}} >
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead bgcolor="secondary=.main.light" style={{backgroundColor:'grey'}}>
             <TableRow>

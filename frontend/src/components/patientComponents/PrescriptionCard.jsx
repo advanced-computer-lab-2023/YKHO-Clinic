@@ -31,9 +31,9 @@ export default function PrescriptionCard(props) {
                     </Typography>
                     {props.hasHealthPackage ?
                         <Typography sx={{ fontSize: 13, whiteSpace: "nowrap", marginLeft: "1%" }} gutterBottom>
-                            Price: <del>{props.price} EGP</del> {props.discount} EGP
+                            Price: <del>{props.price} </del> {props.discount} $
                         </Typography> : <Typography sx={{ fontSize: 13, whiteSpace: "nowrap", marginLeft: "1%" }} gutterBottom>
-                            Price: {props.price} EGP
+                            Price: {props.price} $
                         </Typography>
                     }
 

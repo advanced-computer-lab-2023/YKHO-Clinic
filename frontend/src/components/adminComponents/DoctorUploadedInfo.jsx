@@ -175,10 +175,9 @@ function DoctorUploadedInfo() {
         (result && <div>
         <title>Home</title>
         <Navbar goHome={goHome} goEdit={editUserButton} goDoctor={uploadedInfoButton} goHealth={healthPackagesButton} goPass={changePasswordButton}/>
-  <div style={{display:"flex"}}>
-        
+        <div style={{display:'flex', justifyContent:'center',alignItems:'center'}}>        
   <div >
-        <TableContainer component={Paper} style={{marginLeft:200, marginBottom:150, marginTop:150}}>
+        <TableContainer component={Paper} style={{ marginBottom:150, marginTop:150}}>
         <Breadcrumbs separator="›" aria-label="breadcrumb">
         {breadcrumbs.map((breadcrumb, index) => (
           <Link

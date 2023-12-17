@@ -435,13 +435,13 @@ const addHealthPackages = async (req, res) => {
       //law mal2ash package bel esm el maktob by add it
       const result = await healthPackage.save();
       healthPackages = await healthPackageTable.find();
-      return res.status(200).json({ message: "package created successfully" });
+      return res.status(200).json({ message: "package created successfully", healthPackages: healthPackages });
     } else {
-      return res.status(200).json({ message: "package already exists" });
+      return res.status(200).json({ message: "package already exists"});
     }
   } catch (ex) {
     //law feh missing fields/out of bounds/wrong type inputs
-    return res.status(200).json({ message: ex.message, healthPackages: healthPackages });
+    return res.status(200).json({ message: ex.message});
   }
 };
 
@@ -575,8 +575,6 @@ const getRequests = async (req, res) => {
   const requests = await requestsTable.find();
   return res.status(200).json({ requests: requests });
 };
-
-
 
 async function showDoctorRecord(req, res) {
   const doctorId = req.params.id;
