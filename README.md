@@ -2020,6 +2020,10 @@ This is the notification bar
 ![image21](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/916dcf79-173c-4c58-b27d-8256e08fce5f)
 This is the burger menu
 ![image22](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/d56d057d-8488-47cf-8b80-c207a05c1629)
+This is the doctor appointments page , you can filter by the status, date or whether its upcoming or a past appointment, you can also reschedule, cancel or do a followup if its completed
+![image23](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/e3e65c3c-ea1d-4d73-92f9-ff1a0041a047)
+This is the doctor timeSlots page , you can add a new timeslot if its not clashing and view your already created time slots
+![image24](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/100940677/a954f869-97c8-4e04-8dc7-8c575b9ea794)
 
 #### Tests
 ![sd](https://github.com/advanced-computer-lab-2023/YKHO-Clinic/assets/58986797/d72837da-2bd9-43ac-bc1e-9b95df69a487)
