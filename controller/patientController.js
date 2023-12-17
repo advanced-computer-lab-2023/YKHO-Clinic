@@ -149,7 +149,7 @@ const changePasswordPatient = async (req, res) => {
 
   if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
     if (req.body.newPassword != req.body.confirmationPassword) {
-      return res.status(404).json({ message: "Passwords dont not match" });
+      return res.status(201).json({ message: "Passwords dont not match" });
     }
 
     if (isStrongPassword(req.body.newPassword) === false) {

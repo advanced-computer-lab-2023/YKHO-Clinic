@@ -121,7 +121,6 @@ export default function PrimarySearchAppBar({ goHome, goEdit ,goDoctor, goHealth
   useEffect(() => {
     socket.on("update", () => {
       console.log("update");
-      getNotifications()
     })
 
     socket.on("receive_message", (data) => {
@@ -139,7 +138,6 @@ export default function PrimarySearchAppBar({ goHome, goEdit ,goDoctor, goHealth
   const [notifications, setNotifications] = useState([]); const [values, setValues] = useState("");
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  useEffect(() => { getNotifications() }, [notifRead]);
   const { searchvalue } = useParams();
 
   useEffect(() => { init() }, [])
@@ -175,18 +173,6 @@ export default function PrimarySearchAppBar({ goHome, goEdit ,goDoctor, goHealth
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
-  async function getNotifications() {
-    try {
-      const res = await axios.post("http://localhost:3000/doctor/getNotifications", {read:notifRead}, {
-        withCredentials: true,
-      });
-      setReadCount(res.data.readCount);
-      setNotifications(res.data.result);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   const [notificationsState, setNotificationsState] = React.useState({
     top: false,
     left: false,
@@ -201,19 +187,6 @@ export default function PrimarySearchAppBar({ goHome, goEdit ,goDoctor, goHealth
     }
     setNotifRead(true);
     setNotificationsState({ ...notificationsState, [anchor]: open });
-  }
-
-  async function deleteNotification(id) {
-    console.log(id)
-    axios.post("http://localhost:3000/patient/deleteNotification", { id: id }, {
-      withCredentials: true,
-    }).then((res) => {
-      if (res.data.message == "Notification deleted successfully") {
-        getNotifications();
-      }
-    }).catch((err) => {
-      console.log(err);
-    })
   }
 
   const notificationsList = (anchor) => (
