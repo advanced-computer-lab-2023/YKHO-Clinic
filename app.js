@@ -257,7 +257,7 @@ app.post("/request/createRequest", upload.array("files"), createRequest);
 // patient
 // app.get("/patient/createFamilyMember", requireAuthPatient,function (req, res) {
 //   res.render("patient/addFamily")});
-app.post("/patient/getNotifications", requireAuthPatient, getNotifications);
+app.post("/patient/getNotifications", requireAuthPatient, getNotifications);//
 app.post("/patient/deleteNotification", deleteNotification);
 app.post("/patient/createPatient",createPatient);
 app.post("/patient/createFamilyMember", requireAuthPatient, createFamilyMember);
@@ -270,7 +270,7 @@ app.get("/patient/filterDoctors", requireAuthPatient, filterDoctors);
 
 app.get("/patient/doctors/:id", requireAuthPatient, selectDoctor);
 app.get("/patient/paymentcredit/:id",requireAuthPatient,PayByCredit);
-app.get("/patient/paymentWallet/:id",requireAuthPatient,PayByWallet);
+app.get("/patient/paymentWallet/:id",requireAuthPatient,PayByWallet);//
 app.get("/patient/Wallet",requireAuthPatient,ViewWallet);
 app.get("/success/:id",requireAuth,success);
 app.get("/fail",requireAuth,fail);
@@ -335,13 +335,11 @@ io.on('connection', (socket) => {
  
   // chat
   socket.on("send_message", (data) => {
-    console.log(data)
     socket.in(data.room).emit("receive_message", data);
     save(data);    
   })
 
   socket.on("send_message_pharmacist", (data) => {
-    console.log(data)
     socket.in(data.room).emit("receive_message_pharmacist", data);
     pharmacistSave(data);    
   })

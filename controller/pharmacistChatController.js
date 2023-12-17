@@ -28,13 +28,11 @@ const pharmacistSave = async ({ room, text, time }) => {
     let message = {
         text,
         date: new Date(time),
-        isDoctor: true
+        isDoctor: true,
+        unread:true
     }
 
     chat.messages.push(message);
-
-    chat.unreadPharmacist = 1 + chat.unreadPharmacist;
-
     chat.save();
 }
 
